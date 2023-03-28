@@ -461,6 +461,76 @@ def _dist_rpc_pipeline_stage_factory(*args, **kwargs) -> DistRpcPipelineStage:
     stage.module_to(device=torch.device('cuda', kwargs['local_rank']))
     return stage
 
+# QUANT.py
+# deepcopy a linear
+def deepcopy_linear(child: nn.Linear):
+    # store C
+    new_li = nn.Linear(child.in_features, child.out_features, child.bias is not None)
+    new_li.weight.data.copy_(child.weight.data)
+    new_li.weight.requires_grad_(child.weight.requires_grad)
+    if child.bias is not None:
+        new_li.bias.data.copy_(child.bias.data) 
+        new_li.bias.requires_grad_(child.bias.requires_grad)
+    del child
+    return new_li
+
+class LinearWrapper(nn.Module):
+    def __init__(self, layer, bit):
+        super().__init__()
+        self.layer = deepcopy_linear(layer)
+        if bit == 16:
+            self.layer = self.layer.half()
+        self.bit = bit
+    
+    def forward(self, x):
+        if self.bit == 16:
+            x = x.half()
+        return self.layer(x)
+    
+from lptorch.gptq.nn import QuantLinear, Quantizer, quantize
+def quantize_linears(layer, bit):
+    qli_list = []
+    # enumerate all nn.Linear inside layer,
+    # substitute them with QuantLinear
+    def convert_layers_inner(module):
+        for name, child in module.named_children():
+            # new_mod = None 
+            if isinstance(child, (QuantLinear)):
+                continue
+            elif isinstance(child, (nn.Linear)):
+                if bit == 16 or bit == 32:
+                    qlayer = LinearWrapper(child, bit)
+                else:
+                    quantizer = Quantizer()
+                    quantizer.configure(bit, perchannel=True, sym=False, mse=False)
+                    quantizer.find_params(child.weight.data, weight=True)
+                    child.weight.data = quantize(
+                        child.weight.data, quantizer.scale, quantizer.zero, quantizer.maxq
+                    )
+                    qlayer = QuantLinear(bit, -1, child.in_features, child.out_features)
+                    qlayer.pack(child, quantizer.scale, quantizer.zero)
+                setattr(module, name, qlayer) # set new layer
+                qli_list.append(qlayer)
+                # new_mod = qlayer
+            else:
+                convert_layers_inner(child)
+    convert_layers_inner(layer)
+    return qli_list
+
+
+def module_factory(layers, qlvs):
+    """Get a `nn.Sequential` instance."""
+    assert len(layers) == len(qlvs), "one quant bit for one layer"
+    # new_layers = []
+    for idx, layer in enumerate(layers):
+        bit = qlvs[idx]
+        if bit in [2,3,4,8,16,32]: # GPTQ supports bits
+            quant_layers = quantize_linears(layer, bit)
+        else:
+            raise ValueError("bit should be 2, 3, 4, 8, 16, 32")
+        # new_layers.append(layer)
+    return nn.Sequential(*layers)
+
 def dist_rpc_pipeline_factory(model_layers: list, schedules: dict, results_to: int,
                               results_cb: Callable[[Any], None]) -> DistRpcPipeline:
     """Get an RPC pipeline instance."""
@@ -474,7 +544,7 @@ def dist_rpc_pipeline_factory(model_layers: list, schedules: dict, results_to: i
         layer_range = stage_cfgs['layers']
         qlvs = stage_cfgs['qlvs']
         layers = model_layers[layer_range[0]:layer_range[1]]
-        module = nn.Sequential(*layers)
+        module = module_factory(layers, qlvs)
         # print(module, layers, layer_range)
         # print(module, dst_rank)
         neighbor_ranks = get_neighbor_ranks(device_mesh, dst_rank)
@@ -592,7 +662,6 @@ def run_pipeline_rpc(model_layers:list, dist_cfg: DistConfig, chunk:int=1, input
             start_count = results_counter.value
             for data_chunk in data_chunks:
                 pipeline.enqueue_tensor(data_chunk)
-                print(results_counter.value)
             results_counter.wait_gte(start_count + len(data_chunks))
             tok_data = perf_counter()
             latency = tok_data - tik_data
@@ -624,10 +693,10 @@ if __name__ == '__main__':
             "layers": [0,1], "qlvs": [32]
         },
         8: {
-            "layers": [1,2], "qlvs": [32]
+            "layers": [1,2], "qlvs": [4]
         },
         9: {
-            "layers": [2,3], "qlvs": [32]   
+            "layers": [2,3], "qlvs": [8]   
         }
     }
     # original_result = nn.Sequential(*model_layers)(torch.rand(32, 10))
