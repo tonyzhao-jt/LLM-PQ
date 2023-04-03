@@ -8,6 +8,7 @@ import threading
 from time import perf_counter
 
 import logging
+import copy 
 
 # configure logger
 logger = logging.getLogger(__name__)
@@ -112,7 +113,7 @@ def set_device_map(rank, device_mesh, schedules, rpc_options):
     if cur_stage_rank == next_stage_rank:
         pass
     else:
-        logger.info(f"set device map for {cur_stage_rank} to {next_stage_rank} with {cur_stage_local_rank} to {next_stage_local_rank}")
+        logger.info(f"set device map for worker{cur_stage_rank}:{cur_stage_local_rank} to worker{next_stage_rank}:{next_stage_local_rank}")
         rpc_options.set_device_map(f"worker{next_stage_rank}", {cur_stage_local_rank: next_stage_local_rank})
 
 
@@ -188,7 +189,7 @@ class DistRpcContext(DistContext):
 
 # ideally, returns the pipline + quantization schedules
 # key functions here
-def get_pipeline_schedule(model_layers):
+def get_shard_strategy(model_cpu):
     return [], [], []
 
 # encode schedule to 1d list for communication
@@ -200,7 +201,7 @@ def encode_schedule(schedule):
     for rank, cfg in schedule.items():
         layer_start = cfg['layers'][0]
         layer_end = cfg['layers'][-1]
-        qlvs = cfg['qlvs']
+        qlvs = cfg['bits']
         stage_ranks.append(rank)
         stage_layers.append(layer_start) 
         stage_layers.append(layer_end)
@@ -221,7 +222,7 @@ def decode_schedule(stage_ranks, stage_layers, stage_qlvs):
         num_layers = layer_end - layer_start
         qlvs = stage_qlvs[passed_layers: passed_layers + num_layers]
         passed_layers = passed_layers + num_layers
-        schedule[rank] = {'layers': [layer_start, layer_end], 'qlvs': qlvs}
+        schedule[rank] = {'layers': [layer_start, layer_end], 'bits': qlvs}
     return schedule
     
 
@@ -238,7 +239,7 @@ def _verify_schedules(schedule, layers_num):
             former_layer = layer_end
         # check quantization is matched
         num_layers = layer_end - layer_start
-        qlvs = cfg['qlvs']
+        qlvs = cfg['bits']
         total_num_layers = total_num_layers + num_layers
         assert len(qlvs) == num_layers, "the number of quantization levels is not matched with the number of layers"
     
@@ -332,6 +333,8 @@ class DistRpcPipelineStage:
         self._sem_mod = threading.Semaphore(value=1) # value = N
         # here should me a nn.Sequential Module, and a function that set quantization bit should be here
         # self._module = module_cls(*module_args, **module_kwargs)
+        # TODO: replace with single node strategy
+        self.is_master = stage_id==0
         self._module = module_cls
         self._next_rref = None
         self._results_to = None
@@ -343,7 +346,10 @@ class DistRpcPipelineStage:
 
     def module_to(self, *args, **kwargs) -> None:
         """Wrap the module's `nn.Module.to` method (`device` can be be a `str`)."""
-        self._module.to(*args, **kwargs)
+        if self.is_master:
+            self._module = self._module.to(*args, **kwargs)
+        else:
+            self._module.decoder_layers_to_device(*args, **kwargs)
         # print(self._module, args, kwargs)
 
     def set_next(self, stage_rref: rpc.RRef) -> None:
@@ -366,7 +372,7 @@ class DistRpcPipelineStage:
         """Wrap the module's callable method."""
         inputs = to_device(inputs, self.stage_device)
         with self._sem_mod:
-            outputs = self._module(inputs)
+            outputs = self._module.decode(inputs)
         if self._next_rref is not None:
             # Sending must be asynchronous, otherwise we lose pipeline parallelism.
             # However, don't try to send until the next stage is ready.
@@ -385,7 +391,7 @@ class DistRpcPipelineStage:
     def test_fwd(self, input):
         # print("run", input)
         input = to_device(input, self.stage_device)
-        outputs = self._module(input)
+        outputs = self._module.decode(input)
         if self._next_rref:
             self._next_rref.rpc_async().test_fwd(outputs)
         else:
@@ -518,37 +524,21 @@ def quantize_linears(layer, bit):
     return qli_list
 
 
-def module_factory(layers, qlvs):
-    """Get a `nn.Sequential` instance."""
-    assert len(layers) == len(qlvs), "one quant bit for one layer"
-    # new_layers = []
-    for idx, layer in enumerate(layers):
-        bit = qlvs[idx]
-        if bit in [2,3,4,8,16,32]: # GPTQ supports bits
-            quant_layers = quantize_linears(layer, bit)
-        else:
-            raise ValueError("bit should be 2, 3, 4, 8, 16, 32")
-        # new_layers.append(layer)
-    return nn.Sequential(*layers)
-
-def dist_rpc_pipeline_factory(model_layers: list, schedules: dict, results_to: int,
+def dist_rpc_pipeline_factory(model_cpu: nn.Module, sharding_strategy: dict, results_to: int,
                               results_cb: Callable[[Any], None]) -> DistRpcPipeline:
     """Get an RPC pipeline instance."""
     stage_rrefs = []
     stage_cnt = 0
 
-    dst_rank_order = list(schedules.keys())
+    dst_rank_order = list(sharding_strategy.keys())
     stage_numbers = len(dst_rank_order)
 
-    for dst_rank, stage_cfgs in schedules.items():
-        layer_range = stage_cfgs['layers']
-        qlvs = stage_cfgs['qlvs']
-        layers = model_layers[layer_range[0]:layer_range[1]]
-        module = module_factory(layers, qlvs)
-        # print(module, layers, layer_range)
-        # print(module, dst_rank)
+    for dst_rank, stage_cfgs in sharding_strategy.items():
+        print(f"Rank {dst_rank} module sharded")
+        sharded_model = model_cpu.shard_model(sharding_strategy, dst_rank)
         neighbor_ranks = get_neighbor_ranks(device_mesh, dst_rank)
         if stage_cnt == stage_numbers - 1:
+            next_rank = 0 # meet the last one
             comm_type = "cpu"
         else:
             next_rank = dst_rank_order[stage_cnt + 1]
@@ -560,14 +550,14 @@ def dist_rpc_pipeline_factory(model_layers: list, schedules: dict, results_to: i
         
         print(f"Stage {stage_cnt} on {dst_rank} with {comm_type} communication to {next_rank}, local rank {dst_local_rank}")
 
-        rref = rpc.remote(dst_rank, _dist_rpc_pipeline_stage_factory, args=(module,),
-                           kwargs={'stage_id': id, 'module_args': {'qlvs': qlvs}, \
+        rref = rpc.remote(dst_rank, _dist_rpc_pipeline_stage_factory, args=(sharded_model,),
+                           kwargs={'stage_id': stage_cnt, 'module_kwargs': {}, \
                                    'local_rank':dst_local_rank, 'comm_type': comm_type})
-        
         rpc.remote(dst_rank, logger.info,
                     args=("======= Stage %d on %d =======", stage_cnt, dst_rank))
         stage_cnt += 1
         stage_rrefs.append(rref)
+
     logger.info("results to rank %d", results_to)
     logger.info("results callback %s", results_cb.__name__ if results_cb else "None")
     logger.info("======= Pipeline created =======")
@@ -593,18 +583,18 @@ def handle_results(tensors: torch.Tensor) -> None:
     logger.info("outputs is %s", tensors)
     results_counter.add(1)
 
-def run_pipeline_rpc(model_layers:list, dist_cfg: DistConfig, chunk:int=1, input_schedules=None) -> None:
+def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=1, sharding_strategy=None) -> None:
     """Run the pipeline using RPC communication."""
     rpc_opts = rpc.TensorPipeRpcBackendOptions(num_worker_threads=128, rpc_timeout=60)
     rank = dist_cfg.rank
     data_rank = 0 # by default, use rank 0 as the data rank
-    # init RPC context 
-    if not input_schedules:
-        input_schedules = get_pipeline_schedule(model_layers)
-    else:
-        layers_num = len(model_layers)
-        _verify_schedules(input_schedules, layers_num)  
-    set_device_map(rank, device_mesh, schedules, rpc_opts)
+    # verify the scheduling is ok to be set
+    if rank == 0:
+        if not sharding_strategy:
+            sharding_strategy = get_shard_strategy(model_cpu)
+        else:
+            model_cpu._verify_shard_strategy(sharding_strategy)  
+    set_device_map(rank, device_mesh, sharding_strategy, rpc_opts)
     # based on the schedule and device_mesh, determines the communication type
     with DistRpcContext((f"worker{rank}",),
                         { 'world_size': dist_cfg.world_size,
@@ -614,12 +604,12 @@ def run_pipeline_rpc(model_layers:list, dist_cfg: DistConfig, chunk:int=1, input
         # Send or receive the schedule
         # if rank == 0:
         #     # the stage_layers, stage_quant, stage_ranks
-        #     if not input_schedules:
-        #         input_schedules = get_pipeline_schedule(model_layers)
+        #     if not sharding_strategy:
+        #         sharding_strategy = get_shard_strategy(model_cpu)
         #     else:
-        #         layers_num = len(model_layers)
-        #         _verify_schedules(input_schedules, layers_num)
-        #     stage_layers, stage_quant, stage_ranks = encode_schedule(input_schedules)
+        #         layers_num = len(model_cpu)
+        #         _verify_schedules(sharding_strategy, layers_num)
+        #     stage_layers, stage_quant, stage_ranks = encode_schedule(sharding_strategy)
         #     # broad cast the scheduling to all workers
         #     logger.info("Scheduling: data rank: %s", data_rank)
         #     logger.info("Broadcasting schedule")
@@ -628,7 +618,7 @@ def run_pipeline_rpc(model_layers:list, dist_cfg: DistConfig, chunk:int=1, input
         #                             torch.tensor(stage_quant),
         #                             torch.tensor(stage_ranks),
         #                             torch.tensor(data_rank)))
-        #     # stage_schedules = input_schedules[0]
+        #     # stage_schedules = sharding_strategy[0]
         # else:
         #     logger.info("Waiting for schedule")
         #     stage_layers, stage_quant, stage_ranks, data_rank = sched_q.get()
@@ -641,66 +631,100 @@ def run_pipeline_rpc(model_layers:list, dist_cfg: DistConfig, chunk:int=1, input
             # logger.info("Stage quant: %s", stage_quant)
             # logger.info("Stage ranks: %s", stage_ranks)
             # logger.info("Data rank: %s", data_rank)
-
-        if rank == data_rank:
-            # for master, it need to prepare data for pipeline and setup pipelines
-
-            # load input data
-            batch_size = 32
-            sample_data_batch = torch.rand(batch_size, 20, 10)
-            # chunk the data based on the chunk size
-            data_chunks = torch.chunk(sample_data_batch, chunk, dim=0)
-
+        
+        if rank == 0: # master, process some data
             # create pipeline
-            pipeline = dist_rpc_pipeline_factory(model_layers, input_schedules, rank, handle_results)
-            # pipeline.rpc_register_forward_hook(forward_hook_to_cpu)
-            # pipeline.rpc_register_forward_pre_hook(forward_pre_hook_to_device)
-            tik_data = perf_counter()
-            # start results monitoring - see comments in handle_results
-            # this call is asynchronous - wait for results to get end-to-end timings
-            logger.info("start pipe data")
-            start_count = results_counter.value
-            for data_chunk in data_chunks:
-                pipeline.enqueue_tensor(data_chunk)
-            results_counter.wait_gte(start_count + len(data_chunks))
-            tok_data = perf_counter()
-            latency = tok_data - tik_data
-            throughput = batch_size / latency
-            logger.info("Latency is %f, throughput is %f", latency, throughput)
+            pipeline = dist_rpc_pipeline_factory(model_cpu, sharding_strategy, rank, handle_results)
+            # load input data
+            # chunk the data based on the chunk size
+            input_ids = tokenizer.encode("Hi, where is my dog", return_tensors="pt")
+            print("pipeline")
+            # pre_result = master_model.preprocess(input_ids, use_cache=True)
+            # batch_size = chunk
+            # data_chunks = [copy.deepcopy(pre_result) for i in range(chunk)]
+
+            # fake the data chunks for test
+            # TODO: make it real chunks
+            # data_chunks = torch.chunk(sample_data_batch, chunk, dim=0)
+            # other_decode_params = master_model.other_decode_params
+            # dist_ctx.cmd_broadcast(handle_cmd, CMD_SCHED, other_decode_params)
+        else:
+            print("worker")
+            # communicate to get other_decode_params
+            # logger.info("Waiting for other params")
+            # other_decode_params = sched_q.get()
+            # assign the decode params to the corresponding refs
+
+        
+        # if rank == data_rank:
 
 
+        #     # communicate once for the other_params
+
+
+        #     # pipeline.rpc_register_forward_hook(forward_hook_to_cpu)
+        #     # pipeline.rpc_register_forward_pre_hook(forward_pre_hook_to_device)
+        #     tik_data = perf_counter()
+        #     # start results monitoring - see comments in handle_results
+        #     # this call is asynchronous - wait for results to get end-to-end timings
+        #     logger.info("start pipe data")
+        #     start_count = results_counter.value
+        #     for data_chunk in data_chunks:
+        #         pipeline.enqueue_tensor(data_chunk)
+        #     results_counter.wait_gte(start_count + len(data_chunks))
+        #     tok_data = perf_counter()
+        #     latency = tok_data - tik_data
+        #     throughput = batch_size / latency
+        #     logger.info("Latency is %f, throughput is %f", latency, throughput)
+
+
+from qllm.models.OPT import OPTForCausalLMSeq
+from transformers import AutoTokenizer
 if __name__ == '__main__':
-    # The test model
-    # in later test, should be partitioned into equal workload blocks
-    block_1 = nn.Sequential(
-        nn.Linear(10, 20),
-        nn.ReLU(),
-    )
-    block_1.name = 'block1'
-    block_2 = nn.Sequential(
-        nn.Linear(20, 30),
-        nn.ReLU(),
-    )
-    block_2.name = 'block2'
-    block_3 = nn.Sequential(
-        nn.Linear(30, 40)
-    )
-    block_3.name = 'block3'
-    model_layers = [block_1, block_2, block_3]
-    # schedules: rank: [start_layer, end_layer]
-    schedules = {
-        0: {
-            "layers": [0,1], "qlvs": [32]
+    # load the LLM from QLLM
+    # QLLM support the sequential execution of the decoders
+    loaded_llm_cpu = OPTForCausalLMSeq.from_pretrained("facebook/opt-350m", torch_dtype=torch.float16)
+    tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
+
+    # print("decoder layernum", loaded_llm_cpu.model.decoder.get_decoder_layer_num())
+    dist_cfg, device_mesh = init_env()
+
+    # the sharding strategy basically like
+    # Rank: {decoder_layer_idx: {"shard": [shard_idx, ...], "bits":[qbit, ...]}}
+    sharding_strategy = {
+        0: {},
+        1: {
+            0: {'shard': [0, 1], 'bits': [16, 16]},
+            1: {'shard': [0, 1], 'bits': [16, 16]},
+            2: {'shard': [0, 1], 'bits': [16, 16]},
+            3: {'shard': [0, 1], 'bits': [16, 16]},
+            4: {'shard': [0, 1], 'bits': [16, 16]},
+            5: {'shard': [0, 1], 'bits': [16, 8]},
+            6: {'shard': [0, 1], 'bits': [16, 16]},
+            7: {'shard': [0, 1], 'bits': [16, 16]},
+            8: {'shard': [0], 'bits': [16]},
         },
         8: {
-            "layers": [1,2], "qlvs": [4]
+            8: {'shard': [1], 'bits': [16]},
+            9: {'shard': [0,1], 'bits': [16, 16]},
+            10: {'shard': [0,1], 'bits': [8, 16]},
+            11: {'shard': [0,1], 'bits': [16, 16]},
+            # 350M
+            12: {'shard': [0,1], 'bits': [16, 16]},
+            13: {'shard': [0,1], 'bits': [16, 16]},
+            14: {'shard': [0,1], 'bits': [8, 16]},
+            15: {'shard': [0,1], 'bits': [16, 16]},
+            16: {'shard': [0,1], 'bits': [16, 16]},
+            17: {'shard': [0,1], 'bits': [16, 8]},
         },
-        9: {
-            "layers": [2,3], "qlvs": [8]   
+        9:{
+            18: {'shard': [0,1], 'bits': [16, 16]},
+            19: {'shard': [0,1], 'bits': [16, 16]},
+            20: {'shard': [0,1], 'bits': [8, 16]},
+            21: {'shard': [0,1], 'bits': [16, 16]},
+            22: {'shard': [0,1], 'bits': [16, 16]}, 
+            23: {'shard': [0,1], 'bits': [16, 16]},
         }
     }
-    # original_result = nn.Sequential(*model_layers)(torch.rand(32, 10))
-    # print(original_result.shape)
-    dist_cfg, device_mesh = init_env()
     # print(device_mesh)
-    run_pipeline_rpc(model_layers, dist_cfg, chunk=2, input_schedules=schedules)
+    run_pipeline_rpc(loaded_llm_cpu, tokenizer, dist_cfg, chunk=2, sharding_strategy=sharding_strategy)
