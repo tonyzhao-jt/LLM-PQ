@@ -345,6 +345,7 @@ class DistRpcPipelineStage:
         self.stage_id = stage_id
         self.comm_type = comm_type
         self.stage_device = torch.device(f"cuda:{local_rank}")
+        self.module_to(self.stage_device)
 
     def module_to(self, *args, **kwargs) -> None:
         """Wrap the module's `nn.Module.to` method (`device` can be be a `str`)."""
@@ -373,7 +374,7 @@ class DistRpcPipelineStage:
     def __call__(self, inputs: Any) -> None:
         """Wrap the module's callable method."""
         inputs = to_device(inputs, self.stage_device)
-        print("on", self.stage_id)
+        # print("on", self.stage_id)
         with self._sem_mod:
             outputs = self._module.decode(inputs)
         if self._next_rref is not None:
@@ -467,64 +468,7 @@ class DistRpcPipeline:
 def _dist_rpc_pipeline_stage_factory(*args, **kwargs) -> DistRpcPipelineStage:
     """Get a `rpc.DistRpcPipelineStage` instance on the globally-configured `devices.DEVICE`."""
     stage = DistRpcPipelineStage(*args, **kwargs)
-    stage.module_to(device=torch.device('cuda', kwargs['local_rank']))
     return stage
-
-# QUANT.py
-# deepcopy a linear
-def deepcopy_linear(child: nn.Linear):
-    # store C
-    new_li = nn.Linear(child.in_features, child.out_features, child.bias is not None)
-    new_li.weight.data.copy_(child.weight.data)
-    new_li.weight.requires_grad_(child.weight.requires_grad)
-    if child.bias is not None:
-        new_li.bias.data.copy_(child.bias.data) 
-        new_li.bias.requires_grad_(child.bias.requires_grad)
-    del child
-    return new_li
-
-class LinearWrapper(nn.Module):
-    def __init__(self, layer, bit):
-        super().__init__()
-        self.layer = deepcopy_linear(layer)
-        if bit == 16:
-            self.layer = self.layer.half()
-        self.bit = bit
-    
-    def forward(self, x):
-        if self.bit == 16:
-            x = x.half()
-        return self.layer(x)
-    
-from lptorch.gptq.nn import QuantLinear, Quantizer, quantize
-def quantize_linears(layer, bit):
-    qli_list = []
-    # enumerate all nn.Linear inside layer,
-    # substitute them with QuantLinear
-    def convert_layers_inner(module):
-        for name, child in module.named_children():
-            # new_mod = None 
-            if isinstance(child, (QuantLinear)):
-                continue
-            elif isinstance(child, (nn.Linear)):
-                if bit == 16 or bit == 32:
-                    qlayer = LinearWrapper(child, bit)
-                else:
-                    quantizer = Quantizer()
-                    quantizer.configure(bit, perchannel=True, sym=False, mse=False)
-                    quantizer.find_params(child.weight.data, weight=True)
-                    child.weight.data = quantize(
-                        child.weight.data, quantizer.scale, quantizer.zero, quantizer.maxq
-                    )
-                    qlayer = QuantLinear(bit, -1, child.in_features, child.out_features)
-                    qlayer.pack(child, quantizer.scale, quantizer.zero)
-                setattr(module, name, qlayer) # set new layer
-                qli_list.append(qlayer)
-                # new_mod = qlayer
-            else:
-                convert_layers_inner(child)
-    convert_layers_inner(layer)
-    return qli_list
 
 
 def dist_rpc_pipeline_factory(model_cpu: nn.Module, sharding_strategy: dict, results_to: int,
@@ -661,12 +605,11 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             pipeline = dist_rpc_pipeline_factory(model_cpu, sharding_strategy, rank, handle_results)
             master_pipeline = pipeline
             # prepare test data
-            input_ids = tokenizer.encode("Hi, where is my dog", return_tensors="pt").cuda()
-
-
-            def prepare_input(p_input_ids, request_id):
+            def prepare_input(batched_ids, request_id):
+                batched_ids = to_device_recursive(dict(batched_ids), 'cuda:0')
                 generation_config = model_pre_and_post.generation_config
-                request_token = model_pre_and_post.preprocess(p_input_ids, use_cache=True, request_id=request_id)
+                request_token = model_pre_and_post.preprocess(**batched_ids, use_cache=True, request_id=request_id)
+                p_input_ids = batched_ids['input_ids']
                 inputs_tensor, model_input_name, model_kwargs = model_pre_and_post._prepare_model_inputs(
                     p_input_ids, generation_config.bos_token_id, {}
                 )
@@ -688,10 +631,11 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
 
                 return to_device_recursive(request_token, 'cpu')
             
-            request_token = prepare_input(input_ids, request_id=1)
-            request_token2 = prepare_input(input_ids, request_id=2)
-            
-            data_chunks = [request_token, request_token2]
+            data_chunks = []
+            for i in range(request_numbers):
+                batched_ids = tokenizer.batch_encode_plus(fetch_prompts(bs_token, prompt_length), padding=True, return_tensors="pt")
+                request_token = prepare_input(batched_ids, request_id=i)
+                data_chunks.append(request_token)
             batch_size = len(data_chunks)
             print("pipeline")
             # fake the data chunks for test
@@ -723,7 +667,7 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             latency = tok_data - tik_data
             throughput = batch_size / latency
             logger.info("Latency is %f, throughput is %f", latency, throughput)
-            
+
             for request_id, input_id_finally in request_input_ids.items():
                 ouput_token = tokenizer.batch_decode(input_id_finally, skip_special_tokens=True)
                 print(f"request {request_id} output token {ouput_token}")
@@ -732,6 +676,7 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
 from qllm.models.OPT import OPTForCausalLMSeq
 from transformers import AutoTokenizer
 from transformers import LogitsProcessorList, StoppingCriteriaList
+from samples import fetch_prompts
 if __name__ == '__main__':
     # load the LLM from QLLM
     # QLLM support the sequential execution of the decoders
@@ -742,8 +687,10 @@ if __name__ == '__main__':
     model_pre_and_post = model_pre_and_post.cuda()
 
     # control the token generation
-    num_tokens_to_generate = 8
-    
+    num_tokens_to_generate = 50
+    prompt_length = 512
+    bs_token = 16 # how many sentence in a batch
+    request_numbers = 2 # how many requests
 
     # print("decoder layernum", loaded_llm_cpu.model.decoder.get_decoder_layer_num())
     dist_cfg, device_mesh = init_env()
