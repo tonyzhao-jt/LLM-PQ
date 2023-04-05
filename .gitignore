@@ -1,0 +1,14 @@
+.nv
+.python_history
+*.so
+.ssh
+*.pyc
+/__pycache__/
+*/__pycache__/
+*.egg-info/
+*.o
+/build/
+.ipynb_checkpoints
+.Trash-0/
+*.pkl
+*.log
