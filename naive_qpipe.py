@@ -10,6 +10,8 @@ from time import perf_counter
 import logging
 import copy 
 
+from qllm.utils import to_dtype_recursive, to_device_recursive
+
 # configure logger
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -109,7 +111,7 @@ def set_device_map(rank, device_mesh, schedules, rpc_options):
     # cur_stage local rank
     cur_stage_local_rank = get_local_rank_by_device_mesh(device_mesh, cur_stage_rank)
     # next_stage local rank
-    next_stage_local_rank = get_local_rank_by_device_mesh(device_mesh, cur_stage_rank)
+    next_stage_local_rank = get_local_rank_by_device_mesh(device_mesh, next_stage_rank)
     if cur_stage_rank == next_stage_rank:
         pass
     else:
@@ -371,6 +373,7 @@ class DistRpcPipelineStage:
     def __call__(self, inputs: Any) -> None:
         """Wrap the module's callable method."""
         inputs = to_device(inputs, self.stage_device)
+        print("on", self.stage_id)
         with self._sem_mod:
             outputs = self._module.decode(inputs)
         if self._next_rref is not None:
@@ -578,12 +581,33 @@ def handle_cmd(cmd: int, tensors: Tuple[torch.Tensor, ...]) -> None:
     else:
         logger.warning("handle_cmd: Unknown command: %s", cmd)
 
-
-def handle_results(tensors: torch.Tensor) -> None:
-    logger.info("outputs is %s", tensors)
+final_result = {}
+request_input_ids = {}
+request_logit_processor = {}
+request_loop_counter = {}
+def handle_results(final_intermediate_result) -> None:
+    request_id = final_intermediate_result[-1]
+    request_loop_counter[request_id] += 1
     results_counter.add(1)
+    # get original input id
+    input_ids = request_input_ids[request_id]
+    logits_processor = request_logit_processor[request_id]
+    # generate new tokens
+    outputs = model_pre_and_post.postprocess(final_intermediate_result, None)
+    next_token_logits = outputs.logits[:, -1, :]
+    next_tokens_scores = logits_processor(input_ids, next_token_logits)
+    next_tokens = torch.argmax(next_tokens_scores, dim=-1)
+    new_input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
+    if request_loop_counter[request_id] < num_tokens_to_generate:
+        request_input_ids[request_id] = new_input_ids
+        request_token = model_pre_and_post.preprocess(new_input_ids, use_cache=True, request_id=request_id)
+        logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
+        master_pipeline.enqueue_tensor(to_device_recursive(request_token, 'cpu'))
 
+
+master_pipeline = None
 def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=1, sharding_strategy=None) -> None:
+    global master_pipeline
     """Run the pipeline using RPC communication."""
     rpc_opts = rpc.TensorPipeRpcBackendOptions(num_worker_threads=128, rpc_timeout=60)
     rank = dist_cfg.rank
@@ -635,14 +659,41 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
         if rank == 0: # master, process some data
             # create pipeline
             pipeline = dist_rpc_pipeline_factory(model_cpu, sharding_strategy, rank, handle_results)
-            # load input data
-            # chunk the data based on the chunk size
-            input_ids = tokenizer.encode("Hi, where is my dog", return_tensors="pt")
-            print("pipeline")
-            # pre_result = master_model.preprocess(input_ids, use_cache=True)
-            # batch_size = chunk
-            # data_chunks = [copy.deepcopy(pre_result) for i in range(chunk)]
+            master_pipeline = pipeline
+            # prepare test data
+            input_ids = tokenizer.encode("Hi, where is my dog", return_tensors="pt").cuda()
 
+
+            def prepare_input(p_input_ids, request_id):
+                generation_config = model_pre_and_post.generation_config
+                request_token = model_pre_and_post.preprocess(p_input_ids, use_cache=True, request_id=request_id)
+                inputs_tensor, model_input_name, model_kwargs = model_pre_and_post._prepare_model_inputs(
+                    p_input_ids, generation_config.bos_token_id, {}
+                )
+                input_ids_seq_length = p_input_ids.shape[-1]
+                logits_processor = LogitsProcessorList()
+                # 8. prepare distribution pre_processing samplers
+                logits_processor = model_pre_and_post._get_logits_processor(
+                    generation_config=generation_config,
+                    input_ids_seq_length=input_ids_seq_length,
+                    encoder_input_ids=inputs_tensor,
+                    prefix_allowed_tokens_fn=None,
+                    logits_processor=logits_processor,
+                )
+
+                final_result[request_id] = None
+                request_input_ids[request_id] = p_input_ids
+                request_logit_processor[request_id] = logits_processor
+                request_loop_counter[request_id] = 0
+
+                return to_device_recursive(request_token, 'cpu')
+            
+            request_token = prepare_input(input_ids, request_id=1)
+            request_token2 = prepare_input(input_ids, request_id=2)
+            
+            data_chunks = [request_token, request_token2]
+            batch_size = len(data_chunks)
+            print("pipeline")
             # fake the data chunks for test
             # TODO: make it real chunks
             # data_chunks = torch.chunk(sample_data_batch, chunk, dim=0)
@@ -656,35 +707,43 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             # assign the decode params to the corresponding refs
 
         
-        # if rank == data_rank:
-
-
-        #     # communicate once for the other_params
-
-
-        #     # pipeline.rpc_register_forward_hook(forward_hook_to_cpu)
-        #     # pipeline.rpc_register_forward_pre_hook(forward_pre_hook_to_device)
-        #     tik_data = perf_counter()
-        #     # start results monitoring - see comments in handle_results
-        #     # this call is asynchronous - wait for results to get end-to-end timings
-        #     logger.info("start pipe data")
-        #     start_count = results_counter.value
-        #     for data_chunk in data_chunks:
-        #         pipeline.enqueue_tensor(data_chunk)
-        #     results_counter.wait_gte(start_count + len(data_chunks))
-        #     tok_data = perf_counter()
-        #     latency = tok_data - tik_data
-        #     throughput = batch_size / latency
-        #     logger.info("Latency is %f, throughput is %f", latency, throughput)
+        if rank == data_rank:
+            # pipeline.rpc_register_forward_hook(forward_hook_to_cpu)
+            # pipeline.rpc_register_forward_pre_hook(forward_pre_hook_to_device)
+            tik_data = perf_counter()
+            # start results monitoring - see comments in handle_results
+            # this call is asynchronous - wait for results to get end-to-end timings
+            logger.info("start pipe data")
+            start_count = results_counter.value
+            # this only launch the tasks but not actually finish the tasks.
+            for data_chunk in data_chunks:
+                pipeline.enqueue_tensor(data_chunk)
+            results_counter.wait_gte(start_count + len(data_chunks) * num_tokens_to_generate)
+            tok_data = perf_counter()
+            latency = tok_data - tik_data
+            throughput = batch_size / latency
+            logger.info("Latency is %f, throughput is %f", latency, throughput)
+            
+            for request_id, input_id_finally in request_input_ids.items():
+                ouput_token = tokenizer.batch_decode(input_id_finally, skip_special_tokens=True)
+                print(f"request {request_id} output token {ouput_token}")
 
 
 from qllm.models.OPT import OPTForCausalLMSeq
 from transformers import AutoTokenizer
+from transformers import LogitsProcessorList, StoppingCriteriaList
 if __name__ == '__main__':
     # load the LLM from QLLM
     # QLLM support the sequential execution of the decoders
     loaded_llm_cpu = OPTForCausalLMSeq.from_pretrained("facebook/opt-350m", torch_dtype=torch.float16)
     tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
+
+    model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
+    model_pre_and_post = model_pre_and_post.cuda()
+
+    # control the token generation
+    num_tokens_to_generate = 8
+    
 
     # print("decoder layernum", loaded_llm_cpu.model.decoder.get_decoder_layer_num())
     dist_cfg, device_mesh = init_env()
