@@ -14,6 +14,8 @@ def parse_args():
     parser.add_argument('--warmup', type=int, default=10, help='Number of warmup iterations')
     parser.add_argument('--bit', type=str, default='8:tc', help='Precision bit setting')
     parser.add_argument('--shard', type=int, default=0, choices=[0, 1], help='Sharding mode (0 for self-attention, 1 for FFN)')
+    # add verbose, store_true
+    parser.add_argument('--verbose', action='store_true', help='Print out the latency and memory usage')
     args = parser.parse_args()
     return args
 
@@ -32,4 +34,4 @@ if __name__ == '__main__':
 
     lat_avg, mem_weight, mem_kv, mem_embedding = profiler.profile_decoder_layer(model_size, model_cards, OPTDecoderLayerSharded, shard=shard, batch_size=batch_size, \
                         input_seq_length=input_seq_length, past_seq_length=past_seq_length, bit=bit, \
-                              warmup=warmup, repeat=repeat, verbose=False)
+                              warmup=warmup, repeat=repeat, verbose=args.verbose)
