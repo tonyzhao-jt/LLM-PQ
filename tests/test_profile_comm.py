@@ -8,20 +8,12 @@
 from torch.distributed import rpc
 from qpipe.rpc import init_env, DistConfig, set_device_map, DistRpcContext
 
-def run_profile_two_node(test_rank, test_rank_locals, rank, dist_cfg: DistConfig, rpc_options):
-    with DistRpcContext((f"worker{rank}",),
-                        { 'world_size': dist_cfg.world_size,
-                          'rank': rank,
-                          'rpc_backend_options': rpc_opts}
-                       ) as dist_ctx:
-        print("a")
-
 def run_profile(sharding_strategy, dist_cfg: DistConfig, device_mesh):
     rpc_opts = rpc.TensorPipeRpcBackendOptions(num_worker_threads=128, rpc_timeout=60)
     rank = dist_cfg.rank
     data_rank = 0 
     # contruct the device map
-    set_device_map(rank, device_mesh, sharding_strategy, rpc_opts)
+    # set_device_map(rank, device_mesh, sharding_strategy, rpc_opts)
     # for the communication cost in each line, we only need to profile the first node
     # for the communication from the end node of the line and the start node of the next line, we only need to profile the end node
     # thus, for each row, two nodes are enough. (for last row, one node is enough)
@@ -37,9 +29,15 @@ def run_profile(sharding_strategy, dist_cfg: DistConfig, device_mesh):
             all_test_pairs.append((last_node, ranks[0]))
             mesh_comm_cost[f'node_{row_idx}_col_cost'] = (last_node, ranks[0])
         last_node = ranks[-1]
+    
+    with DistRpcContext((f"worker{rank}",),
+                            { 'world_size': dist_cfg.world_size,
+                            'rank': rank,
+                            'rpc_backend_options': rpc_opts}
+                        ) as dist_ctx:
+    
+        # do communication here
 
-    print(all_test_pairs)
-    # run_profile_dist_rpc(rank, dist_cfg, rpc_opts)
 
 
 if __name__ == '__main__':
