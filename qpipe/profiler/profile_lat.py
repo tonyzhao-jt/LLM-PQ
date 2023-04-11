@@ -7,10 +7,8 @@ from time import perf_counter
 from ..utils import get_size_cuda
 
 # inf = float('inf')
-def profile_decoder_layer(model_size, model_cards, DecoderLayerClass, shard=0, batch_size=1, input_seq_length=1, past_seq_length=2048, bit=8,\
+def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_seq_length=1, past_seq_length=2048, bit=8,\
                         mem_unit='MB', warmup=10, repeat=100, verbose=True):
-    config = model_cards[model_size]
-    decoder_layer = DecoderLayerClass(config)
 
     # construct fake input, fake KV
     h1 = config.hidden_size

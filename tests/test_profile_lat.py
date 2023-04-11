@@ -32,6 +32,9 @@ if __name__ == '__main__':
     bit = args.bit
     shard = args.shard
 
-    lat_avg, mem_weight, mem_kv, mem_embedding = profile_lat.profile_decoder_layer(model_size, model_cards, OPTDecoderLayerSharded, shard=shard, batch_size=batch_size, \
+    config = model_cards[model_size]
+    decoder_layer = OPTDecoderLayerSharded(config)
+
+    lat_avg, mem_weight, mem_kv, mem_embedding = profile_lat.profile_decoder_layer(config, decoder_layer, shard=shard, batch_size=batch_size, \
                         input_seq_length=input_seq_length, past_seq_length=past_seq_length, bit=bit, \
                               warmup=warmup, repeat=repeat, verbose=args.verbose)
