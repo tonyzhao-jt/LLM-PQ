@@ -1,6 +1,6 @@
 # profile latency
 # load an OPTSharded Decoder
-from qpipe import profiler
+from qpipe.profiler import profile_lat
 from qllm.models.OPT.opt import model_cards
 from qllm.models.OPT.seq_layers import OPTDecoderLayerSharded
 import argparse
@@ -32,6 +32,6 @@ if __name__ == '__main__':
     bit = args.bit
     shard = args.shard
 
-    lat_avg, mem_weight, mem_kv, mem_embedding = profiler.profile_decoder_layer(model_size, model_cards, OPTDecoderLayerSharded, shard=shard, batch_size=batch_size, \
+    lat_avg, mem_weight, mem_kv, mem_embedding = profile_lat.profile_decoder_layer(model_size, model_cards, OPTDecoderLayerSharded, shard=shard, batch_size=batch_size, \
                         input_seq_length=input_seq_length, past_seq_length=past_seq_length, bit=bit, \
                               warmup=warmup, repeat=repeat, verbose=args.verbose)

@@ -1,6 +1,6 @@
 # profile latency
 # load an OPTSharded Decoder
-from qpipe import profiler
+from qpipe.profiler import profile_lat
 from qpipe.utils import get_device_name
 from qllm.models.OPT.opt import model_cards
 from qllm.models.OPT.seq_layers import OPTDecoderLayerSharded
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     for bit in available_bits:
         for i in range(1, generated_seq_length+1, step):
             # profile latency
-            lat_avg, mem_weight, mem_kv, mem_embedding = profiler.profile_decoder_layer(model_size, model_cards, OPTDecoderLayerSharded, shard=shard, batch_size=batch_size, \
+            lat_avg, mem_weight, mem_kv, mem_embedding = profile_lat.profile_decoder_layer(model_size, model_cards, OPTDecoderLayerSharded, shard=shard, batch_size=batch_size, \
                                 input_seq_length=input_seq_length, past_seq_length=past_seq_length + i, bit=bit, \
                                     warmup=warmup, repeat=repeat, verbose=True)
             results.append([bit, i, lat_avg, mem_weight, mem_kv, mem_embedding])
