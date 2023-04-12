@@ -25,7 +25,7 @@ from qpipe.rpc import (
 )
 from qpipe.logger import logger
 from qpipe.thread import ThreadSafeCounter
-from qpipe.partition import get_shard_strategy
+from qpipe.partitioner import get_shard_strategy
 from qpipe.pipe import (
     dist_rpc_pipeline_factory
 )

@@ -1,10 +1,9 @@
 # profile latency
 # load an OPTSharded Decoder
 from qpipe.profiler import profile_lat
-from qpipe.utils import get_device_name
+from qpipe.utils import get_device_name_and_mem
 from qllm.models.OPT.opt import model_cards
 from qllm.models.OPT.seq_layers import OPTDecoderLayerSharded
-from qllm import get_available_bits
 import os 
 import argparse
 import pandas as pd 
@@ -37,15 +36,14 @@ if __name__ == '__main__':
 
     generated_seq_length = args.generated_seq_length
     file_path = os.path.dirname(os.path.realpath(__file__))
-    device_name = get_device_name()
+    device_name, device_mem, available_bits = get_device_name_and_mem()
 
     file_name = device_name + "_" + str(model_size) + ".csv"
-    available_bits = get_available_bits()
 
     config = model_cards[model_size]
     decoder_layer = OPTDecoderLayerSharded(config)
-    h1 = model_cards[model_size].hidden_size
-    h2 = decoder_layer.fc1.weight.shape[0]
+    h1 = config.hidden_size
+    h2 = config.ffn_dim
 
     # print(h1, h2)
 

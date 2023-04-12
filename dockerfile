@@ -4,7 +4,10 @@ WORKDIR $PROJECT_DIR
 # change data path and number of trainers here
 RUN apt-get update && apt-get install -y \
     git ffmpeg libsm6 libxext6 ca-certificates curl jq wget \
-    git-lfs
+    git-lfs 
+
+RUN pip install gurobipy 
+RUN pip install -U scikit-learn scipy matplotlib
 
 
 CMD echo "===========END========="

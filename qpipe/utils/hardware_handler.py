@@ -148,3 +148,29 @@ def get_device_name():
     device = os.popen('(CUDA_VISIBLE_DEVICES=0 nvidia-smi --query-gpu=name --format=csv,noheader | tr " " _)').readlines()
     device_0 = device[0].strip()
     return device_0
+
+
+def get_device_mem_offline(device_name, unit='MB'):
+    device_name = device_name.upper()
+    mem_table = {
+        "A100-SXM4-40GB": 40 * 1024,
+        'TESLA_T4': 16 * 1024,
+        'TESLA_V100-SXM2-32GB': 32 * 1024,
+        'TESLA_V100-SXM2-16GB': 16 * 1024,
+        'NVIDIA_A100-SXM4-40GB': 40 * 1024,
+    }
+    if device_name in mem_table:
+        mem = mem_table[device_name]
+    else:
+        raise ValueError("Unknown device name: {}".format(device_name))
+    if unit == 'GB':
+        mem = mem / 1024
+    return mem
+
+
+def get_device_name_and_mem():
+    import torch
+    from qllm import get_available_bits
+    device_name = get_device_name()
+    device_mem = torch.cuda.get_device_properties(0).total_memory
+    return device_name, device_mem, get_available_bits()
