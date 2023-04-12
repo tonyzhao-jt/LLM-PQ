@@ -68,12 +68,11 @@ if __name__ == '__main__':
                         print("Entry has been profiled, skip")
                         continue
                     # profile latency
-                    cpy_decoder_layer = copy.deepcopy(decoder_layer)
-                    lat_avg, mem_weight, mem_kv, mem_embedding = profile_lat.profile_decoder_layer(config, cpy_decoder_layer, shard=shard, batch_size=bz, \
+                    lat_avg, mem_weight, mem_kv, mem_embedding = profile_lat.profile_decoder_layer(config, decoder_layer, shard=shard, batch_size=bz, \
                                         input_seq_length=input_seq_length, past_seq_length=past_seq_length + i, bit=bit, \
                                             warmup=warmup, repeat=repeat, verbose=True)
                     mem_all = mem_weight + mem_kv + mem_embedding
-                    df._append({'shard': shard, 'h1': h1, 'h2': h2, \
+                    df = df._append({'shard': shard, 'h1': h1, 'h2': h2, \
                                 'bit': bit, 'batch_size': bz, 'input_seq_length': input_seq_length, \
                                 'past_seq_length': past_seq_length + i, 'lat_avg': lat_avg, \
                                 'mem_weight': mem_weight, 'mem_kv': mem_kv, 'mem_embedding': mem_embedding, \

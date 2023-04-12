@@ -5,11 +5,13 @@ from qllm.utils import to_device_recursive
 import lptorch
 from time import perf_counter
 from ..utils import get_size_cuda
+import copy
 
 # inf = float('inf')
 def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_seq_length=1, past_seq_length=2048, bit=8,\
                         mem_unit='MB', warmup=10, repeat=100, verbose=True):
 
+    decoder_layer = copy.deepcopy(decoder_layer)
     # construct fake input, fake KV
     h1 = config.hidden_size
 
@@ -94,4 +96,15 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
     if verbose:
         print(f"decoder_layer {layer_name} (bit={bit}): {lat_avg}")
         print(f"decoder_layer {layer_name} (bit={bit}, unit {mem_unit}): {mem_weight} {mem_kv} {mem_embedding}")
+    
+    # del all the instances
+    del decoder_layer
+    del fake_input
+    if False not in availability_result:
+        del fake_k
+        del fake_v
+        del past_key_value
+        del hidden_states
+    torch.cuda.empty_cache()
+
     return lat_avg, mem_weight, mem_kv, mem_embedding
