@@ -20,12 +20,15 @@ import qpipe
 from qllm.models.OPT.opt import model_cards
 from qllm.utils import ModelMemEstimator
 
+
 device_mesh = {
     0: [4, 'NVIDIA_A100-SXM4-40GB'], # start rank, numbers, device_type
     4: [4, 'Tesla_V100-SXM2-32GB'],
 }
 
 unit = qpipe._globals.MEM_UNIT
+RATIO_TO_AVOID_OOM = qpipe._globals.RATIO_TO_AVOID_OOM
+CUDA_CONTEXT_MEM = qpipe._globals.CUDA_CONTEXT_MEM
 D = create_device_mesh_grid(device_mesh)
 max_device_mem = get_maximum_available_mem(device_mesh)
 
@@ -63,7 +66,6 @@ else:
     else:
         print("start q")
         print(initial_mem, max_device_mem)
-        ratio_to_avoidOOM = 0.95
         # start quantization
         # assign indicator
         # ILP to get the optimal bit map
@@ -74,7 +76,8 @@ else:
         # the total memory requirement of the model is the sum of the memory requirement of each layer M(l,b)
         # try to minimize the sum of indicator i_(l,b) while satisfying the memory constraint
         available_bits = [2,4,8,16]
-        mem_constraints = ratio_to_avoidOOM * max_device_mem
+        mem_constraints = RATIO_TO_AVOID_OOM * max_device_mem
         L = len(T)
         indicator = assign_uniform_indicator(L, available_bits)
-        assign_bit_with_mem_constraints(T, available_bits, indicator, mem_constraints, model_mem_estimator, verbose=True, store=True)
+        assign_bit_with_mem_constraints(T, available_bits, indicator, mem_constraints, model_mem_estimator, verbose=True, store=True,\
+                                        file_path='./baseline_result/bit_adaptive.pkl')

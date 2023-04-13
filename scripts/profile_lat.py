@@ -55,7 +55,7 @@ if __name__ == '__main__':
                                     'bit', 'batch_size', 'input_seq_length', 'past_seq_length', \
                                     'lat_avg', 'mem_weight', 'mem_kv', 'mem_embedding'])
 
-    for shard in [0, 1]:
+    for shard in [1, 0]:
         for bz in range(1, batch_size):
             for bit in available_bits:
                 for i in range(1, generated_seq_length+1, step):
@@ -75,7 +75,7 @@ if __name__ == '__main__':
                                 'past_seq_length': past_seq_length + i, 'lat_avg': lat_avg, \
                                 'mem_weight': mem_weight, 'mem_kv': mem_kv, 'mem_embedding': mem_embedding, \
                                 'mem_all': mem_all}, ignore_index=True)
-                # store the result
-                df.to_csv(file_name, index=False)
+                    # store the result
+                    df.to_csv(file_name, index=False)
     # Write the DataFrame to a CSV file
     df.to_csv(file_name, index=False)
