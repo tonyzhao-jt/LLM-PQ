@@ -60,7 +60,7 @@ print(f"Total memory required: {mem_required / 1024 } GB", "available memory: ",
 # user input here, press any to continue
 input("Press any key to continue")
 file_name = 'pipedge_result.pkl' if not adaptive else 'pipedge_result_adaptive.pkl'
-result_file_name = 'pipedge_result.txt' if not adaptive else 'pipedge_result_adaptive.txt'
+result_file_name = 'pipedge_result.pkl' if not adaptive else 'pipedge_result_adaptive.pkl'
 
 import itertools
 def transition_equation(h, i, S, j, u, T, D):
