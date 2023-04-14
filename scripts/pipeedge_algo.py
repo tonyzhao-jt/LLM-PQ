@@ -1,33 +1,31 @@
 
 from qllm.models.OPT.opt import model_cards
-from qllm.utils import ModelMemEstimator
-from qpipe.partitioner import (
-    assign_uniform_indicator
-)
 from qpipe.partitioner.utils import (
     assign_uniform_bit, 
-    estimate_min_max_mem,
-    get_maximum_available_mem,
     create_device_mesh_grid
 )
-
-from qpipe.partitioner.assigner import assign_bit_with_mem_constraints
 
 from qpipe.cost_model import (
     estimate_all_layer_mem, estimate_single_layer_mem
 )
-
-from qpipe.utils import get_device_mem_offline
-
-from qpipe.cost_model import CommCostModel, LatCostModel
-from qpipe.utils import get_size_cpu
+from qpipe.partitioner.helper import init_parameters_and_cost_models
 import qpipe
-import torch
 import pickle
 
+from qpipe.partitioner.helper import (
+    init_parameters_and_cost_models, 
+    get_single_device_mem_constraints,
+    get_device_mesh_overall_mem_constraints
+)
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--model_size', type=str, default='175b')
+# adaptive 
+parser.add_argument('--adaptive', action='store_true')
+args = parser.parse_args()
+
 unit = qpipe._globals.MEM_UNIT
-RATIO_TO_AVOID_OOM = qpipe._globals.RATIO_TO_AVOID_OOM
-CUDA_CONTEXT_MEM = qpipe._globals.CUDA_CONTEXT_MEM
 
 # device configuration
 device_names = ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']
@@ -38,49 +36,27 @@ device_mesh = {
 }
 
 D = create_device_mesh_grid(device_mesh)
+max_device_mem = get_device_mesh_overall_mem_constraints(D)
 
-# get the maximum device memory
-max_device_mem = get_maximum_available_mem(device_mesh)
-
-# target model configuration
 model_size = '175b'
 config = model_cards[model_size]
-h1 = config.hidden_size
-h2 = config.ffn_dim
-num_hidden_layers = config.num_hidden_layers # decoder layer numbers
-
-# micro_batch_size
-b = 16
-# set the prompt sequence length
-s = 512
-# set the number of generated tokens
-n = 100
-
-# T equals to num_hidden_layers, 0,1
-T = [0,1] * num_hidden_layers
-
-# estimators
-model_mem_estimator = ModelMemEstimator(h1, h2, b, s, n)
-comm_size = (b * 1 * h1 * 2) / 1024 / 1024 # MB
-
-# cost models
-cost_model_store_path = '/workspace/qpipe/scripts/lat_cost_model'
-comm_cost_model = CommCostModel(comm_cost_model_folder='/workspace/qpipe/scripts/comm_cost_model/')
-lat_cost_model = LatCostModel(cost_model_store_path, device_names)
-lat_cost_model.register_hyper_params(b, s+n, h1, h2)
+model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names)
 # comm_cost_model.print_model_available_keys()
 # comm_cost = comm_cost_model.predict_comm_time(start_rank=0, end_rank=1, data_size=get_size_cpu(x, unit='MB'))
 # predicted_cost = lat_cost_model.predict(device, shard, b, i, h1, h2, bit)
 # load bit assignment
-adaptive = False
+adaptive = args.adaptive
 if adaptive:
-    with open('bit_adaptive.pkl', 'rb') as f:
+    with open('./baseline_result/bit_adaptive.pkl', 'rb') as f:
         bit_assignment = pickle.load(f)
+    
 else:
     bit_assignment = {}
     assign_uniform_bit(T, 8, bit_assignment)
-    mem_required = estimate_all_layer_mem(model_mem_estimator, T, bit_assignment)
-    assert mem_required < (RATIO_TO_AVOID_OOM * max_device_mem - len(D) * CUDA_CONTEXT_MEM), "The model is too large to fit in the device mesh"
+
+mem_required = estimate_all_layer_mem(model_mem_estimator, T, bit_assignment)
+assert mem_required < max_device_mem, "The model is too large to fit in the device mesh"
+print(f"Total memory required: {mem_required / 1024 } GB", "available memory: ", max_device_mem / 1024, "GB")
 
 file_name = 'pipedge_result.pkl' if not adaptive else 'pipedge_result_adaptive.pkl'
 result_file_name = 'pipedge_result.txt' if not adaptive else 'pipedge_result_adaptive.txt'
@@ -126,7 +102,7 @@ def pipeedge_partition(T, D):
                     # check memory constraints
                     # i to j-1 layer. e.g. i=0, j=1, then only layer 0
                     i_to_j_mem = sum(estimate_single_layer_mem(model_mem_estimator, T[k], bit_assignment[k]) for k in range(i, j))
-                    device_mem = RATIO_TO_AVOID_OOM * get_device_mem_offline(D[u], unit=unit) - CUDA_CONTEXT_MEM
+                    device_mem = get_single_device_mem_constraints(D[u])
 
                     if i_to_j_mem > device_mem:
                         # print(f"i_to_j_mem: {i_to_j_mem}, device_mem: {device_mem}")
@@ -151,6 +127,7 @@ def pipeedge_partition(T, D):
                                 p[j-1, tmp_S, v] = (i, u) # precursor
     test_h = h
     test_p = p
+    assert index is not None, "No solution found"
     with open(f'./baseline_result/{file_name}', 'wb') as f: pickle.dump((test_h, test_p, index), f)
 
 def interpret_result(T):
@@ -178,7 +155,9 @@ def interpret_result(T):
     import json
     with open(f'./baseline_result/{result_file_name}', 'w') as f:
         json.dump(final_result, f)
+        print("result saved to ", f'./baseline_result/{result_file_name}')
     # times: 196608, answer: 0.34138697775843824, adaptive
     return final_result
+
 pipeedge_partition(T, D)
 interpret_result(T)

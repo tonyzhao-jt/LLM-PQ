@@ -1,43 +1,45 @@
+import pulp
 
-import itertools
-def partition(T, D, B):
-    # D_ranks here is rank with keys anD_ranks values
-    D_ranks = list(D.keys())
-    L = len(T)
-    P = [t.numel() for t in T]
-    M = [t.element_size() * p for t, p in zip(T, P)]
-    
-    h = {(i, frozenset(S), u): float("inf") for i in range(L + 1) for S in itertools.chain.from_iterable(itertools.combinations(D_ranks, r) for r in range(len(D_ranks) + 1)) for u in D_ranks}
-    h[0, frozenset(), None] = 0
-    answer = float("inf")
-    
-    for i in range(L):
-        for S in itertools.chain.from_iterable(itertools.combinations(D_ranks, r) for r in range(len(D_ranks) + 1)):
-            for u in set(D_ranks) - set(S):
-                for j in range(i + 1, L + 1):
-                    if sum(M[k] for k in range(i, j)) > D_ranks[u]:
-                        break
-                    C = max(h[i, frozenset(S), u], (j - i) * P[j - 1] / B)
-                    if j == L:
-                        if C < answer:
-                            answer = C
-                            inD_ranksex = (L, frozenset(S), u)
-                    else:
-                        for v in set(D_ranks) - set(S) - {u}:
-                            if C < h[j, frozenset(S.union({u})), v]:
-                                h[j, frozenset(S.union({u})), v] = C
-                                h[j, frozenset(S.union({u})), v] = (i, u)
-    
-    Topt = float("inf")
-    for S in itertools.chain.from_iterable(itertools.combinations(D_ranks, r) for r in range(len(D_ranks) + 1)):
-        Topt = min(h[L, frozenset(S), None], Topt)
-    
-    R = []
-    i, S, u = inD_ranksex
-    R.appenD_ranks((i + 1, L, u))
-    while i > 0:
-        i, u = h[inD_ranksex]
-        R.appenD_ranks((i + 1, inD_ranksex[0], u))
-        inD_ranksex = (i, S - {u}, u)
-    
-    return Topt, R
+# Define the problem
+prob = pulp.LpProblem("Latency Minimization Problem", pulp.LpMinimize)
+
+# Define the decision variables
+L = 10
+N = 5
+BITs = [0, 1, 2]
+M = [10, 20, 30, 40, 50]
+l = [[[0 for b in BITs] for j in range(N)] for i in range(L)]
+omega = [[0 for b in BITs] for i in range(L)]
+comm = [0 for j in range(N)]
+z = pulp.LpVariable.dicts("z", [(i, j, b) for i in range(L) for j in range(N) for b in BITs], cat=pulp.LpBinary)
+y = pulp.LpVariable.dicts("y", [(i, b) for i in range(L) for b in BITs], cat=pulp.LpBinary)
+LAT = pulp.LpVariable.dicts("LAT", [j for j in range(N)], lowBound=0, cat=pulp.LpContinuous)
+LAT_max = pulp.LpVariable("LAT_max", lowBound=0, cat=pulp.LpContinuous)
+
+# Define the objective function
+prob += LAT_max + pulp.lpSum([omega[i][b] * y[(i, b)] * z[(i, j, b)] for i in range(L) for j in range(N) for b in BITs])
+
+# Define the constraints
+for i in range(L):
+    prob += pulp.lpSum([z[(i, j, b)] for j in range(N) for b in BITs]) == 1
+for i in range(L):
+    for b in BITs:
+        prob += pulp.lpSum([z[(i, j, b)] for j in range(N)]) == y[(i, b)]
+for j in range(N):
+    prob += pulp.lpSum([z[(i, j, b)] * l[i][j][b] for i in range(L) for b in BITs]) <= M[j]
+    prob += pulp.lpSum([z[(i, j, b)] * l[i][j][b] for i in range(L) for b in BITs]) <= LAT[j]
+    prob += LAT[j] >= comm[j]
+    prob += LAT_max >= LAT[j]
+
+# Solve the problem
+prob.solve()
+
+# Print the solution status
+print("Status:", pulp.LpStatus[prob.status])
+
+# Print the optimal objective value
+print("Optimal value of the objective function:", pulp.value(prob.objective))
+
+# Print the optimal values of the decision variables
+for v in prob.variables():
+    print(v.name, "=", v.varValue)

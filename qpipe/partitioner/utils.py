@@ -30,16 +30,5 @@ def get_bit_layer_memory_map(estimator, available_bits, shards=[0,1]):
             s[(shard, bit)] = mem_require
     return s 
 
-from ..utils import get_device_mem_offline
-from .._globals import MEM_UNIT as unit
-def get_maximum_available_mem(device_mesh):
-    # unit MB
-    max_mem = 0
-    for start_rank, single_node_device in device_mesh.items():
-        num_devices, device_type = single_node_device
-        for i in range(num_devices):
-            mem = get_device_mem_offline(device_type, unit=unit)
-            max_mem += mem
-    return max_mem
 
 
