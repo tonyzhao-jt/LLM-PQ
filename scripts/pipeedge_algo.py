@@ -48,8 +48,8 @@ model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parame
 adaptive = args.adaptive
 if adaptive:
     with open('./baseline_result/bit_adaptive.pkl', 'rb') as f:
-        bit_assignment = pickle.load(f)
-    
+        result = pickle.load(f)
+        bit_assignment = result['bit_assignment']
 else:
     bit_assignment = {}
     assign_uniform_bit(T, 8, bit_assignment)
@@ -57,7 +57,8 @@ else:
 mem_required = estimate_all_layer_mem(model_mem_estimator, T, bit_assignment)
 assert mem_required < max_device_mem, "The model is too large to fit in the device mesh"
 print(f"Total memory required: {mem_required / 1024 } GB", "available memory: ", max_device_mem / 1024, "GB")
-
+# user input here, press any to continue
+input("Press any key to continue")
 file_name = 'pipedge_result.pkl' if not adaptive else 'pipedge_result_adaptive.pkl'
 result_file_name = 'pipedge_result.txt' if not adaptive else 'pipedge_result_adaptive.txt'
 
@@ -75,10 +76,9 @@ def transition_equation(h, i, S, j, u, T, D):
     # comm cost
     # get last device in S
     t_comm = 0
-    if len(S) != 0:
-        last_device = list(S)[-1]
-        t_comm = comm_cost_model.predict_comm_time(last_device, u, comm_size)
-    
+    device_rank_nums = len(D)
+    next_rank = (u+1) % device_rank_nums
+    t_comm = comm_cost_model.predict_comm_time(u, next_rank, comm_size)
     res = max(minmax_throughput, t_comp, t_comm)
     return res 
 

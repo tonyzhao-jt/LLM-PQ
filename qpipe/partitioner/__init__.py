@@ -4,5 +4,5 @@ def get_shard_strategy(model_cpu):
 
 from . import assigner
 from . import utils
-from .indicator import assign_uniform_indicator
+from . import indicator
 from . import helper

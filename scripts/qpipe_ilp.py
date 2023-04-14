@@ -1,8 +1,12 @@
 # qpipe algorithm has a hyper parameter theta to determine the concern for the precision
 # higher theta means more concern for the precision, lower theta means more concern for the latency/throughput
 from qllm.models.OPT.opt import model_cards
+from qpipe.partitioner.indicator import (
+    assign_omega_uniform
+)
 from qpipe.partitioner.utils import (
-    create_device_mesh_grid
+    create_device_mesh_grid,
+    interpret_ilp_result_i_j_b
 )
 
 from qpipe.cost_model import (
@@ -155,25 +159,6 @@ def get_comm(D):
         comm[idx] = comm_cost_model.predict_comm_time(idx, (idx + 1) % device_length, comm_size)
     return comm
 
-# change later
-def get_omega(omega, BITs):
-    # suppose to collect from the model
-    omega_dict = {
-        2: 0.1,
-        4: 0.2,
-        8: 0.3,
-        16: 0.4,
-        '8:tc': 0.3,
-        '8:tc-li': 0.3,
-    }
-    for l_idx in range(omega.shape[0]):
-        for b_idx, bit_pair in enumerate(BITs):
-            self_attn, ffn = bit_pair
-            attn_omega = omega_dict[self_attn] * np.random.uniform(0, 1)
-            ffn_omega = omega_dict[ffn] * np.random.uniform(0, 1)
-            omega_layer_bitpair = attn_omega + ffn_omega
-            omega[l_idx, b_idx] = omega_layer_bitpair
-    return omega
 
 def prepare_for_ilp(num_hidden_layers, D, available_bits):
     L = num_hidden_layers # in partition, regard as a whole
@@ -206,8 +191,7 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
         l[i, :, :] = lat_device_bits_matrix
     
     # omega
-    omega = np.zeros((L, len(BITs)))
-    omega = get_omega(omega, BITs)
+    omega = assign_omega_uniform(L, BITs)
 
     # comm
     comm = get_comm(D)
@@ -219,6 +203,7 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
 L, N, BITs, M_d, M, l, omega, comm, theta = prepare_for_ilp(num_hidden_layers, D, available_bits)
 # solve_ilp(L, N, BITs, M, M_d, l, omega, comm, theta)
 result = solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta)
+result = interpret_ilp_result_i_j_b(result, available_bits)
 # store result
 result_file_name = 'qpipe_ilp_result.pkl'
 root_path = './baseline_result'

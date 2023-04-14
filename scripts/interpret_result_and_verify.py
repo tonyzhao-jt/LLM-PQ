@@ -5,7 +5,6 @@ from qpipe.partitioner.utils import (
 )
 
 
-
 # COMMON PART
 from qllm.models.OPT.opt import model_cards
 from qpipe.partitioner.utils import (
@@ -53,7 +52,7 @@ parser.add_argument('--adaptive', action='store_true')
 args = parser.parse_args()
 adaptive = args.adaptive
 
-# pipeedge result
+# pipeedge result (int8)
 pipeline_partition_result = "pipedge_result_adaptive.json"
 bit_assignment_result = "bit_adaptive.pkl"
 if adaptive:
@@ -71,43 +70,15 @@ pipeline_partition_result_pipedge = {int(k): v for k, v in pipeline_partition_re
 # qpipe result
 qpipe_result = "qpipe_ilp_result.pkl"
 qpipe_result = pickle.load(open(f'./baseline_result/{qpipe_result}', "rb"))
-# handle result into pipeegde form
-pipeline_partition_result_qpipe = {}
-bit_assignment_result_qpipe = {}
-L = len(list(qpipe_result.keys()))
-for layer, (device_rank, bit) in qpipe_result.items():
-    if device_rank not in pipeline_partition_result_qpipe:
-        pipeline_partition_result_qpipe[device_rank] = []
-        bit_assignment_result_qpipe[device_rank] = []
-    pipeline_partition_result_qpipe[device_rank].append(layer)
-    bit_assignment_result_qpipe[device_rank].append(bit)
+pipeline_partition_result_qpipe, bit_assignment_result_qpipe = qpipe_result['partition_result'], qpipe_result['bit_assignment']
 
-# reset the layer index
-for device_rank, layers in pipeline_partition_result_qpipe.items():
-    pipeline_partition_result_qpipe[device_rank] = len(layers)
-start_idx = 0
-for device_rank, layers in pipeline_partition_result_qpipe.items():
-    pipeline_partition_result_qpipe[device_rank] = [start_idx, start_idx + layers * 2]
-    start_idx += layers * 2
-
-pipeline_partition_result_qpipe = {k: pipeline_partition_result_qpipe[k] for k in sorted(pipeline_partition_result_qpipe)}
-
-available_bits = [2, 4, 8, '8:tc', '8:tc-li', 16] 
-available_bits = list(set(available_bits))
-BITs = [
-    (i, j) for i in available_bits for j in available_bits
-]
-# assign bits
-new_bit_assignment_result_qpipe = {}
-for device_rank, bit in bit_assignment_result_qpipe.items():
-    part_result = pipeline_partition_result_qpipe[device_rank]
-    bit_idx = 0
-    for i in range(part_result[0], part_result[1], 2):
-        attn_bit, ffn_bit = BITs[bit[bit_idx]]
-        new_bit_assignment_result_qpipe[i] = attn_bit
-        new_bit_assignment_result_qpipe[i+1] = ffn_bit
-        bit_idx += 1
-bit_assignment_result_qpipe = new_bit_assignment_result_qpipe
+'''
+    Just look some other results also.
+'''
+# adaptive bit result
+adaptive_result = "bit_adaptive.pkl"
+adaptive_result = pickle.load(open(f'./baseline_result/{adaptive_result}', "rb"))
+pipeline_partition_result_adabit, bit_assignment_result_adabit = adaptive_result['partition_result'], adaptive_result['bit_assignment']
 
 # first make sure the partition is within the memory budget
 def check_memory_budget_single_device(device_rank, p_partition_result, p_bit_assign):
@@ -120,12 +91,45 @@ def check_memory_budget_single_device(device_rank, p_partition_result, p_bit_ass
 def check_memory_budget(p_partition_result, p_bit_assign, name='qpipe'):
     print("verify memory budget for", name)
     for device_rank in p_partition_result:
-        print("device rank passed: ", device_rank)
+        # print("device rank passed: ", device_rank)
         check_memory_budget_single_device(device_rank, p_partition_result, p_bit_assign)
+    print("all passed")
 
 check_memory_budget(pipeline_partition_result_qpipe, bit_assignment_result_qpipe)
 check_memory_budget(pipeline_partition_result_pipedge, bit_assignment_result_pipedge, name='pipedge')
+check_memory_budget(pipeline_partition_result_adabit, bit_assignment_result_adabit, name='adabit')
 
-# then check the latency
+# then evalute the end-to-end latency and throughputs for different methods
 # pipedge
 # qpipe
+
+def calculate_max_throughputs_and_lat(D, p_partition_result, p_bit_assign):
+    e2e_lat = 0
+    minmax_throughputs = 0
+    max_rank = len(D)
+    for d_rank, device_name in D.items():
+        layers_start, layers_end = p_partition_result[d_rank]
+        comp_time = 0
+        # latency
+        for layer in range(layers_start, layers_end):
+            shard = layer % 2
+            bit = p_bit_assign[layer]
+            comp_time += lat_cost_model.predict_with_hyper(device_name, shard, bit).item()
+        # communication
+        next_rank = (d_rank + 1) % max_rank
+        t_comm = comm_cost_model.predict_comm_time(d_rank, next_rank, comm_size)
+        # minmax throughput
+        minmax_throughputs = max(minmax_throughputs, comp_time, t_comm)
+        e2e_lat += max(comp_time, t_comm)
+    return minmax_throughputs, e2e_lat
+
+def log_result(result, name):
+    print(f"{name} result: Throughputs {1/result[0]} Lat {result[1]} ")
+
+qpipe_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_qpipe, bit_assignment_result_qpipe)
+pipedge_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_pipedge, bit_assignment_result_pipedge)
+adabit_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_adabit, bit_assignment_result_adabit)
+
+log_result(qpipe_result, 'qpipe')
+log_result(pipedge_result, 'pipedge')
+log_result(adabit_result, 'adabit')

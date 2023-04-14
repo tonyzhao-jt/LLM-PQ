@@ -91,6 +91,8 @@ class LatCostModel:
             assert len(self.cost_model[device_name]) == 2, f"Cannot find cost model for {device_name}"
 
         self.has_hypers = False
+        self.has_profiled = False
+
     def device_in_cost_model(self, device_name):
         return device_name in self.device_names
     
@@ -100,6 +102,13 @@ class LatCostModel:
         self.h1 = h1
         self.h2 = h2
         self.has_hypers = True
+    
+    def update_profiled_result(self, profiled_data):
+        assert self.has_hypers, "Please register hyper params first. Profiling can only be done after hyper params are registered."
+        # read profiled data
+        self.profiled_data = profiled_data
+        if not self.has_profiled:
+            self.has_profiled = True
     
     def predict(self, device_name, shard, b, i, h1, h2, bit):
         assert self.device_in_cost_model(device_name), f"Device {device_name} is not in the cost model."
@@ -121,3 +130,7 @@ class LatCostModel:
     def predict_with_hyper(self, device_name, shard, bit):
         assert self.has_hypers, "Hyper parameters are not registered."
         return self.predict(device_name, shard, self.b, self.i, self.h1, self.h2, bit)
+
+    def predict_with_profiled(self, device_name, shard, bit):
+        assert self.has_profiled, "Profiled data is not registered."
+        return self.profiled_data[device_name, shard, self.profiled_data['b'], self.profiled_data['i'], self.profiled_data['h1'], self.profiled_data['h2'], bit]
