@@ -35,6 +35,8 @@ device_mesh = {
 D = create_device_mesh_grid(device_mesh)
 max_device_mem = get_device_mesh_overall_mem_constraints(D)
 
+use_profiler_prediction = True
+
 # target model configuration
 model_size = '175b'
 config = model_cards[model_size]
@@ -43,6 +45,9 @@ num_hidden_layers = len(T) // 2
 # comm_cost_model.print_model_available_keys()
 # comm_cost = comm_cost_model.predict_comm_time(start_rank=0, end_rank=1, data_size=get_size_cpu(x, unit='MB'))
 # predicted_cost = lat_cost_model.predict(device, shard, b, i, h1, h2, bit)
+
+if use_profiler_prediction:
+    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts')
 
 file_name = 'qpipe_result.pkl' 
 result_file_name = 'qpipe_result.txt'
@@ -141,8 +146,18 @@ def get_latency_with_layer_device_bit_pair(D, bit_pairs):
         for idx, bit_pair in enumerate(bit_pairs):
             attn_bit, ffn_bit = bit_pair
             device_bit_res[(device_name, bit_pair)] = 0
-            attn_lat = lat_cost_model.predict_with_hyper(device_name, 0, attn_bit).item()
-            ffn_lat = lat_cost_model.predict_with_hyper(device_name, 1, ffn_bit).item()
+            if not use_profiler_prediction:
+                attn_lat = lat_cost_model.predict_with_hyper(device_name, 0, attn_bit).item()
+                ffn_lat = lat_cost_model.predict_with_hyper(device_name, 1, ffn_bit).item()
+            else:
+                attn_lat = lat_cost_model.predict_with_profiled(device_name, 0, attn_bit)
+                ffn_lat = lat_cost_model.predict_with_profiled(device_name, 1, ffn_bit)
+                if attn_lat is None: # bit is not available
+                    attn_lat = 9999 # a large number
+                    print(device_name, 0, attn_bit)
+                if ffn_lat is None:
+                    ffn_lat = 9999
+                    print(device_name, 1, ffn_bit)
             lat = attn_lat + ffn_lat
             device_bit_res[(device_name, bit_pair)] = lat
     # create latency matrix

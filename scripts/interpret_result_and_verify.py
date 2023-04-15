@@ -39,10 +39,14 @@ device_mesh = {
 D = create_device_mesh_grid(device_mesh)
 max_device_mem = get_device_mesh_overall_mem_constraints(D)
 
+use_profiler_prediction = True
 # target model configuration
 model_size = '175b'
 config = model_cards[model_size]
 model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names)
+
+if use_profiler_prediction:
+    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts')
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -114,7 +118,11 @@ def calculate_max_throughputs_and_lat(D, p_partition_result, p_bit_assign):
         for layer in range(layers_start, layers_end):
             shard = layer % 2
             bit = p_bit_assign[layer]
-            comp_time += lat_cost_model.predict_with_hyper(device_name, shard, bit).item()
+            if not use_profiler_prediction:
+                comp_time += lat_cost_model.predict_with_hyper(device_name, shard, bit).item()
+            else:
+                lat = lat_cost_model.predict_with_profiled(device_name, shard, bit)
+                comp_time += lat
         # communication
         next_rank = (d_rank + 1) % max_rank
         t_comm = comm_cost_model.predict_comm_time(d_rank, next_rank, comm_size)

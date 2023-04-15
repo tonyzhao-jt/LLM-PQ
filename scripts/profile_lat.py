@@ -46,6 +46,13 @@ if __name__ == '__main__':
     h2 = config.ffn_dim
 
     # print(h1, h2)
+    def convert_to_int(x):
+        if type(x) is float:
+            return int(x)
+        elif type(x) is str and x.isnumeric():
+            return int(float(x))
+        else:
+            return x
 
     # check whether the file exists
     if os.path.exists(file_name):
@@ -54,14 +61,14 @@ if __name__ == '__main__':
         df = pd.DataFrame(columns=['shard', 'h1', 'h2', \
                                     'bit', 'batch_size', 'input_seq_length', 'past_seq_length', \
                                     'lat_avg', 'mem_weight', 'mem_kv', 'mem_embedding'])
-    
+
     for shard in [1, 0]:
-        for bz in range(1, batch_size):
+        for bz in range(1, batch_size + 1):
             for bit in available_bits:
                 i = generated_seq_length
                 # check if the entry has been profiled
                 if len(df[(df['shard'] == shard) & (df['h1'] == h1) & (df['h2'] == h2) & \
-                            (df['bit'] == bit) & (df['batch_size'] == bz) & (df['input_seq_length'] == input_seq_length) & \
+                            (df['bit'] == str(bit)) & (df['batch_size'] == bz) & (df['input_seq_length'] == input_seq_length) & \
                             (df['past_seq_length'] == past_seq_length + i)]) > 0:
                     print("Entry has been profiled, skip")
                     continue
@@ -71,7 +78,7 @@ if __name__ == '__main__':
                                         warmup=warmup, repeat=repeat, verbose=True)
                 mem_all = mem_weight + mem_kv + mem_embedding
                 df = df._append({'shard': shard, 'h1': h1, 'h2': h2, \
-                            'bit': bit, 'batch_size': bz, 'input_seq_length': input_seq_length, \
+                            'bit': str(bit), 'batch_size': bz, 'input_seq_length': input_seq_length, \
                             'past_seq_length': past_seq_length + i, 'lat_avg': lat_avg, \
                             'mem_weight': mem_weight, 'mem_kv': mem_kv, 'mem_embedding': mem_embedding, \
                             'mem_all': mem_all}, ignore_index=True)

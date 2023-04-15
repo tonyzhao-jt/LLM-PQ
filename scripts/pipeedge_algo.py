@@ -38,9 +38,15 @@ device_mesh = {
 D = create_device_mesh_grid(device_mesh)
 max_device_mem = get_device_mesh_overall_mem_constraints(D)
 
+use_profiler_prediction = True
+
 model_size = '175b'
 config = model_cards[model_size]
 model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names)
+
+if use_profiler_prediction:
+    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts')
+
 # comm_cost_model.print_model_available_keys()
 # comm_cost = comm_cost_model.predict_comm_time(start_rank=0, end_rank=1, data_size=get_size_cpu(x, unit='MB'))
 # predicted_cost = lat_cost_model.predict(device, shard, b, i, h1, h2, bit)
@@ -72,7 +78,16 @@ def transition_equation(h, i, S, j, u, T, D):
     for layer_on_u in range(i, j):
         shard = T[layer_on_u]
         bit = bit_assignment[layer_on_u]
-        t_comp += lat_cost_model.predict_with_hyper(device_name, shard, bit).item()
+
+        if not use_profiler_prediction:
+            t_comp += lat_cost_model.predict_with_hyper(device_name, shard, bit).item()
+        else:
+            lat = lat_cost_model.predict_with_profiled(device_name, shard, bit)
+            if lat is None:
+                print(device_name, shard, bit)
+                lat = 9999
+            t_comp += lat
+
     # comm cost
     # get last device in S
     t_comm = 0
@@ -97,7 +112,7 @@ def pipeedge_partition(T, D):
         for S in itertools.chain.from_iterable(itertools.combinations(D_ranks, r) for r in range(len(D_ranks) + 1)):
             for u in set(D_ranks) - set(S): # u is the next device to be used. 
                 calculation_times += 1
-                print(f"S: {S}, u: {u}, Calculate times: {calculation_times}, answer: {answer}")
+                print(f"S: {S}, u: {u}, Calculate times: {calculation_times}, answer: {answer}" )
                 for j in range(i + 1, L + 1):
                     # check memory constraints
                     # i to j-1 layer. e.g. i=0, j=1, then only layer 0
@@ -120,7 +135,7 @@ def pipeedge_partition(T, D):
                         # record the min value of j placement
                         for v in set(D_ranks) - set(S) - {u}:
                             tmp_S = frozenset(set(S).union({u}))
-                            print("update result", j-1, tmp_S, v, C)
+                            print("update result", j-1, tmp_S, v, C, end="\r", flush=True)
                             # the real number will be j - 1
                             if C < h[j-1, tmp_S, v]:
                                 h[j-1, tmp_S, v] = C

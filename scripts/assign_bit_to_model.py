@@ -117,7 +117,8 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
     mem_bits_vector = get_mem_with_layer_bit_pair(BITs)
     M = np.tile(mem_bits_vector, (L, 1))
     # omega
-    omega = assign_omega_constant(L, BITs)
+    # omega = assign_omega_constant(L, BITs)
+    omega = assign_omega_uniform(L, BITs)
     return L, N, BITs, M_d, M, omega
 
 if min_model_mem > max_device_mem:
