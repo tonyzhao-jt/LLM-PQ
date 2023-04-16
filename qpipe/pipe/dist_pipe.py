@@ -50,6 +50,10 @@ class DistRpcPipelineStage:
         self.comm_type = comm_type
         self.stage_device = torch.device(f"cuda:{local_rank}")
         self.module_to(self.stage_device)
+        infer_configs = module_kwargs['infer_configs']
+        bs, prompt_length, num_tokens_to_generate, request_numbers = infer_configs
+        for request_id in range(request_numbers):
+            self._module.init_kv_cache(bs, prompt_length, num_tokens_to_generate, request_id)
 
     def module_to(self, *args, **kwargs) -> None:
         """Wrap the module's `nn.Module.to` method (`device` can be be a `str`)."""
@@ -175,7 +179,7 @@ def _dist_rpc_pipeline_stage_factory(*args, **kwargs) -> DistRpcPipelineStage:
     return stage
 
 
-def dist_rpc_pipeline_factory(model_cpu: nn.Module, sharding_strategy: dict, device_mesh, results_to: int,
+def dist_rpc_pipeline_factory(model_cpu: nn.Module, sharding_strategy: dict, device_mesh, infer_configs, results_to: int,
                               results_cb: Callable[[Any], None]) -> DistRpcPipeline:
     """Get an RPC pipeline instance."""
     stage_rrefs = []
@@ -202,7 +206,7 @@ def dist_rpc_pipeline_factory(model_cpu: nn.Module, sharding_strategy: dict, dev
         logger.info(f"Stage {stage_cnt} on {dst_rank} with {comm_type} communication to {next_rank}, local rank {dst_local_rank}")
 
         rref = rpc.remote(dst_rank, _dist_rpc_pipeline_stage_factory, args=(sharded_model,),
-                           kwargs={'stage_id': stage_cnt, 'module_kwargs': {}, \
+                           kwargs={'stage_id': stage_cnt, 'module_kwargs': {'infer_configs':infer_configs}, \
                                    'local_rank':dst_local_rank, 'comm_type': comm_type})
         rpc.remote(dst_rank, logger.info,
                     args=("======= Stage %d on %d =======", stage_cnt, dst_rank))

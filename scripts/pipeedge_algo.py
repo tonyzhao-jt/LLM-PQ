@@ -8,7 +8,6 @@ from qpipe.partitioner.utils import (
 from qpipe.cost_model import (
     estimate_all_layer_mem, estimate_single_layer_mem
 )
-from qpipe.partitioner.helper import init_parameters_and_cost_models
 import qpipe
 import pickle
 

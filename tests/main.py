@@ -83,7 +83,7 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
         
         if rank == 0: # master, process some data
             # create pipeline
-            pipeline = dist_rpc_pipeline_factory(model_cpu, sharding_strategy, device_mesh, rank, handle_results)
+            pipeline = dist_rpc_pipeline_factory(model_cpu, sharding_strategy, device_mesh, infer_configs, rank, handle_results)
             master_pipeline = pipeline
             # prepare test data
             def prepare_input(batched_ids, request_id):
@@ -163,6 +163,7 @@ if __name__ == '__main__':
     # tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
 
     # wo weight
+    os.environ['SET_DECODERS_META'] = "1"
     # model_size = "175b"
     # config = model_cards[model_size]
     # loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
@@ -172,11 +173,10 @@ if __name__ == '__main__':
     # pipeline_strategy_result_qpipe = f'/workspace/qpipe/scripts/baseline_result/{pipeline_strategy_result_qpipe}'
     # sharding_strategy = pickle.load(open(pipeline_strategy_result_qpipe, "rb"))
     # dist.barrier()
-    # test case
+    # # test case
     model_size = "350M"
     config = model_cards[model_size]
     tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
-    os.environ['SET_DECODERS_META'] = "1"
     loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
 
     sharding_strategy = {
@@ -217,12 +217,14 @@ if __name__ == '__main__':
 
     model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
     model_pre_and_post = model_pre_and_post.cuda()
-
+ 
     # control the token generation
     num_tokens_to_generate = 100
     prompt_length = 512
     bs_token = 16 # how many sentence in a batch
     request_numbers = 1 # how many requests
+
+    infer_configs = (bs_token, prompt_length, num_tokens_to_generate, request_numbers)
 
     # init env
     seed = 42
