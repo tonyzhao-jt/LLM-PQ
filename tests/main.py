@@ -30,6 +30,8 @@ from qpipe.pipe import (
     dist_rpc_pipeline_factory
 )
 
+from accelerate import init_empty_weights
+
 results_counter = ThreadSafeCounter()
 
 final_result = {}
@@ -112,7 +114,7 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             
             data_chunks = []
             for i in range(request_numbers):
-                batched_ids = tokenizer.batch_encode_plus(fetch_prompts(bs_token, prompt_length), padding=True, return_tensors="pt")
+                batched_ids = tokenizer.batch_encode_plus(fetch_prompts(bs_token, prompt_length), padding='max_length', max_length=prompt_length, return_tensors="pt")
                 request_token = prepare_input(batched_ids, request_id=i)
                 data_chunks.append(request_token)
             batch_size = len(data_chunks)
@@ -161,19 +163,66 @@ if __name__ == '__main__':
     # tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
 
     # wo weight
-    model_size = "175b"
+    # model_size = "175b"
+    # config = model_cards[model_size]
+    # loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
+    # tokenizer = AutoTokenizer.from_pretrained("facebook/opt-66b")
+
+    # pipeline_strategy_result_qpipe = "pipeline_strategy_result_qpipe.pkl"
+    # pipeline_strategy_result_qpipe = f'/workspace/qpipe/scripts/baseline_result/{pipeline_strategy_result_qpipe}'
+    # sharding_strategy = pickle.load(open(pipeline_strategy_result_qpipe, "rb"))
+    # dist.barrier()
+    # test case
+    model_size = "350M"
     config = model_cards[model_size]
+    tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
+    os.environ['SET_DECODERS_META'] = "1"
     loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
-    tokenizer = AutoTokenizer.from_pretrained("facebook/opt-66b")
+
+    sharding_strategy = {
+        0: {},
+        1: {
+            0: {'shard': [0, 1], 'bits': [16, 16]},
+            1: {'shard': [0, 1], 'bits': [16, 16]},
+            2: {'shard': [0, 1], 'bits': [16, 16]},
+            3: {'shard': [0, 1], 'bits': [16, 16]},
+            4: {'shard': [0, 1], 'bits': [16, 16]},
+            5: {'shard': [0, 1], 'bits': [16, 8]},
+            6: {'shard': [0, 1], 'bits': [16, 16]},
+            7: {'shard': [0, 1], 'bits': [16, 16]},
+            8: {'shard': [0], 'bits': [16]},
+        },
+        2: {
+            8: {'shard': [1], 'bits': [16]},
+            9: {'shard': [0,1], 'bits': [16, 16]},
+            10: {'shard': [0,1], 'bits': [8, 16]},
+            11: {'shard': [0,1], 'bits': [16, 16]},
+            # 350M
+            12: {'shard': [0,1], 'bits': [16, 16]},
+            13: {'shard': [0,1], 'bits': [16, 16]},
+            14: {'shard': [0,1], 'bits': [8, 16]},
+            15: {'shard': [0,1], 'bits': [16, 16]},
+            16: {'shard': [0,1], 'bits': [16, 16]},
+            17: {'shard': [0,1], 'bits': [16, 8]},
+        },
+        3:{
+            18: {'shard': [0,1], 'bits': [16, 16]},
+            19: {'shard': [0,1], 'bits': [16, 16]},
+            20: {'shard': [0,1], 'bits': [8, 16]},
+            21: {'shard': [0,1], 'bits': [16, 16]},
+            22: {'shard': [0,1], 'bits': [16, 16]}, 
+            23: {'shard': [0,1], 'bits': [16, 16]},
+        }
+    }
 
     model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
     model_pre_and_post = model_pre_and_post.cuda()
 
     # control the token generation
-    num_tokens_to_generate = 50
-    prompt_length = 128
+    num_tokens_to_generate = 100
+    prompt_length = 512
     bs_token = 16 # how many sentence in a batch
-    request_numbers = 2 # how many requests
+    request_numbers = 1 # how many requests
 
     # init env
     seed = 42
@@ -184,46 +233,8 @@ if __name__ == '__main__':
     # Customize the sharding strategy
     # Rank: {decoder_layer_idx: {"shard": [shard_idx, ...], "bits":[qbit, ...]}}
     # single device test
-    pipeline_strategy_result_qpipe = "pipeline_strategy_result_qpipe.pkl"
-    pipeline_strategy_result_qpipe = f'/workspace/qpipe/scripts/baseline_result/{pipeline_strategy_result_qpipe}'
-    sharding_strategy = pickle.load(open(pipeline_strategy_result_qpipe, "rb"))
-    dist.barrier()
-    # sharding_strategy = {
-    #     0: {},
-    #     1: {
-    #         0: {'shard': [0, 1], 'bits': [16, 16]},
-    #         1: {'shard': [0, 1], 'bits': [16, 16]},
-    #         2: {'shard': [0, 1], 'bits': [16, 16]},
-    #         3: {'shard': [0, 1], 'bits': [16, 16]},
-    #         4: {'shard': [0, 1], 'bits': [16, 16]},
-    #         5: {'shard': [0, 1], 'bits': [16, 8]},
-    #         6: {'shard': [0, 1], 'bits': [16, 16]},
-    #         7: {'shard': [0, 1], 'bits': [16, 16]},
-    #         8: {'shard': [0], 'bits': [16]},
-    #     },
-    #     2: {
-    #         8: {'shard': [1], 'bits': [16]},
-    #         9: {'shard': [0,1], 'bits': [16, 16]},
-    #         10: {'shard': [0,1], 'bits': [8, 16]},
-    #         11: {'shard': [0,1], 'bits': [16, 16]},
-    #         # 350M
-    #         12: {'shard': [0,1], 'bits': [16, 16]},
-    #         13: {'shard': [0,1], 'bits': [16, 16]},
-    #         14: {'shard': [0,1], 'bits': [8, 16]},
-    #         15: {'shard': [0,1], 'bits': [16, 16]},
-    #         16: {'shard': [0,1], 'bits': [16, 16]},
-    #         17: {'shard': [0,1], 'bits': [16, 8]},
-    #     },
-    #     3:{
-    #         18: {'shard': [0,1], 'bits': [16, 16]},
-    #         19: {'shard': [0,1], 'bits': [16, 16]},
-    #         20: {'shard': [0,1], 'bits': [8, 16]},
-    #         21: {'shard': [0,1], 'bits': [16, 16]},
-    #         22: {'shard': [0,1], 'bits': [16, 16]}, 
-    #         23: {'shard': [0,1], 'bits': [16, 16]},
-    #     }
-    # }
 
+    
     # two node test
     # sharding_strategy = {
     #     0: {},

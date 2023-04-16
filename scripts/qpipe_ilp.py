@@ -23,6 +23,8 @@ from qpipe.partitioner.helper import (
     calculate_max_throughputs_and_lat
 )
 
+from qpipe.cost_model import price as price_model
+
 unit = qpipe._globals.MEM_UNIT
 
 # device configuration
@@ -128,6 +130,62 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta):
                     # print("z[{}, {}, {}] = {}".format(i, j, b, z[(i, j, b)].varValue))
                     result[i] = (j, b)
     return result, pulp.value(prob.objective)
+
+
+def solve_ilp_pulp_with_price(L, N, BITs, M, M_d, l, omega, comm, price, theta, gamma):
+    prob = pulp.LpProblem("max Latency Minimization Problem", pulp.LpMinimize)
+    # Create a new PuLP model
+    B = len(BITs)
+    z = pulp.LpVariable.dicts("z", [(i, j, b) for i in range(L) for j in range(N) for b in range(B)], cat=pulp.LpBinary)
+    y = pulp.LpVariable.dicts("y", [(i, b) for i in range(L) for b in range(B)], cat=pulp.LpBinary)
+    x = pulp.LpVariable.dicts("x", [j for j in range(N)], cat=pulp.LpBinary)
+    LAT = pulp.LpVariable.dicts("LAT", [j for j in range(N)], lowBound=0, cat=pulp.LpContinuous)
+    LAT_max = pulp.LpVariable("LAT_max", lowBound=0, cat=pulp.LpContinuous)
+
+    # Define the objective function
+    prob += LAT_max + theta * pulp.lpSum([omega[i][b] * y[(i, b)] for i in range(L) for b in range(B)]) + \
+    gamma * pulp.lpSum(x[j] * price[j] for j in range(N))
+
+    # Define the constraints
+    for i in range(L):
+        prob += pulp.lpSum([z[(i, j, b)] for j in range(N) for b in range(B)]) == 1
+    for i in range(L):
+        for b in range(B):
+            prob += pulp.lpSum([z[(i, j, b)] for j in range(N)]) == y[(i, b)]
+
+    for j in range(N):
+        prob += pulp.lpSum([z[(i, j, b)] * M[i][b] for i in range(L) for b in range(B)]) <= M_d[j]
+        prob += pulp.lpSum([z[(i, j, b)] * l[i][j][b] for i in range(L) for b in range(B)]) <= LAT[j]
+        prob += LAT[j] >= comm[j]
+        prob += LAT_max >= LAT[j]
+
+        # x[j] = 1 if the task j is assigned to a device
+        prob += x[j] >= pulp.lpSum([z[(i, j, b)] for i in range(L) for b in range(B)])
+        prob += x[j] <= pulp.lpSum([z[(i, j, b)] for i in range(L) for b in range(B)])
+        
+    # Solve the problem
+    prob.solve(pulp.apis.PULP_CBC_CMD(msg=0))
+
+    # Print the solution status
+    print("Status:", pulp.LpStatus[prob.status])
+    # Print the optimal objective value
+    print("Optimal value of the objective function:", pulp.value(prob.objective))
+    # store the optimal solution
+    result = {}
+    # print z variable result
+    for i in range(L):
+        for j in range(N):
+            for b in range(B):
+                if z[(i, j, b)].varValue > 0:
+                    # print("z[{}, {}, {}] = {}".format(i, j, b, z[(i, j, b)].varValue))
+                    result[i] = (j, b)
+    # get whether device j is used
+    device_used = []
+    for j in range(N):
+        if x[j].varValue > 0:
+            device_used.append(j)
+        
+    return result, pulp.value(prob.objective), device_used
     
 def get_mem_with_layer_bit_pair(bit_pairs): 
     mem_bits_vector = np.zeros(len(bit_pairs))
@@ -215,7 +273,14 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
 
     # hyperparameters
     theta = 0.1
-    return L, N, BITs, M_d, M, l, omega, comm, theta
+
+    # price related
+    gamma = 0.01
+    # get price
+    price = np.zeros(N)
+    for i in range(N):
+        price[i] = price_model.get_price(D[i])
+    return L, N, BITs, M_d, M, l, omega, comm, price, theta, gamma
     
 # solve_ilp(L, N, BITs, M, M_d, l, omega, comm, theta)
 # add chunk searching
@@ -239,8 +304,9 @@ available_chunks = lat_cost_model.get_available_chunks()
 #         best_chunk = chunk
 #         best_bs = bs
 #         print("update best result: ", max_throughput, best_chunk, best_bs)
-L, N, BITs, M_d, M, l, omega, comm, theta = prepare_for_ilp(num_hidden_layers, D, available_bits)
+L, N, BITs, M_d, M, l, omega, comm, price, theta, gamma = prepare_for_ilp(num_hidden_layers, D, available_bits)
 result, obj_value = solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta)
+# result, obj_value, device_used = solve_ilp_pulp_with_price(L, N, BITs, M, M_d, l, omega, comm, price, theta, gamma)
 result = interpret_ilp_result_i_j_b(result, available_bits)
 # store result
 result_file_name = 'qpipe_ilp_result.pkl'

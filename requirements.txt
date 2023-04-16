@@ -1,3 +1,5 @@
+pandas
+statsmodels
 bitsandbytes
 datasets
-transformers
+# transformers
