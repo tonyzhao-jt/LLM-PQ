@@ -13,7 +13,8 @@ def create_device_mesh(rank, local_rank, world_size):
     node_info = torch.tensor([node_first_rank, local_rank], dtype=torch.int64)
     node_info_list = [torch.zeros(len(node_info), dtype=torch.int64) for _ in range(world_size)]
     dist.all_gather(node_info_list, node_info)
-
+    # dist.destroy_process_group()
+    # print("Process group closed")
     # based on the first node, create a mesh with ranks has the same first rank on the row
     # and ranks has the same local rank on the column
     device_mesh = {}
@@ -25,11 +26,11 @@ def create_device_mesh(rank, local_rank, world_size):
     return device_mesh
 
 
-
 def get_neighbor_ranks(device_mesh, rank):
     for first_rank, ranks in device_mesh.items():
         if rank in ranks:
             return ranks
+        
 def get_local_rank_by_device_mesh(device_mesh, rank):
     for first_rank, ranks in device_mesh.items():
         if rank in ranks:

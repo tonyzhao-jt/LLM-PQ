@@ -164,56 +164,60 @@ if __name__ == '__main__':
 
     # wo weight
     os.environ['SET_DECODERS_META'] = "1"
-    # model_size = "175b"
-    # config = model_cards[model_size]
-    # loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
-    # tokenizer = AutoTokenizer.from_pretrained("facebook/opt-66b")
+    # os.environ["NCCL_SOCKET_IFNAME"] = "enp225s0"
+    # os.environ["GLOO_SOCKET_IFNAME"] = "enp225s0"
+    # export GLOO_SOCKET_IFNAME=enp225s0
 
-    # pipeline_strategy_result_qpipe = "pipeline_strategy_result_qpipe.pkl"
-    # pipeline_strategy_result_qpipe = f'/workspace/qpipe/scripts/baseline_result/{pipeline_strategy_result_qpipe}'
-    # sharding_strategy = pickle.load(open(pipeline_strategy_result_qpipe, "rb"))
-    # dist.barrier()
-    # # test case
-    model_size = "350M"
+    model_size = "175b"
     config = model_cards[model_size]
-    tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
     loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
+    tokenizer = AutoTokenizer.from_pretrained("facebook/opt-66b")
 
-    sharding_strategy = {
-        0: {},
-        1: {
-            0: {'shard': [0, 1], 'bits': [16, 16]},
-            1: {'shard': [0, 1], 'bits': [16, 16]},
-            2: {'shard': [0, 1], 'bits': [16, 16]},
-            3: {'shard': [0, 1], 'bits': [16, 16]},
-            4: {'shard': [0, 1], 'bits': [16, 16]},
-            5: {'shard': [0, 1], 'bits': [16, 8]},
-            6: {'shard': [0, 1], 'bits': [16, 16]},
-            7: {'shard': [0, 1], 'bits': [16, 16]},
-            8: {'shard': [0], 'bits': [16]},
-        },
-        2: {
-            8: {'shard': [1], 'bits': [16]},
-            9: {'shard': [0,1], 'bits': [16, 16]},
-            10: {'shard': [0,1], 'bits': [8, 16]},
-            11: {'shard': [0,1], 'bits': [16, 16]},
-            # 350M
-            12: {'shard': [0,1], 'bits': [16, 16]},
-            13: {'shard': [0,1], 'bits': [16, 16]},
-            14: {'shard': [0,1], 'bits': [8, 16]},
-            15: {'shard': [0,1], 'bits': [16, 16]},
-            16: {'shard': [0,1], 'bits': [16, 16]},
-            17: {'shard': [0,1], 'bits': [16, 8]},
-        },
-        3:{
-            18: {'shard': [0,1], 'bits': [16, 16]},
-            19: {'shard': [0,1], 'bits': [16, 16]},
-            20: {'shard': [0,1], 'bits': [8, 16]},
-            21: {'shard': [0,1], 'bits': [16, 16]},
-            22: {'shard': [0,1], 'bits': [16, 16]}, 
-            23: {'shard': [0,1], 'bits': [16, 16]},
-        }
-    }
+    pipeline_strategy_result_qpipe = "pipeline_strategy_result_qpipe.pkl"
+    pipeline_strategy_result_qpipe = f'/workspace/qpipe/scripts/baseline_result/{pipeline_strategy_result_qpipe}'
+    sharding_strategy = pickle.load(open(pipeline_strategy_result_qpipe, "rb"))
+    
+    # # test case
+    # model_size = "350M"
+    # config = model_cards[model_size]
+    # tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
+    # loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
+
+    # sharding_strategy = {
+    #     0: {},
+    #     1: {
+    #         0: {'shard': [0, 1], 'bits': [16, 16]},
+    #         1: {'shard': [0, 1], 'bits': [16, 16]},
+    #         2: {'shard': [0, 1], 'bits': [16, 16]},
+    #         3: {'shard': [0, 1], 'bits': [16, 16]},
+    #         4: {'shard': [0, 1], 'bits': [16, 16]},
+    #         5: {'shard': [0, 1], 'bits': [16, 8]},
+    #         6: {'shard': [0, 1], 'bits': [16, 16]},
+    #         7: {'shard': [0, 1], 'bits': [16, 16]},
+    #         8: {'shard': [0], 'bits': [16]},
+    #     },
+    #     2: {
+    #         8: {'shard': [1], 'bits': [16]},
+    #         9: {'shard': [0,1], 'bits': [16, 16]},
+    #         10: {'shard': [0,1], 'bits': [8, 16]},
+    #         11: {'shard': [0,1], 'bits': [16, 16]},
+    #         # 350M
+    #         12: {'shard': [0,1], 'bits': [16, 16]},
+    #         13: {'shard': [0,1], 'bits': [16, 16]},
+    #         14: {'shard': [0,1], 'bits': [8, 16]},
+    #         15: {'shard': [0,1], 'bits': [16, 16]},
+    #         16: {'shard': [0,1], 'bits': [16, 16]},
+    #         17: {'shard': [0,1], 'bits': [16, 8]},
+    #     },
+    #     3:{
+    #         18: {'shard': [0,1], 'bits': [16, 16]},
+    #         19: {'shard': [0,1], 'bits': [16, 16]},
+    #         20: {'shard': [0,1], 'bits': [8, 16]},
+    #         21: {'shard': [0,1], 'bits': [16, 16]},
+    #         22: {'shard': [0,1], 'bits': [16, 16]}, 
+    #         23: {'shard': [0,1], 'bits': [16, 16]},
+    #     }
+    # }
 
     model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
     model_pre_and_post = model_pre_and_post.cuda()
@@ -231,7 +235,6 @@ if __name__ == '__main__':
     init_random_seed(seed)
     dist_cfg, device_mesh = init_env()
     assert dist_cfg.world_size > 1, "world size should be larger than 1, else single device"
-
     # Customize the sharding strategy
     # Rank: {decoder_layer_idx: {"shard": [shard_idx, ...], "bits":[qbit, ...]}}
     # single device test
