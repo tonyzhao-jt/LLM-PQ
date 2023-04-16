@@ -21,7 +21,8 @@ from qpipe.cost_model import (
 from qpipe.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
-    get_device_mesh_overall_mem_constraints
+    get_device_mesh_overall_mem_constraints,
+    calculate_max_throughputs_and_lat
 )
 
 unit = qpipe._globals.MEM_UNIT
@@ -107,37 +108,64 @@ check_memory_budget(pipeline_partition_result_adabit, bit_assignment_result_adab
 # pipedge
 # qpipe
 
-def calculate_max_throughputs_and_lat(D, p_partition_result, p_bit_assign):
-    e2e_lat = 0
-    minmax_throughputs = 0
-    max_rank = len(D)
-    for d_rank, device_name in D.items():
-        layers_start, layers_end = p_partition_result[d_rank]
-        comp_time = 0
-        # latency
-        for layer in range(layers_start, layers_end):
-            shard = layer % 2
-            bit = p_bit_assign[layer]
-            if not use_profiler_prediction:
-                comp_time += lat_cost_model.predict_with_hyper(device_name, shard, bit).item()
-            else:
-                lat = lat_cost_model.predict_with_profiled(device_name, shard, bit)
-                comp_time += lat
-        # communication
-        next_rank = (d_rank + 1) % max_rank
-        t_comm = comm_cost_model.predict_comm_time(d_rank, next_rank, comm_size)
-        # minmax throughput
-        minmax_throughputs = max(minmax_throughputs, comp_time, t_comm)
-        e2e_lat += max(comp_time, t_comm)
-    return minmax_throughputs, e2e_lat
 
 def log_result(result, name):
     print(f"{name} result: Throughputs {1/result[0]} Lat {result[1]} ")
 
-qpipe_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_qpipe, bit_assignment_result_qpipe)
-pipedge_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_pipedge, bit_assignment_result_pipedge)
-adabit_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_adabit, bit_assignment_result_adabit)
+# simulator result
+qpipe_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_qpipe, bit_assignment_result_qpipe, \
+                                                 lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size)
+pipedge_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_pipedge, bit_assignment_result_pipedge, \
+                                                    lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size)
+adabit_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_adabit, bit_assignment_result_adabit, \
+                                                    lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size)
 
 log_result(qpipe_result, 'qpipe')
 log_result(pipedge_result, 'pipedge')
 log_result(adabit_result, 'adabit')
+
+# convert to the result can be used by qpipe
+def convert_to_qpipe_result2partitions(pipeline_partition_result, bit_assignment_result):
+    # result is something like
+    '''
+        sharding_strategy = {
+        0: {},
+        1: {
+            0: {'shard': [0, 1], 'bits': [16, 16]},
+            1: {'shard': [0, 1], 'bits': [16, 16]},
+        },
+        2: {
+            8: {'shard': [1], 'bits': [16]},
+            9: {'shard': [0,1], 'bits': [16, 16]},
+            10: {'shard': [0,1], 'bits': [8, 16]},
+        },
+    }
+    '''
+    partition_strategies = {}
+    layer_num = 0
+    for device_rank, (i, j) in pipeline_partition_result.items():
+        # device rank use int
+        partition_strategies[device_rank] = {}
+        for shard_layer_num in range(i, j):
+            if shard_layer_num % 2 == 0:
+                # self attn
+                # each two layers are in the same partition
+                partition_strategies[device_rank][layer_num] = {'shard': [0], 'bits': [bit_assignment_result[shard_layer_num]]}
+            elif shard_layer_num % 2 == 1:
+                # ffn
+                if not layer_num in partition_strategies[device_rank]: 
+                    partition_strategies[device_rank][layer_num] = {'shard': [1], 'bits':[bit_assignment_result[shard_layer_num]]}
+                else:
+                    partition_strategies[device_rank][layer_num]['shard'].append(1)
+                    partition_strategies[device_rank][layer_num]['bits'].append(bit_assignment_result[shard_layer_num])
+                layer_num += 1 # only when ffn is done, we move to the next layer
+
+    return partition_strategies
+
+qpipe_partition_strategies = convert_to_qpipe_result2partitions(pipeline_partition_result_qpipe, bit_assignment_result_qpipe)
+pipedge_partition_strategies = convert_to_qpipe_result2partitions(pipeline_partition_result_pipedge, bit_assignment_result_pipedge)
+adabit_partition_strategies = convert_to_qpipe_result2partitions(pipeline_partition_result_adabit, bit_assignment_result_adabit)
+# qpipe partition strategy result
+pipeline_strategy_result_qpipe = "pipeline_strategy_result_qpipe.pkl"
+# store the partition strategies
+pickle.dump(qpipe_partition_strategies, open(f'./baseline_result/{pipeline_strategy_result_qpipe}', "wb"))

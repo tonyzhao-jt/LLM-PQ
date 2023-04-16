@@ -45,3 +45,31 @@ def get_device_mesh_overall_mem_constraints(D):
         device_mem = get_single_device_mem_constraints(device_name)
         overall_mem += device_mem
     return overall_mem
+
+
+
+# result helper
+def calculate_max_throughputs_and_lat(D, p_partition_result, p_bit_assign, \
+                                       lat_cost_model, comm_cost_model, use_profiler_prediction=False, comm_size=0):
+    e2e_lat = 0
+    minmax_throughputs = 0
+    max_rank = len(D)
+    for d_rank, device_name in D.items():
+        layers_start, layers_end = p_partition_result[d_rank]
+        comp_time = 0
+        # latency
+        for layer in range(layers_start, layers_end):
+            shard = layer % 2
+            bit = p_bit_assign[layer]
+            if not use_profiler_prediction:
+                comp_time += lat_cost_model.predict_with_hyper(device_name, shard, bit).item()
+            else:
+                lat = lat_cost_model.predict_with_profiled(device_name, shard, bit)
+                comp_time += lat
+        # communication
+        next_rank = (d_rank + 1) % max_rank
+        t_comm = comm_cost_model.predict_comm_time(d_rank, next_rank, comm_size)
+        # minmax throughput
+        minmax_throughputs = max(minmax_throughputs, comp_time, t_comm)
+        e2e_lat += max(comp_time, t_comm)
+    return minmax_throughputs, e2e_lat

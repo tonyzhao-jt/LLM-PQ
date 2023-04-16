@@ -19,7 +19,8 @@ import numpy as np
 from qpipe.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
-    get_device_mesh_overall_mem_constraints
+    get_device_mesh_overall_mem_constraints,
+    calculate_max_throughputs_and_lat
 )
 
 unit = qpipe._globals.MEM_UNIT
@@ -52,6 +53,7 @@ if use_profiler_prediction:
 file_name = 'qpipe_result.pkl' 
 result_file_name = 'qpipe_result.txt'
 available_bits = [2, 4, 8, '8:tc', '8:tc-li', 16] # we now can do hardware-aware quantization with 8:tc and 8:tc-li
+
 
 def get_mem_available_devices(T, D, allocation_schemes, bit_assignment):
     if len(allocation_schemes) == 0: return D 
@@ -110,7 +112,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta):
         prob += LAT_max >= LAT[j]
     
     # Solve the problem
-    prob.solve()
+    prob.solve(pulp.apis.PULP_CBC_CMD(msg=0))
 
     # Print the solution status
     print("Status:", pulp.LpStatus[prob.status])
@@ -123,9 +125,9 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta):
         for j in range(N):
             for b in range(B):
                 if z[(i, j, b)].varValue > 0:
-                    print("z[{}, {}, {}] = {}".format(i, j, b, z[(i, j, b)].varValue))
+                    # print("z[{}, {}, {}] = {}".format(i, j, b, z[(i, j, b)].varValue))
                     result[i] = (j, b)
-    return result
+    return result, pulp.value(prob.objective)
     
 def get_mem_with_layer_bit_pair(bit_pairs): 
     mem_bits_vector = np.zeros(len(bit_pairs))
@@ -154,10 +156,10 @@ def get_latency_with_layer_device_bit_pair(D, bit_pairs):
                 ffn_lat = lat_cost_model.predict_with_profiled(device_name, 1, ffn_bit)
                 if attn_lat is None: # bit is not available
                     attn_lat = 9999 # a large number
-                    print(device_name, 0, attn_bit)
+                    # print(device_name, 0, attn_bit)
                 if ffn_lat is None:
                     ffn_lat = 9999
-                    print(device_name, 1, ffn_bit)
+                    # print(device_name, 1, ffn_bit)
             lat = attn_lat + ffn_lat
             device_bit_res[(device_name, bit_pair)] = lat
     # create latency matrix
@@ -215,9 +217,30 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
     theta = 0.1
     return L, N, BITs, M_d, M, l, omega, comm, theta
     
-L, N, BITs, M_d, M, l, omega, comm, theta = prepare_for_ilp(num_hidden_layers, D, available_bits)
 # solve_ilp(L, N, BITs, M, M_d, l, omega, comm, theta)
-result = solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta)
+# add chunk searching
+available_chunks = lat_cost_model.get_available_chunks()
+# test chunk spliting.
+# max_throughput = 0
+# for chunk in available_chunks: # chunk with number of chunks and bs
+#     num_chunks, bs = chunk
+#     lat_cost_model.change_bs(bs) # change lat cost model is enough, maximum memory won't change.
+#     L, N, BITs, M_d, M, l, omega, comm, theta = prepare_for_ilp(num_hidden_layers, D, available_bits)
+#     result, obj_value = solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta)
+#     result = interpret_ilp_result_i_j_b(result, available_bits)
+#     partition_result, bit_assignment = result['partition_result'], result['bit_assignment']
+#     minmax_throughputs, e2e_lat = calculate_max_throughputs_and_lat(D, partition_result, bit_assignment, \
+#                                       lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size)
+#     minmax_throughputs = bs * minmax_throughputs
+#     # the final throughput should be bs/obj_value
+#     if minmax_throughputs > max_throughput:
+#         max_throughput = minmax_throughputs
+#         best_result = result
+#         best_chunk = chunk
+#         best_bs = bs
+#         print("update best result: ", max_throughput, best_chunk, best_bs)
+L, N, BITs, M_d, M, l, omega, comm, theta = prepare_for_ilp(num_hidden_layers, D, available_bits)
+result, obj_value = solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta)
 result = interpret_ilp_result_i_j_b(result, available_bits)
 # store result
 result_file_name = 'qpipe_ilp_result.pkl'

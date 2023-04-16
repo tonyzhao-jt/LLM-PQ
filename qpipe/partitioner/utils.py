@@ -54,6 +54,8 @@ def interpret_ilp_result_i_j_b(ilp_result, available_bits):
     # reset the layer index
     for device_rank, layers in pipeline_partition_result_qpipe.items():
         pipeline_partition_result_qpipe[device_rank] = len(layers)
+    pipeline_partition_result_qpipe = sorted(pipeline_partition_result_qpipe.items())
+    pipeline_partition_result_qpipe = {k:v for (k,v) in pipeline_partition_result_qpipe}
     start_idx = 0
     for device_rank, layers in pipeline_partition_result_qpipe.items():
         pipeline_partition_result_qpipe[device_rank] = [start_idx, start_idx + layers * 2]
