@@ -91,6 +91,9 @@ def check_memory_budget_single_device(device_rank, p_partition_result, p_bit_ass
     i, j = p_partition_result[device_rank]
     i_to_j_mem = sum(estimate_single_layer_mem(model_mem_estimator, T[k], p_bit_assign[k]) for k in range(i, j))
     device_mem = get_single_device_mem_constraints(device_name)
+    if device_rank == 0:
+        post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
+        device_mem = device_mem - post_pre_mem
     assert i_to_j_mem < device_mem, f"memory budget exceeded for device {device_rank}, {i_to_j_mem} > {device_mem}"
 
 def check_memory_budget(p_partition_result, p_bit_assign, name='qpipe'):

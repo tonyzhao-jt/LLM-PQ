@@ -12,7 +12,7 @@ from transformers import AutoTokenizer
 from transformers import LogitsProcessorList, StoppingCriteriaList
 
 from qllm.models.OPT import OPTForCausalLMSeq
-from qllm.utils import to_dtype_recursive, to_device_recursive
+from qllm.utils import to_device_recursive
 
 from qpipe import (
     init_random_seed,
@@ -20,7 +20,7 @@ from qpipe import (
 )
 
 from qpipe.rpc import (
-    init_env, DistConfig, create_device_mesh, set_device_map,
+    init_env, DistConfig, set_device_map,
     DistRpcContext
 )
 from qpipe.logger import logger
@@ -30,7 +30,6 @@ from qpipe.pipe import (
     dist_rpc_pipeline_factory
 )
 
-from accelerate import init_empty_weights
 
 results_counter = ThreadSafeCounter()
 

@@ -8,6 +8,9 @@ def init_parameters_and_cost_models(config, device_names=[]):
     h2 = config.ffn_dim
     num_hidden_layers = config.num_hidden_layers # decoder layer numbers
 
+    vocab_size = config.vocab_size
+    max_position_embeddings = config.max_position_embeddings
+
     # micro_batch_size
     b = 16
     # set the prompt sequence length
@@ -19,7 +22,8 @@ def init_parameters_and_cost_models(config, device_names=[]):
     T = [0,1] * num_hidden_layers
 
     # estimators
-    model_mem_estimator = ModelMemEstimator(h1, h2, b, s, n)
+    model_mem_estimator = ModelMemEstimator(h1, h2, b, s, n, \
+                                            vocab_size=vocab_size, max_position_embeddings=max_position_embeddings)
     comm_size = (b * 1 * h1 * 2) / 1024 / 1024 # MB
 
     # cost models

@@ -156,6 +156,7 @@ def solve_ilp_pulp_with_price(L, N, BITs, M, M_d, l, omega, comm, price, theta, 
     for j in range(N):
         prob += pulp.lpSum([z[(i, j, b)] * M[i][b] for i in range(L) for b in range(B)]) <= M_d[j]
         prob += pulp.lpSum([z[(i, j, b)] * l[i][j][b] for i in range(L) for b in range(B)]) <= LAT[j]
+        # for device on 0: master, need to add the embedding time
         prob += LAT[j] >= comm[j]
         prob += LAT_max >= LAT[j]
 
@@ -258,6 +259,10 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
     
     mem_bits_vector = get_mem_with_layer_bit_pair(BITs)
     M = np.tile(mem_bits_vector, (L, 1))
+
+    # reduce the embedding size on device 0 for M_d
+    post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
+    M_d[0] -= post_pre_mem
 
     # latency
     l = np.zeros((L, N, len(BITs)))
