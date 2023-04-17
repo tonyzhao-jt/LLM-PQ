@@ -39,7 +39,6 @@ def get_bitidx_layer_memory_map(estimator, available_bits, shards=[0,1]):
     return s 
 
 def interpret_ilp_result_i_j_b(ilp_result, available_bits):
-    # qpipe result
     # handle result into pipeegde form
     pipeline_partition_result_qpipe = {}
     bit_assignment_result_qpipe = {}

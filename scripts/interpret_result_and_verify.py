@@ -112,17 +112,6 @@ check_memory_budget(pipeline_partition_result_adabit, bit_assignment_result_adab
 def log_result(result, name):
     print(f"{name} result: Throughputs {1/result[0]} Lat {result[1]} ")
 
-# simulator result
-qpipe_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_qpipe, bit_assignment_result_qpipe, \
-                                                 lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size)
-pipedge_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_pipedge, bit_assignment_result_pipedge, \
-                                                    lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size)
-adabit_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_adabit, bit_assignment_result_adabit, \
-                                                    lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size)
-
-log_result(qpipe_result, 'qpipe')
-log_result(pipedge_result, 'pipedge')
-log_result(adabit_result, 'adabit')
 
 # convert to the result can be used by qpipe
 def convert_to_qpipe_result2partitions(pipeline_partition_result, bit_assignment_result):
@@ -162,10 +151,46 @@ def convert_to_qpipe_result2partitions(pipeline_partition_result, bit_assignment
 
     return partition_strategies
 
+# cases: {0: [93, 119], 1: [46, 72], 2: [139, 166], 3: [166, 192], 4: [0, 24], 5: [24, 46], 6: [72, 93], 7: [119, 139]}
+def reset_result_rank_index(p_pipeline_partition_result_pipedge, bit_assignment_result_pipedge):
+    new_result = {}
+    new_bit_assignment_result = {}
+    new_idx = 0
+    for device_rank, (i, j) in p_pipeline_partition_result_pipedge.items():
+        layer_num = j - i
+        new_result[device_rank] = [new_idx, new_idx + layer_num]
+        for k in range(layer_num):
+            new_bit_assignment_result[new_idx + k] = bit_assignment_result_pipedge[i + k]
+        new_idx += layer_num
+    return new_result, new_bit_assignment_result
+
+pipeline_partition_result_pipedge, bit_assignment_result_pipedge = reset_result_rank_index(pipeline_partition_result_pipedge, bit_assignment_result_pipedge)
+pipeline_partition_result_adabit, bit_assignment_result_adabit = reset_result_rank_index(pipeline_partition_result_adabit, bit_assignment_result_adabit)
+pipeline_partition_result_qpipe, bit_assignment_result_qpipe = reset_result_rank_index(pipeline_partition_result_qpipe, bit_assignment_result_qpipe)
+
+# simulator result
+qpipe_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_qpipe, bit_assignment_result_qpipe, \
+                                                 lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size)
+pipedge_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_pipedge, bit_assignment_result_pipedge, \
+                                                    lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size)
+adabit_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_adabit, bit_assignment_result_adabit, \
+                                                    lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size)
+
+log_result(qpipe_result, 'qpipe')
+log_result(pipedge_result, 'pipedge')
+log_result(adabit_result, 'adabit')
+
+
 qpipe_partition_strategies = convert_to_qpipe_result2partitions(pipeline_partition_result_qpipe, bit_assignment_result_qpipe)
 pipedge_partition_strategies = convert_to_qpipe_result2partitions(pipeline_partition_result_pipedge, bit_assignment_result_pipedge)
 adabit_partition_strategies = convert_to_qpipe_result2partitions(pipeline_partition_result_adabit, bit_assignment_result_adabit)
+
+import pdb; pdb.set_trace()
 # qpipe partition strategy result
 pipeline_strategy_result_qpipe = "pipeline_strategy_result_qpipe.pkl"
+pipeline_strategy_result_pipedge = "pipeline_strategy_result_pipedge.pkl"
+pipeline_strategy_result_adabit = "pipeline_strategy_result_adabit.pkl"
 # store the partition strategies
 pickle.dump(qpipe_partition_strategies, open(f'./baseline_result/{pipeline_strategy_result_qpipe}', "wb"))
+pickle.dump(pipedge_partition_strategies, open(f'./baseline_result/{pipeline_strategy_result_pipedge}', "wb"))
+pickle.dump(adabit_partition_strategies, open(f'./baseline_result/{pipeline_strategy_result_adabit}', "wb"))
