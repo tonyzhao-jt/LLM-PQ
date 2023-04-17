@@ -40,24 +40,28 @@ class DistRpcPipelineStage:
         # here should me a nn.Sequential Module, and a function that set quantization bit should be here
         # self._module = module_cls(*module_args, **module_kwargs)
         # TODO: replace with single node strategy
+        self.stage_device = torch.device(f"cuda:{local_rank}")
+
         shard_config = module_kwargs['shard_config']
         infer_configs = module_kwargs['infer_configs']
-        module_cls._shard_model_current(shard_config)
+        module_cls._shard_model_current(shard_config, self.stage_device)
         print(f"Stage {stage_id} module sharded")
-        self.is_master = stage_id==0
+        bs, prompt_length, num_tokens_to_generate, request_numbers = infer_configs
+        for request_id in range(request_numbers):
+            module_cls.init_kv_cache(bs, prompt_length, num_tokens_to_generate, request_id)
+        print(f"Stage {stage_id} kv initialized")
+
         self._module = module_cls
+
+        self.is_master = stage_id==0
         self._next_rref = None
         self._results_to = None
         self._results_cb = None
 
         self.stage_id = stage_id
         self.comm_type = comm_type
-        self.stage_device = torch.device(f"cuda:{local_rank}")
-        self.module_to(self.stage_device)
-        bs, prompt_length, num_tokens_to_generate, request_numbers = infer_configs
-        for request_id in range(request_numbers):
-            self._module.init_kv_cache(bs, prompt_length, num_tokens_to_generate, request_id)
-        print(f"Stage {stage_id} kv initialized")
+
+
     def module_to(self, *args, **kwargs) -> None:
         """Wrap the module's `nn.Module.to` method (`device` can be be a `str`)."""
         if self.is_master:
