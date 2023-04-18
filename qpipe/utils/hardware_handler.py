@@ -174,3 +174,11 @@ def get_device_name_and_mem():
     device_name = get_device_name()
     device_mem = torch.cuda.get_device_properties(0).total_memory
     return device_name, device_mem, get_available_bits()
+
+
+def get_cuda_occupation_by_command():
+    import subprocess
+    gpu_index = 0 # replace with the index of the GPU you want to monitor
+    output = subprocess.check_output(f"nvidia-smi --query-gpu=memory.used --format=csv,nounits --id={gpu_index}", shell=True)
+    memory_used = int(output.decode().strip().split("\n")[1])
+    print(f"Memory used by GPU {gpu_index}: {memory_used} MB")

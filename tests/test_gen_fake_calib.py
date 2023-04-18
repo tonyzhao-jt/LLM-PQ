@@ -4,8 +4,14 @@ from qllm.models.OPT.opt import model_cards
 
 import lptorch
 import torch
+import argparse
+
 if __name__ == '__main__':
-    model_size = '175b'.lower()
+    parser = argparse.ArgumentParser()
+    # add model size
+    parser.add_argument('--model_size', type=str, default='125m', help='model size')
+    args = parser.parse_args()
+    model_size = args.model_size.lower()
     # fake input = b * 1 * hidden_size
     config = model_cards[model_size]
     batch_size = 10

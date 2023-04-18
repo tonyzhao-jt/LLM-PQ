@@ -47,7 +47,7 @@ config = model_cards[model_size]
 model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names)
 
 if use_profiler_prediction:
-    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts')
+    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts/lat_profiled_result')
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -94,6 +94,7 @@ def check_memory_budget_single_device(device_rank, p_partition_result, p_bit_ass
     if device_rank == 0:
         post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
         device_mem = device_mem - post_pre_mem
+    print(i_to_j_mem, device_mem)
     assert i_to_j_mem < device_mem, f"memory budget exceeded for device {device_rank}, {i_to_j_mem} > {device_mem}"
 
 def check_memory_budget(p_partition_result, p_bit_assign, name='qpipe'):
@@ -106,7 +107,6 @@ def check_memory_budget(p_partition_result, p_bit_assign, name='qpipe'):
 check_memory_budget(pipeline_partition_result_qpipe, bit_assignment_result_qpipe)
 check_memory_budget(pipeline_partition_result_pipedge, bit_assignment_result_pipedge, name='pipedge')
 check_memory_budget(pipeline_partition_result_adabit, bit_assignment_result_adabit, name='adabit')
-
 # then evalute the end-to-end latency and throughputs for different methods
 # pipedge
 # qpipe
@@ -171,6 +171,10 @@ pipeline_partition_result_pipedge, bit_assignment_result_pipedge = reset_result_
 pipeline_partition_result_adabit, bit_assignment_result_adabit = reset_result_rank_index(pipeline_partition_result_adabit, bit_assignment_result_adabit)
 pipeline_partition_result_qpipe, bit_assignment_result_qpipe = reset_result_rank_index(pipeline_partition_result_qpipe, bit_assignment_result_qpipe)
 
+print("pipeline_partition_result_pipedge", pipeline_partition_result_pipedge)
+print("pipeline_partition_result_adabit", pipeline_partition_result_adabit)
+print("pipeline_partition_result_qpipe", pipeline_partition_result_qpipe)
+
 # simulator result
 qpipe_result = calculate_max_throughputs_and_lat(D, pipeline_partition_result_qpipe, bit_assignment_result_qpipe, \
                                                  lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size)
@@ -188,7 +192,6 @@ qpipe_partition_strategies = convert_to_qpipe_result2partitions(pipeline_partiti
 pipedge_partition_strategies = convert_to_qpipe_result2partitions(pipeline_partition_result_pipedge, bit_assignment_result_pipedge)
 adabit_partition_strategies = convert_to_qpipe_result2partitions(pipeline_partition_result_adabit, bit_assignment_result_adabit)
 
-import pdb; pdb.set_trace()
 # qpipe partition strategy result
 pipeline_strategy_result_qpipe = "pipeline_strategy_result_qpipe.pkl"
 pipeline_strategy_result_pipedge = "pipeline_strategy_result_pipedge.pkl"

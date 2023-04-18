@@ -44,7 +44,7 @@ config = model_cards[model_size]
 model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names)
 
 if use_profiler_prediction:
-    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts')
+    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts/lat_profiled_result')
 
 # comm_cost_model.print_model_available_keys()
 # comm_cost = comm_cost_model.predict_comm_time(start_rank=0, end_rank=1, data_size=get_size_cpu(x, unit='MB'))

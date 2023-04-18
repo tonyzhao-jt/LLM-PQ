@@ -10,6 +10,7 @@ def init_parameters_and_cost_models(config, device_names=[]):
 
     vocab_size = config.vocab_size
     max_position_embeddings = config.max_position_embeddings
+    word_embed_proj_dim = config.word_embed_proj_dim
 
     # micro_batch_size
     b = 16
@@ -23,7 +24,7 @@ def init_parameters_and_cost_models(config, device_names=[]):
 
     # estimators
     model_mem_estimator = ModelMemEstimator(h1, h2, b, s, n, \
-                                            vocab_size=vocab_size, max_position_embeddings=max_position_embeddings)
+                                            vocab_size=vocab_size, max_position_embeddings=max_position_embeddings, word_embed_proj_dim=word_embed_proj_dim)
     comm_size = (b * 1 * h1 * 2) / 1024 / 1024 # MB
 
     # cost models

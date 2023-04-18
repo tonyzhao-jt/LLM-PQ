@@ -71,7 +71,6 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             sharding_strategy = get_shard_strategy(model_cpu)
         else:
             model_cpu._verify_shard_strategy(sharding_strategy)  
-
     set_device_map(rank, device_mesh, sharding_strategy, rpc_opts)
     # based on the schedule and device_mesh, determines the communication type
     with DistRpcContext((f"worker{rank}",),
@@ -81,6 +80,9 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
                        ) as dist_ctx:
         
         if rank == 0: # master, process some data
+            # move model to gpu
+            model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
+            model_pre_and_post = model_pre_and_post.cuda()
             # create pipeline
             pipeline = dist_rpc_pipeline_factory(model_cpu, sharding_strategy, device_mesh, infer_configs, rank, handle_results)
             master_pipeline = pipeline
@@ -111,6 +113,7 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
 
                 return to_device_recursive(request_token, 'cpu')
             
+
             data_chunks = []
             for i in range(request_numbers):
                 batched_ids = tokenizer.batch_encode_plus(fetch_prompts(bs_token, prompt_length), padding='max_length', max_length=prompt_length, return_tensors="pt")
@@ -119,6 +122,8 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
             batch_size = len(data_chunks)
             print("pipeline")
+            print("torch.cuda.memory_allocated: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024))
+            print("torch.cuda.memory_reserved: %fGB"%(torch.cuda.memory_reserved(0)/1024/1024/1024))
             # fake the data chunks for test
             # TODO: make it real chunks
             # data_chunks = torch.chunk(sample_data_batch, chunk, dim=0)
@@ -222,10 +227,6 @@ if __name__ == '__main__':
     #         23: {'shard': [0,1], 'bits': [16, 16]},
     #     }
     # }
-
-    model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
-    model_pre_and_post = model_pre_and_post.cuda()
- 
     # control the token generation
     num_tokens_to_generate = 100
     prompt_length = 512
@@ -280,5 +281,4 @@ if __name__ == '__main__':
     #         23: {'shard': [0,1], 'bits': [16, 16]},
     #     }
     # }
-
     run_pipeline_rpc(loaded_llm_cpu, tokenizer, dist_cfg, chunk=2, sharding_strategy=sharding_strategy)

@@ -50,7 +50,7 @@ num_hidden_layers = len(T) // 2
 # predicted_cost = lat_cost_model.predict(device, shard, b, i, h1, h2, bit)
 
 if use_profiler_prediction:
-    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts')
+    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts/lat_profiled_result')
 
 file_name = 'qpipe_result.pkl' 
 result_file_name = 'qpipe_result.txt'
@@ -114,7 +114,8 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta):
         prob += LAT_max >= LAT[j]
     
     # Solve the problem
-    prob.solve(pulp.apis.PULP_CBC_CMD(msg=0))
+    # prob.solve(pulp.apis.PULP_CBC_CMD(msg=0))
+    prob.solve()
 
     # Print the solution status
     print("Status:", pulp.LpStatus[prob.status])
@@ -263,7 +264,6 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
     # reduce the embedding size on device 0 for M_d
     post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
     M_d[0] -= post_pre_mem
-
     # latency
     l = np.zeros((L, N, len(BITs)))
     lat_device_bits_matrix = get_latency_with_layer_device_bit_pair(D, BITs)
