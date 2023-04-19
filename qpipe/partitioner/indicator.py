@@ -17,12 +17,12 @@ def assign_omega_uniform(L, BITs):
     omega = np.zeros((L, len(BITs)))
     # suppose to collect from the model
     omega_dict = {
-        2: 0.6,
-        4: 0.4,
-        8: 0.3,
-        16: 0.2,
-        '8:tc': 0.3,
-        '8:tc-li': 0.3,
+        2: 6.4,
+        4: 1.6,
+        8: 0.4,
+        16: 0.1,
+        '8:tc': 0.4,
+        '8:tc-li': 0.4,
     }
     for l_idx in range(omega.shape[0]):
         for b_idx, bit_pair in enumerate(BITs):

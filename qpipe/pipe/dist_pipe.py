@@ -42,15 +42,8 @@ class DistRpcPipelineStage:
         # TODO: replace with single node strategy
         self.stage_device = torch.device(f"cuda:{local_rank}")
 
-        shard_config = module_kwargs['shard_config']
-        infer_configs = module_kwargs['infer_configs']
-        module_cls._shard_model_current(shard_config, self.stage_device)
-        print(f"Stage {stage_id} module sharded")
-        bs, prompt_length, num_tokens_to_generate, request_numbers = infer_configs
-        for request_id in range(request_numbers):
-            module_cls.init_kv_cache(bs, prompt_length, num_tokens_to_generate, request_id)
-        print(f"Stage {stage_id} kv initialized")
-
+        self.shard_config = module_kwargs['shard_config']
+        self.infer_configs = module_kwargs['infer_configs']
         self._module = module_cls
 
         self.is_master = stage_id==0
@@ -60,7 +53,16 @@ class DistRpcPipelineStage:
 
         self.stage_id = stage_id
         self.comm_type = comm_type
-
+    
+    def init_module(self):
+        shard_config = self.shard_config
+        infer_configs = self.infer_configs
+        self._module._shard_model_current(shard_config, self.stage_device)
+        print(f"Stage {self.stage_id} module sharded")
+        bs, prompt_length, num_tokens_to_generate, request_numbers = infer_configs
+        for request_id in range(request_numbers):
+            self._module.init_kv_cache(bs, prompt_length, num_tokens_to_generate, request_id)
+        print(f"Stage {self.stage_id} kv initialized")
 
     def module_to(self, *args, **kwargs) -> None:
         """Wrap the module's `nn.Module.to` method (`device` can be be a `str`)."""
@@ -216,6 +218,11 @@ def dist_rpc_pipeline_factory(model_cpu: nn.Module, sharding_strategy: dict, dev
                     args=("======= Stage %d on %d =======", stage_cnt, dst_rank))
         stage_cnt += 1
         stage_rrefs.append(rref)
+    
+    # start module init
+    logger.info("start remote module init")
+    futs = [ref.rpc_async().init_module() for ref in stage_rrefs]
+    torch.futures.wait_all(futs)
 
     logger.info("results to rank %d", results_to)
     logger.info("results callback %s", results_cb.__name__ if results_cb else "None")

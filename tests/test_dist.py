@@ -62,7 +62,7 @@ master_pipeline = None
 def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=1, sharding_strategy=None) -> None:
     global master_pipeline
     """Run the pipeline using RPC communication."""
-    rpc_opts = rpc.TensorPipeRpcBackendOptions(num_worker_threads=128, rpc_timeout=60)
+    rpc_opts = rpc.TensorPipeRpcBackendOptions(num_worker_threads=128, rpc_timeout=60 * 100) # the loading of weight takes a lot of time
     rank = dist_cfg.rank
     data_rank = 0 # by default, use rank 0 as the data rank
     # verify the scheduling is ok to be set
@@ -129,8 +129,7 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             # logger.info("Waiting for other params")
             # other_decode_params = sched_q.get()
             # assign the decode params to the corresponding refs
-
-        
+        rpc.api._barrier([f"worker{i}" for i in range(dist_cfg.world_size)])
         if rank == data_rank:
             # pipeline.rpc_register_forward_hook(forward_hook_to_cpu)
             # pipeline.rpc_register_forward_pre_hook(forward_pre_hook_to_device)
@@ -146,7 +145,9 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             tok_data = perf_counter()
             latency = tok_data - tik_data
             throughput = batch_size / latency
+            token_throughput = throughput * num_tokens_to_generate
             logger.info("Latency is %f, throughput is %f", latency, throughput)
+            logger.info('Token throughput is %f', token_throughput)
 
             for request_id, input_id_finally in request_input_ids.items():
                 ouput_token = tokenizer.batch_decode(input_id_finally, skip_special_tokens=True)
@@ -167,22 +168,13 @@ if __name__ == '__main__':
     # os.environ["GLOO_SOCKET_IFNAME"] = "enp225s0"
     # export GLOO_SOCKET_IFNAME=enp225s0
     os.environ['SET_DECODERS_META'] = "1"
-
-    # model_size = "175b"
-    # config = model_cards[model_size]
-    # loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
-    # tokenizer = AutoTokenizer.from_pretrained("facebook/opt-66b")
-
-    # pipeline_strategy_result_qpipe = "pipeline_strategy_result_qpipe.pkl"
-    # pipeline_strategy_result_qpipe = f'/workspace/qpipe/scripts/baseline_result/{pipeline_strategy_result_qpipe}'
-    # sharding_strategy = pickle.load(open(pipeline_strategy_result_qpipe, "rb"))
-    
     # # test case
     model_size = "350m"
     config = model_cards[model_size]
     tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
     loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
-    
+    loaded_llm_cpu.eval()
+
     caliber = lptorch.inner_caliber
     caliber.set_fake() 
     caliber.load_fake_calib_data(f'fake_calib_{model_size}.pkl')
@@ -198,16 +190,7 @@ if __name__ == '__main__':
 
     infer_configs = (bs_token, prompt_length, num_tokens_to_generate, request_numbers)
 
-    # init env
-    seed = 42
-    init_random_seed(seed)
-    dist_cfg, device_mesh = init_env()
-    assert dist_cfg.world_size > 1, "world size should be larger than 1, else single device"
-    # Customize the sharding strategy
-    # Rank: {decoder_layer_idx: {"shard": [shard_idx, ...], "bits":[qbit, ...]}}
-    # single device test
 
-    
     # two node test
     sharding_strategy = {
         0: {},
@@ -222,15 +205,15 @@ if __name__ == '__main__':
         },
         3: {
             5: {'shard': [0, 1], 'bits': [16, 8]},
-            6: {'shard': [0, 1], 'bits': [16, 16]},
+            6: {'shard': [0, 1], 'bits': ['8:tc-li', 16]},
         },
         4: {
-            7: {'shard': [0, 1], 'bits': [16, 16]},
+            7: {'shard': [0, 1], 'bits': [4, 16]},
             8: {'shard': [0], 'bits': [16]},
         },
         5: {
             8: {'shard': [1], 'bits': [16]},
-            9: {'shard': [0,1], 'bits': [16, 16]},
+            9: {'shard': [0,1], 'bits': [16, 2]},
             10: {'shard': [0,1], 'bits': [8, 16]},
             11: {'shard': [0,1], 'bits': [16, 16]},
         },
@@ -251,5 +234,17 @@ if __name__ == '__main__':
             23: {'shard': [0,1], 'bits': [16, 16]},
         }
     }
+    loaded_llm_cpu._verify_shard_strategy(sharding_strategy)
+
+
+
+    # init env
+    seed = 42
+    init_random_seed(seed)
+    dist_cfg, device_mesh = init_env()
+    assert dist_cfg.world_size > 1, "world size should be larger than 1, else single device"
+    # Customize the sharding strategy
+    # Rank: {decoder_layer_idx: {"shard": [shard_idx, ...], "bits":[qbit, ...]}}
+    # single device test
 
     run_pipeline_rpc(loaded_llm_cpu, tokenizer, dist_cfg, chunk=2, sharding_strategy=sharding_strategy)

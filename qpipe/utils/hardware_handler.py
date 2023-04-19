@@ -153,11 +153,12 @@ def get_device_name():
 def get_device_mem_offline(device_name, unit='MB'):
     device_name = device_name.upper()
     mem_table = {
-        "A100-SXM4-40GB": 40 * 1024,
-        'TESLA_T4': 16 * 1024,
-        'TESLA_V100-SXM2-32GB': 32 * 1024,
-        'TESLA_V100-SXM2-16GB': 16 * 1024,
-        'NVIDIA_A100-SXM4-40GB': 40 * 1024,
+        "A100-SXM4-40GB": 39.44 * 1024, # not exactly = 40 * 1024
+        'TESLA_T4': 14.76 * 1024,
+        'TESLA_V100-SXM2-32GB': 31.74 * 1024,
+        'TESLA_V100-SXM2-16GB': 14.76 * 1024,
+        'NVIDIA_A100-SXM4-40GB': 39.44 * 1024,
+        'A100-SXM-80GB': 79.35 * 1024,
     }
     if device_name in mem_table:
         mem = mem_table[device_name]

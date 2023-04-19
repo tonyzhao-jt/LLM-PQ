@@ -151,7 +151,11 @@ class LatCostModel:
                         target_device = device_name
                         break
                 if target_device is None: continue
-                self.profiled_data[target_device] = pd.read_csv(os.path.join(profiled_folder, file))
+                if target_device not in self.profiled_data:
+                    self.profiled_data[target_device] = pd.read_csv(os.path.join(profiled_folder, file))
+                else:
+                    # update the pandas array
+                    self.profiled_data[target_device] = self.profiled_data[target_device]._append(pd.read_csv(os.path.join(profiled_folder, file)))
                 # drop the row with lat_avg > 99998
                 self.profiled_data[target_device] = self.profiled_data[target_device][self.profiled_data[target_device]['lat_avg'] < 99998]
                 self.profiled_data[target_device]['bit'] = self.profiled_data[target_device]['bit'].astype(str)

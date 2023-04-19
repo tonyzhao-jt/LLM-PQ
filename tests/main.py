@@ -1,12 +1,10 @@
 import os
 import torch 
 from torch.distributed import rpc 
-
+import torch.distributed as dist
 from time import perf_counter
-
-
 from transformers import AutoTokenizer
-from transformers import LogitsProcessorList, StoppingCriteriaList
+from transformers import LogitsProcessorList
 
 from qllm.models.OPT import OPTForCausalLMSeq
 from qllm.utils import (
@@ -62,7 +60,7 @@ master_pipeline = None
 def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=1, sharding_strategy=None) -> None:
     global master_pipeline
     """Run the pipeline using RPC communication."""
-    rpc_opts = rpc.TensorPipeRpcBackendOptions(num_worker_threads=128, rpc_timeout=60)
+    rpc_opts = rpc.TensorPipeRpcBackendOptions(num_worker_threads=128, rpc_timeout=60 * 100) # the loading of weight takes a lot of time
     rank = dist_cfg.rank
     data_rank = 0 # by default, use rank 0 as the data rank
     # verify the scheduling is ok to be set
@@ -135,8 +133,8 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             # logger.info("Waiting for other params")
             # other_decode_params = sched_q.get()
             # assign the decode params to the corresponding refs
-
         
+        rpc.api._barrier([f"worker{i}" for i in range(dist_cfg.world_size)])
         if rank == data_rank:
             # pipeline.rpc_register_forward_hook(forward_hook_to_cpu)
             # pipeline.rpc_register_forward_pre_hook(forward_pre_hook_to_device)
@@ -151,8 +149,11 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             results_counter.wait_gte(start_count + len(data_chunks) * num_tokens_to_generate)
             tok_data = perf_counter()
             latency = tok_data - tik_data
+            # throughput  = bs * N(token generated) / latency
             throughput = batch_size / latency
+            token_throughput = throughput * num_tokens_to_generate
             logger.info("Latency is %f, throughput is %f", latency, throughput)
+            logger.info('Token throughput is %f', token_throughput)
 
             for request_id, input_id_finally in request_input_ids.items():
                 ouput_token = tokenizer.batch_decode(input_id_finally, skip_special_tokens=True)
@@ -177,15 +178,13 @@ if __name__ == '__main__':
     model_size = "175b"
     config = model_cards[model_size]
     loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
+    loaded_llm_cpu.eval() # eval mode
     tokenizer = AutoTokenizer.from_pretrained("facebook/opt-66b")
-
-    pipeline_strategy_result_qpipe = "pipeline_strategy_result_qpipe.pkl"
-    pipeline_strategy_result_qpipe = f'/workspace/qpipe/scripts/baseline_result/{pipeline_strategy_result_qpipe}'
-    sharding_strategy = pickle.load(open(pipeline_strategy_result_qpipe, "rb"))
 
     caliber = lptorch.inner_caliber
     caliber.set_fake() 
     caliber.load_fake_calib_data(f'fake_calib_{model_size}.pkl')
+
     # # test case
     # model_size = "350M"
     # config = model_cards[model_size]
@@ -235,6 +234,11 @@ if __name__ == '__main__':
 
     infer_configs = (bs_token, prompt_length, num_tokens_to_generate, request_numbers)
 
+    pipeline_strategy_result_qpipe = "pipeline_strategy_result_qpipe.pkl"
+    pipeline_strategy_result_qpipe = f'/workspace/qpipe/scripts/baseline_result/{pipeline_strategy_result_qpipe}'
+    sharding_strategy = pickle.load(open(pipeline_strategy_result_qpipe, "rb"))
+    loaded_llm_cpu._verify_shard_strategy(sharding_strategy)
+
     # init env
     seed = 42
     init_random_seed(seed)
@@ -244,7 +248,6 @@ if __name__ == '__main__':
     # Rank: {decoder_layer_idx: {"shard": [shard_idx, ...], "bits":[qbit, ...]}}
     # single device test
 
-    
     # # two node test
     # sharding_strategy = {
     #     0: {},
