@@ -152,7 +152,9 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             for request_id, input_id_finally in request_input_ids.items():
                 ouput_token = tokenizer.batch_decode(input_id_finally, skip_special_tokens=True)
                 print(f"request {request_id} output token {ouput_token}")
-
+    print("pipeline")
+    print("torch.cuda.memory_allocated: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024))
+    print("torch.cuda.memory_reserved: %fGB"%(torch.cuda.memory_reserved(0)/1024/1024/1024))
 
 import pickle
 from qllm.models.OPT.opt import model_cards

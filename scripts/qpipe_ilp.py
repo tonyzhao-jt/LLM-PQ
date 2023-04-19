@@ -270,10 +270,9 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
     temp_emb_mem = model_mem_estimator.calculate_temp_embedding_tensor_size(unit='MB')[0]
     M_d[0] -= post_pre_mem
     M_d -= time_mult_times * temp_tensor_mem # torch may not release the tensor immediately, modify the 2 to ensure won't oom
-
     M_d = M_d.astype(int)
     M = M.astype(int)
-
+    
     # latency
     l = np.zeros((L, N, len(BITs)))
     lat_device_bits_matrix = get_latency_with_layer_device_bit_pair(D, BITs)

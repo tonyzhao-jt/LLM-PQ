@@ -84,7 +84,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
         prob += pulp.lpSum([z[(i, j, b)] * M[i][b] for i in range(L) for b in range(B)]) <= M_d[j]
     
     # Solve the problem
-    prob.solve(pulp.GUROBI(msg=False))
+    prob.solve(pulp.GUROBI(MIPGap=0.003))
     # prob.solve()
     # Print the solution status
     print("Status:", pulp.LpStatus[prob.status])
