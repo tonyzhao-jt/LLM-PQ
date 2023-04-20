@@ -24,9 +24,12 @@ from qpipe.partitioner.helper import (
 )
 
 import argparse
+import qpipe
 parser = argparse.ArgumentParser()
 # parser.add_argument('--extra_mem_reduced', type=int, default=0)
 args = parser.parse_args()
+
+time_mult_times = qpipe._globals.TIME_MULT_TIMES
 
 # device configuration
 device_names = ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']
@@ -60,6 +63,7 @@ env.setParam('WLSSECRET', "629520bd-a114-45d7-b828-bfc5235c198d")
 env.setParam('LICENSEID', 965996)
 env.start()
 
+avaliable_solvers = pulp.list_solvers(onlyAvailable=True)
 def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
     prob = pulp.LpProblem("max Latency Minimization Problem", pulp.LpMinimize)
     # Create a new PuLP model
@@ -80,7 +84,8 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
         prob += pulp.lpSum([z[(i, j, b)] * M[i][b] for i in range(L) for b in range(B)]) <= M_d[j]
     
     # Solve the problem
-    prob.solve()
+    prob.solve(pulp.GUROBI(MIPGap=0.004))
+    # prob.solve()
     # Print the solution status
     print("Status:", pulp.LpStatus[prob.status])
     # Print the optimal objective value
@@ -117,6 +122,13 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
     M_d = np.array([get_single_device_mem_constraints(device_name) for d_rank, device_name in D.items()]) 
     mem_bits_vector = get_mem_with_layer_bit_pair(BITs)
     M = np.tile(mem_bits_vector, (L, 1))
+    # reduce the embedding size on device 0
+    post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
+    temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size(unit='MB')[0]
+    M_d[0] -= post_pre_mem
+    M_d -= time_mult_times * temp_tensor_mem
+    M_d = M_d.astype(int)
+    M = M.astype(int)
     # omega
     # omega = assign_omega_constant(L, BITs)
     omega = assign_omega_uniform(L, BITs)

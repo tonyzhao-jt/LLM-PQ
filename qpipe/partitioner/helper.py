@@ -1,6 +1,17 @@
 from qllm.utils import ModelMemEstimator
 from ..cost_model import CommCostModel, LatCostModel
 
+
+def create_mem_estimator(b, s, n, config):
+    vocab_size = config.vocab_size
+    max_position_embeddings = config.max_position_embeddings
+    word_embed_proj_dim = config.word_embed_proj_dim
+    h1 = config.hidden_size
+    h2 = config.ffn_dim
+    model_mem_estimator = ModelMemEstimator(h1, h2, b, s, n, \
+                                            vocab_size=vocab_size, max_position_embeddings=max_position_embeddings, word_embed_proj_dim=word_embed_proj_dim)
+    return model_mem_estimator
+
 # helper, init parameters and cost models
 def init_parameters_and_cost_models(config, device_names=[]):
     # target model configuration
@@ -19,7 +30,7 @@ def init_parameters_and_cost_models(config, device_names=[]):
     T = [0,1] * num_hidden_layers
 
     # estimators
-    model_mem_estimator = ModelMemEstimator(h1, h2, b, s, n)
+    model_mem_estimator = create_mem_estimator(b, s, n, config)
     comm_size = (b * 1 * h1 * 2) / 1024 / 1024 # MB
 
     # cost models
@@ -55,6 +66,8 @@ def calculate_max_throughputs_and_lat(D, p_partition_result, p_bit_assign, \
     minmax_throughputs = 0
     max_rank = len(D)
     for d_rank, device_name in D.items():
+        if d_rank not in p_partition_result:
+            continue
         layers_start, layers_end = p_partition_result[d_rank]
         comp_time = 0
         # latency
@@ -65,7 +78,10 @@ def calculate_max_throughputs_and_lat(D, p_partition_result, p_bit_assign, \
                 comp_time += lat_cost_model.predict_with_hyper(device_name, shard, bit).item()
             else:
                 lat = lat_cost_model.predict_with_profiled(device_name, shard, bit)
-                comp_time += lat
+                try:
+                    comp_time += lat
+                except:
+                    import pdb; pdb.set_trace()
         # communication
         next_rank = (d_rank + 1) % max_rank
         t_comm = comm_cost_model.predict_comm_time(d_rank, next_rank, comm_size)

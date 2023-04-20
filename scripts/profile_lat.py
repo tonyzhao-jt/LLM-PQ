@@ -80,7 +80,7 @@ if __name__ == '__main__':
             mem_all = mem_weight + mem_kv + mem_embedding
             # not available for pandas < 1.3.5
             # check pandas version to select which code piece
-            if pd.__version__ >= '1.3.5':
+            if pd.__version__ > '1.3.5':
                 df = df._append({'shard': shard, 'h1': h1, 'h2': h2, \
                             'bit': str(bit), 'batch_size': bz, 'input_seq_length': input_seq_length, \
                             'past_seq_length': past_seq_length + i, 'lat_avg': lat_avg, \

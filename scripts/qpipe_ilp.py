@@ -26,6 +26,7 @@ from qpipe.partitioner.helper import (
 from qpipe.cost_model import price as price_model
 
 unit = qpipe._globals.MEM_UNIT
+time_mult_times = qpipe._globals.TIME_MULT_TIMES
 
 # device configuration
 device_names = ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']
@@ -50,12 +51,12 @@ num_hidden_layers = len(T) // 2
 # predicted_cost = lat_cost_model.predict(device, shard, b, i, h1, h2, bit)
 
 if use_profiler_prediction:
-    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts')
+    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts/lat_profiled_result')
 
 file_name = 'qpipe_result.pkl' 
 result_file_name = 'qpipe_result.txt'
 available_bits = [2, 4, 8, '8:tc', '8:tc-li', 16] # we now can do hardware-aware quantization with 8:tc and 8:tc-li
-
+# available_bits = [2, 4, 8, 16] # cutlass causes illegal memory error for 8:tc and 8:tc-li
 
 def get_mem_available_devices(T, D, allocation_schemes, bit_assignment):
     if len(allocation_schemes) == 0: return D 
@@ -110,11 +111,14 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta):
     for j in range(N):
         prob += pulp.lpSum([z[(i, j, b)] * M[i][b] for i in range(L) for b in range(B)]) <= M_d[j]
         prob += pulp.lpSum([z[(i, j, b)] * l[i][j][b] for i in range(L) for b in range(B)]) <= LAT[j]
-        prob += LAT[j] >= comm[j]
         prob += LAT_max >= LAT[j]
+        prob += LAT_max >= comm[j]
     
     # Solve the problem
-    prob.solve(pulp.apis.PULP_CBC_CMD(msg=0))
+    # prob.solve(pulp.apis.PULP_CBC_CMD())
+    solver = pulp.GUROBI(msg=True, threads=0, timeLimit=100, MIPGap=0.01)
+    # solver = pulp.GUROBI(msg=True)
+    prob.solve(solver)
 
     # Print the solution status
     print("Status:", pulp.LpStatus[prob.status])
@@ -156,6 +160,7 @@ def solve_ilp_pulp_with_price(L, N, BITs, M, M_d, l, omega, comm, price, theta, 
     for j in range(N):
         prob += pulp.lpSum([z[(i, j, b)] * M[i][b] for i in range(L) for b in range(B)]) <= M_d[j]
         prob += pulp.lpSum([z[(i, j, b)] * l[i][j][b] for i in range(L) for b in range(B)]) <= LAT[j]
+        # for device on 0: master, need to add the embedding time
         prob += LAT[j] >= comm[j]
         prob += LAT_max >= LAT[j]
 
@@ -259,6 +264,15 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
     mem_bits_vector = get_mem_with_layer_bit_pair(BITs)
     M = np.tile(mem_bits_vector, (L, 1))
 
+    # reduce the embedding size on device 0 for M_d
+    post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
+    temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size(unit='MB')[0]
+    temp_emb_mem = model_mem_estimator.calculate_temp_embedding_tensor_size(unit='MB')[0]
+    M_d[0] -= post_pre_mem
+    M_d -= time_mult_times * temp_tensor_mem # torch may not release the tensor immediately, modify the 2 to ensure won't oom
+    M_d = M_d.astype(int)
+    M = M.astype(int)
+
     # latency
     l = np.zeros((L, N, len(BITs)))
     lat_device_bits_matrix = get_latency_with_layer_device_bit_pair(D, BITs)
@@ -271,7 +285,7 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
     # comm
     comm = get_comm(D)
 
-    # hyperparameters
+    # control the concern for latency
     theta = 0.1
 
     # price related
@@ -304,6 +318,8 @@ available_chunks = lat_cost_model.get_available_chunks()
 #         best_chunk = chunk
 #         best_bs = bs
 #         print("update best result: ", max_throughput, best_chunk, best_bs)
+# timeLimit=100
+# MIPGap=0.001
 L, N, BITs, M_d, M, l, omega, comm, price, theta, gamma = prepare_for_ilp(num_hidden_layers, D, available_bits)
 result, obj_value = solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta)
 # result, obj_value, device_used = solve_ilp_pulp_with_price(L, N, BITs, M, M_d, l, omega, comm, price, theta, gamma)

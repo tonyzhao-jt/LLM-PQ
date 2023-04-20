@@ -8,7 +8,6 @@ from qpipe.partitioner.utils import (
 from qpipe.cost_model import (
     estimate_all_layer_mem, estimate_single_layer_mem
 )
-from qpipe.partitioner.helper import init_parameters_and_cost_models
 import qpipe
 import pickle
 
@@ -45,7 +44,7 @@ config = model_cards[model_size]
 model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names)
 
 if use_profiler_prediction:
-    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts')
+    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts/lat_profiled_result')
 
 # comm_cost_model.print_model_available_keys()
 # comm_cost = comm_cost_model.predict_comm_time(start_rank=0, end_rank=1, data_size=get_size_cpu(x, unit='MB'))
@@ -118,6 +117,8 @@ def pipeedge_partition(T, D):
                     # i to j-1 layer. e.g. i=0, j=1, then only layer 0
                     i_to_j_mem = sum(estimate_single_layer_mem(model_mem_estimator, T[k], bit_assignment[k]) for k in range(i, j))
                     device_mem = get_single_device_mem_constraints(D[u])
+                    if u == 0:
+                        device_mem -= post_pre_mem # first layer need to load data and embedding
 
                     if i_to_j_mem > device_mem:
                         # print(f"i_to_j_mem: {i_to_j_mem}, device_mem: {device_mem}")
@@ -174,5 +175,6 @@ def interpret_result(T):
     # times: 196608, answer: 0.34138697775843824, adaptive
     return final_result
 
+post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
 pipeedge_partition(T, D)
 interpret_result(T)

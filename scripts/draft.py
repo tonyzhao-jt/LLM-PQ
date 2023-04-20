@@ -1,8 +1,11 @@
-def find_pairs(n):
-    pairs = []
-    for i in range(1, n+1):
-        if n % i == 0:
-            pairs.append((i, n//i))
-    return pairs
+import torch 
+import torch.nn as nn
 
-print(find_pairs(16))
+a = torch.rand(1,2,3, device='cuda:0')
+b = torch.rand(1,2,3,device='cuda:0' )
+
+@torch.cuda.synchronize()
+def add(a, b):
+    return a + b
+
+c = add(a,b)

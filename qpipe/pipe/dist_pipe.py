@@ -40,16 +40,30 @@ class DistRpcPipelineStage:
         # here should me a nn.Sequential Module, and a function that set quantization bit should be here
         # self._module = module_cls(*module_args, **module_kwargs)
         # TODO: replace with single node strategy
-        self.is_master = stage_id==0
+        self.stage_device = torch.device(f"cuda:{local_rank}")
+
+        self.shard_config = module_kwargs['shard_config']
+        self.infer_configs = module_kwargs['infer_configs']
         self._module = module_cls
+
+        self.is_master = stage_id==0
         self._next_rref = None
         self._results_to = None
         self._results_cb = None
 
         self.stage_id = stage_id
         self.comm_type = comm_type
-        self.stage_device = torch.device(f"cuda:{local_rank}")
-        self.module_to(self.stage_device)
+    
+    def init_module(self):
+        shard_config = self.shard_config
+        infer_configs = self.infer_configs
+        self._module._shard_model_current(shard_config, self.stage_device)
+        print(f"Stage {self.stage_id} module sharded")
+        bs, prompt_length, num_tokens_to_generate, request_numbers = infer_configs
+        for request_id in range(request_numbers):
+            self._module.init_kv_cache(bs, prompt_length, num_tokens_to_generate, request_id)
+        print(f"Stage {self.stage_id} kv initialized")
+        self._module.eval()
 
     def module_to(self, *args, **kwargs) -> None:
         """Wrap the module's `nn.Module.to` method (`device` can be be a `str`)."""
@@ -175,7 +189,7 @@ def _dist_rpc_pipeline_stage_factory(*args, **kwargs) -> DistRpcPipelineStage:
     return stage
 
 
-def dist_rpc_pipeline_factory(model_cpu: nn.Module, sharding_strategy: dict, device_mesh, results_to: int,
+def dist_rpc_pipeline_factory(model_cpu: nn.Module, sharding_strategy: dict, device_mesh, infer_configs, results_to: int,
                               results_cb: Callable[[Any], None]) -> DistRpcPipeline:
     """Get an RPC pipeline instance."""
     stage_rrefs = []
@@ -185,8 +199,6 @@ def dist_rpc_pipeline_factory(model_cpu: nn.Module, sharding_strategy: dict, dev
     stage_numbers = len(dst_rank_order)
 
     for dst_rank, stage_cfgs in sharding_strategy.items():
-        print(f"Rank {dst_rank} module sharded")
-        sharded_model = model_cpu.shard_model(sharding_strategy, dst_rank)
         neighbor_ranks = get_neighbor_ranks(device_mesh, dst_rank)
         if stage_cnt == stage_numbers - 1:
             next_rank = 0 # meet the last one
@@ -198,16 +210,20 @@ def dist_rpc_pipeline_factory(model_cpu: nn.Module, sharding_strategy: dict, dev
             else:
                 comm_type = "cpu"
         dst_local_rank = neighbor_ranks.index(dst_rank)
-        
         logger.info(f"Stage {stage_cnt} on {dst_rank} with {comm_type} communication to {next_rank}, local rank {dst_local_rank}")
 
-        rref = rpc.remote(dst_rank, _dist_rpc_pipeline_stage_factory, args=(sharded_model,),
-                           kwargs={'stage_id': stage_cnt, 'module_kwargs': {}, \
+        rref = rpc.remote(dst_rank, _dist_rpc_pipeline_stage_factory, args=(model_cpu,),
+                           kwargs={'stage_id': stage_cnt, 'module_kwargs': {'infer_configs':infer_configs, 'shard_config': sharding_strategy[dst_rank]}, \
                                    'local_rank':dst_local_rank, 'comm_type': comm_type})
         rpc.remote(dst_rank, logger.info,
                     args=("======= Stage %d on %d =======", stage_cnt, dst_rank))
         stage_cnt += 1
         stage_rrefs.append(rref)
+    
+    # start module init
+    logger.info("start remote module init")
+    futs = [ref.rpc_async().init_module() for ref in stage_rrefs]
+    torch.futures.wait_all(futs)
 
     logger.info("results to rank %d", results_to)
     logger.info("results callback %s", results_cb.__name__ if results_cb else "None")

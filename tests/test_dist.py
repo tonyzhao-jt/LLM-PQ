@@ -1,15 +1,18 @@
 import os
 import torch 
-from torch.distributed import rpc 
+import torch.nn as nn
 import torch.distributed as dist
+from torch.distributed import rpc 
+
 from time import perf_counter
+import copy 
+
+
 from transformers import AutoTokenizer
-from transformers import LogitsProcessorList
+from transformers import LogitsProcessorList, StoppingCriteriaList
 
 from qllm.models.OPT import OPTForCausalLMSeq
-from qllm.utils import (
-    to_device_recursive,
-)
+from qllm.utils import to_device_recursive
 
 from qpipe import (
     init_random_seed,
@@ -27,7 +30,6 @@ from qpipe.pipe import (
     dist_rpc_pipeline_factory
 )
 
-import lptorch
 
 results_counter = ThreadSafeCounter()
 
@@ -69,6 +71,7 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             sharding_strategy = get_shard_strategy(model_cpu)
         else:
             model_cpu._verify_shard_strategy(sharding_strategy)  
+
     set_device_map(rank, device_mesh, sharding_strategy, rpc_opts)
     # based on the schedule and device_mesh, determines the communication type
     with DistRpcContext((f"worker{rank}",),
@@ -78,7 +81,6 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
                        ) as dist_ctx:
         
         if rank == 0: # master, process some data
-            
             # create pipeline
             pipeline = dist_rpc_pipeline_factory(model_cpu, sharding_strategy, device_mesh, infer_configs, rank, handle_results)
             master_pipeline = pipeline
@@ -109,16 +111,13 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
 
                 return to_device_recursive(request_token, 'cpu')
             
-
             data_chunks = []
             for i in range(request_numbers):
                 batched_ids = tokenizer.batch_encode_plus(fetch_prompts(bs_token, prompt_length), padding='max_length', max_length=prompt_length, return_tensors="pt")
                 request_token = prepare_input(batched_ids, request_id=i)
                 data_chunks.append(request_token)
-            # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
             batch_size = len(data_chunks)
             print("pipeline")
-
             # fake the data chunks for test
             # TODO: make it real chunks
             # data_chunks = torch.chunk(sample_data_batch, chunk, dim=0)
@@ -130,7 +129,6 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             # logger.info("Waiting for other params")
             # other_decode_params = sched_q.get()
             # assign the decode params to the corresponding refs
-        
         rpc.api._barrier([f"worker{i}" for i in range(dist_cfg.world_size)])
         if rank == data_rank:
             # pipeline.rpc_register_forward_hook(forward_hook_to_cpu)
@@ -146,7 +144,6 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             results_counter.wait_gte(start_count + len(data_chunks) * num_tokens_to_generate)
             tok_data = perf_counter()
             latency = tok_data - tik_data
-            # throughput  = bs * N(token generated) / latency
             throughput = batch_size / latency
             token_throughput = throughput * num_tokens_to_generate
             logger.info("Latency is %f, throughput is %f", latency, throughput)
@@ -155,12 +152,17 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             for request_id, input_id_finally in request_input_ids.items():
                 ouput_token = tokenizer.batch_decode(input_id_finally, skip_special_tokens=True)
                 print(f"request {request_id} output token {ouput_token}")
-
+    print("pipeline")
+    print("rank", rank, \
+          "torch.cuda.memory_cached: %fGB"%(torch.cuda.memory_cached(0)/1024/1024/1024), \
+            "torch.cuda.memory_allocated: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024), \
+            "torch.cuda.memory_reserved: %fGB"%(torch.cuda.memory_reserved(0)/1024/1024/1024), \
+            "torch.cuda.max_memory_allocated: %fGB"%(torch.cuda.max_memory_allocated(0)/1024/1024/1024))
 
 import pickle
 from qllm.models.OPT.opt import model_cards
+import lptorch
 if __name__ == '__main__':
-
     # load the LLM from QLLM
     # with weight
     # loaded_llm_cpu = OPTForCausalLMSeq.from_pretrained("facebook/opt-350m", torch_dtype=torch.float16)
@@ -171,71 +173,73 @@ if __name__ == '__main__':
     # os.environ["GLOO_SOCKET_IFNAME"] = "enp225s0"
     # export GLOO_SOCKET_IFNAME=enp225s0
     os.environ['SET_DECODERS_META'] = "1"
-
-    model_size = "175b"
+    # # test case
+    model_size = "350m"
     config = model_cards[model_size]
+    tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
     loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
-    loaded_llm_cpu.eval() # eval mode
-    tokenizer = AutoTokenizer.from_pretrained("facebook/opt-66b")
+    loaded_llm_cpu.eval()
 
     caliber = lptorch.inner_caliber
     caliber.set_fake() 
     caliber.load_fake_calib_data(f'fake_calib_{model_size}.pkl')
 
-    # # test case
-    # model_size = "350M"
-    # config = model_cards[model_size]
-    # tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
-    # loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
-
-    # sharding_strategy = {
-    #     0: {},
-    #     1: {
-    #         0: {'shard': [0, 1], 'bits': [16, 16]},
-    #         1: {'shard': [0, 1], 'bits': [16, 16]},
-    #         2: {'shard': [0, 1], 'bits': [16, 16]},
-    #         3: {'shard': [0, 1], 'bits': [16, 16]},
-    #         4: {'shard': [0, 1], 'bits': [16, 16]},
-    #         5: {'shard': [0, 1], 'bits': [16, 8]},
-    #         6: {'shard': [0, 1], 'bits': [16, 16]},
-    #         7: {'shard': [0, 1], 'bits': [16, 16]},
-    #         8: {'shard': [0], 'bits': [16]},
-    #     },
-    #     2: {
-    #         8: {'shard': [1], 'bits': [16]},
-    #         9: {'shard': [0,1], 'bits': [16, 16]},
-    #         10: {'shard': [0,1], 'bits': [8, 16]},
-    #         11: {'shard': [0,1], 'bits': [16, 16]},
-    #         # 350M
-    #         12: {'shard': [0,1], 'bits': [16, 16]},
-    #         13: {'shard': [0,1], 'bits': [16, 16]},
-    #         14: {'shard': [0,1], 'bits': [8, 16]},
-    #         15: {'shard': [0,1], 'bits': [16, 16]},
-    #         16: {'shard': [0,1], 'bits': [16, 16]},
-    #         17: {'shard': [0,1], 'bits': [16, 8]},
-    #     },
-    #     3:{
-    #         18: {'shard': [0,1], 'bits': [16, 16]},
-    #         19: {'shard': [0,1], 'bits': [16, 16]},
-    #         20: {'shard': [0,1], 'bits': [8, 16]},
-    #         21: {'shard': [0,1], 'bits': [16, 16]},
-    #         22: {'shard': [0,1], 'bits': [16, 16]}, 
-    #         23: {'shard': [0,1], 'bits': [16, 16]},
-    #     }
-    # }
+ 
     # control the token generation
     num_tokens_to_generate = 50
     prompt_length = 512
     bs_token = 4 # how many sentence in a batch
     request_numbers = 4 # how many requests
-    chunk = 1
 
     infer_configs = (bs_token, prompt_length, num_tokens_to_generate, request_numbers)
 
-    pipeline_strategy_result_qpipe = "pipeline_strategy_result_qpipe.pkl"
-    pipeline_strategy_result_qpipe = f'/workspace/qpipe/scripts/baseline_result/{pipeline_strategy_result_qpipe}'
-    sharding_strategy = pickle.load(open(pipeline_strategy_result_qpipe, "rb"))
+
+    # two node test
+    sharding_strategy = {
+        0: {},
+        1: {
+            0: {'shard': [0, 1], 'bits': [8, 16]},
+            1: {'shard': [0, 1], 'bits': [16, 8]},
+        },
+        2: {
+            2: {'shard': [0, 1], 'bits': [8, '8:tc-li']},
+            3: {'shard': [0, 1], 'bits': [4, 2]},
+            4: {'shard': [0, 1], 'bits': [8, '8:tc-li']},
+        },
+        3: {
+            5: {'shard': [0, 1], 'bits': [16, 8]},
+            6: {'shard': [0, 1], 'bits': [8, 8]},
+        },
+        4: {
+            7: {'shard': [0, 1], 'bits': [4, 16]},
+            8: {'shard': [0], 'bits': [16]},
+        },
+        5: {
+            8: {'shard': [1], 'bits': [16]},
+            9: {'shard': [0,1], 'bits': [16, 2]},
+            10: {'shard': [0,1], 'bits': [8, 16]},
+            11: {'shard': [0,1], 'bits': [8, 16]},
+        },
+        6:{
+            12: {'shard': [0,1], 'bits': [16, 16]},
+            13: {'shard': [0,1], 'bits': [16, 8]},
+            14: {'shard': [0,1], 'bits': [8, 16]},
+            15: {'shard': [0,1], 'bits': [16, 16]},
+            16: {'shard': [0,1], 'bits': [8, 16]},
+            17: {'shard': [0,1], 'bits': [16, 8]},
+        },
+        7:{
+            18: {'shard': [0,1], 'bits': [16, 16]},
+            19: {'shard': [0,1], 'bits': [16, 16]},
+            20: {'shard': [0,1], 'bits': [8, 16]},
+            21: {'shard': [0,1], 'bits': [16, 16]},
+            22: {'shard': [0,1], 'bits': [16, 16]}, 
+            23: {'shard': [0,1], 'bits': [16, 16]},
+        }
+    }
     loaded_llm_cpu._verify_shard_strategy(sharding_strategy)
+
+
 
     # init env
     seed = 42
@@ -245,45 +249,8 @@ if __name__ == '__main__':
     # Customize the sharding strategy
     # Rank: {decoder_layer_idx: {"shard": [shard_idx, ...], "bits":[qbit, ...]}}
     # single device test
-
-    # # two node test
-    # sharding_strategy = {
-    #     0: {},
-    #     1: {
-    #         0: {'shard': [0, 1], 'bits': [16, 16]},
-    #         1: {'shard': [0, 1], 'bits': [16, 16]},
-    #         2: {'shard': [0, 1], 'bits': [16, 16]},
-    #         3: {'shard': [0, 1], 'bits': [16, 16]},
-    #         4: {'shard': [0, 1], 'bits': [16, 16]},
-    #         5: {'shard': [0, 1], 'bits': [16, 8]},
-    #         6: {'shard': [0, 1], 'bits': [16, 16]},
-    #         7: {'shard': [0, 1], 'bits': [16, 16]},
-    #         8: {'shard': [0], 'bits': [16]},
-    #     },
-    #     5: {
-    #         8: {'shard': [1], 'bits': [16]},
-    #         9: {'shard': [0,1], 'bits': [16, 16]},
-    #         10: {'shard': [0,1], 'bits': [8, 16]},
-    #         11: {'shard': [0,1], 'bits': [16, 16]},
-    #         # 350M
-    #         12: {'shard': [0,1], 'bits': [16, 16]},
-    #         13: {'shard': [0,1], 'bits': [16, 16]},
-    #         14: {'shard': [0,1], 'bits': [8, 16]},
-    #         15: {'shard': [0,1], 'bits': [16, 16]},
-    #         16: {'shard': [0,1], 'bits': [16, 16]},
-    #         17: {'shard': [0,1], 'bits': [16, 8]},
-    #     },
-    #     6:{
-    #         18: {'shard': [0,1], 'bits': [16, 16]},
-    #         19: {'shard': [0,1], 'bits': [16, 16]},
-    #         20: {'shard': [0,1], 'bits': [8, 16]},
-    #         21: {'shard': [0,1], 'bits': [16, 16]},
-    #         22: {'shard': [0,1], 'bits': [16, 16]}, 
-    #         23: {'shard': [0,1], 'bits': [16, 16]},
-    #     }
-    # }
     if dist_cfg.rank == 0:
         model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
         model_pre_and_post = model_pre_and_post.cuda()
 
-    run_pipeline_rpc(loaded_llm_cpu, tokenizer, dist_cfg, chunk=chunk, sharding_strategy=sharding_strategy)
+    run_pipeline_rpc(loaded_llm_cpu, tokenizer, dist_cfg, chunk=2, sharding_strategy=sharding_strategy)
