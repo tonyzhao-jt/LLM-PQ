@@ -116,7 +116,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta):
     
     # Solve the problem
     # prob.solve(pulp.apis.PULP_CBC_CMD())
-    solver = pulp.GUROBI(msg=True, threads=0, timeLimit=100, MIPGap=0.002)
+    solver = pulp.GUROBI(msg=True, threads=0, timeLimit=100, MIPGap=0.003)
     # solver = pulp.GUROBI(msg=True)
     prob.solve(solver)
 
@@ -272,7 +272,7 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
     M_d -= time_mult_times * temp_tensor_mem # torch may not release the tensor immediately, modify the 2 to ensure won't oom
     M_d = M_d.astype(int)
     M = M.astype(int)
-    
+
     # latency
     l = np.zeros((L, N, len(BITs)))
     lat_device_bits_matrix = get_latency_with_layer_device_bit_pair(D, BITs)

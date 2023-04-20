@@ -63,6 +63,7 @@ class DistRpcPipelineStage:
         for request_id in range(request_numbers):
             self._module.init_kv_cache(bs, prompt_length, num_tokens_to_generate, request_id)
         print(f"Stage {self.stage_id} kv initialized")
+        self._module.eval()
 
     def module_to(self, *args, **kwargs) -> None:
         """Wrap the module's `nn.Module.to` method (`device` can be be a `str`)."""

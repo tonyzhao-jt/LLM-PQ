@@ -153,8 +153,11 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
                 ouput_token = tokenizer.batch_decode(input_id_finally, skip_special_tokens=True)
                 print(f"request {request_id} output token {ouput_token}")
     print("pipeline")
-    print("torch.cuda.memory_allocated: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024))
-    print("torch.cuda.memory_reserved: %fGB"%(torch.cuda.memory_reserved(0)/1024/1024/1024))
+    print("rank", rank, \
+          "torch.cuda.memory_cached: %fGB"%(torch.cuda.memory_cached(0)/1024/1024/1024), \
+            "torch.cuda.memory_allocated: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024), \
+            "torch.cuda.memory_reserved: %fGB"%(torch.cuda.memory_reserved(0)/1024/1024/1024), \
+            "torch.cuda.max_memory_allocated: %fGB"%(torch.cuda.max_memory_allocated(0)/1024/1024/1024))
 
 import pickle
 from qllm.models.OPT.opt import model_cards
@@ -181,8 +184,6 @@ if __name__ == '__main__':
     caliber.set_fake() 
     caliber.load_fake_calib_data(f'fake_calib_{model_size}.pkl')
 
-    model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
-    model_pre_and_post = model_pre_and_post.cuda()
  
     # control the token generation
     num_tokens_to_generate = 100
@@ -201,8 +202,8 @@ if __name__ == '__main__':
             1: {'shard': [0, 1], 'bits': [16, '8:tc']},
         },
         2: {
-            2: {'shard': [0, 1], 'bits': [16, 16]},
-            3: {'shard': [0, 1], 'bits': ['8:tc', 16]},
+            2: {'shard': [0, 1], 'bits': ["8:tc", "8:tc-li"]},
+            3: {'shard': [0, 1], 'bits': ["8:tc-li",16]},
             4: {'shard': [0, 1], 'bits': [16, 16]},
         },
         3: {
@@ -248,5 +249,8 @@ if __name__ == '__main__':
     # Customize the sharding strategy
     # Rank: {decoder_layer_idx: {"shard": [shard_idx, ...], "bits":[qbit, ...]}}
     # single device test
+    if dist_cfg.rank == 0:
+        model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
+        model_pre_and_post = model_pre_and_post.cuda()
 
     run_pipeline_rpc(loaded_llm_cpu, tokenizer, dist_cfg, chunk=2, sharding_strategy=sharding_strategy)

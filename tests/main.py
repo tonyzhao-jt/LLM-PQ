@@ -78,9 +78,7 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
                        ) as dist_ctx:
         
         if rank == 0: # master, process some data
-            # move model to gpu
-            model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
-            model_pre_and_post = model_pre_and_post.cuda()
+            
             # create pipeline
             pipeline = dist_rpc_pipeline_factory(model_cpu, sharding_strategy, device_mesh, infer_configs, rank, handle_results)
             master_pipeline = pipeline
@@ -120,8 +118,7 @@ def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=
             # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
             batch_size = len(data_chunks)
             print("pipeline")
-            print("torch.cuda.memory_allocated: %fGB"%(torch.cuda.memory_allocated(0)/1024/1024/1024))
-            print("torch.cuda.memory_reserved: %fGB"%(torch.cuda.memory_reserved(0)/1024/1024/1024))
+
             # fake the data chunks for test
             # TODO: make it real chunks
             # data_chunks = torch.chunk(sample_data_batch, chunk, dim=0)
@@ -231,6 +228,7 @@ if __name__ == '__main__':
     prompt_length = 512
     bs_token = 16 # how many sentence in a batch
     request_numbers = 1 # how many requests
+    chunk = 1
 
     infer_configs = (bs_token, prompt_length, num_tokens_to_generate, request_numbers)
 
@@ -284,4 +282,8 @@ if __name__ == '__main__':
     #         23: {'shard': [0,1], 'bits': [16, 16]},
     #     }
     # }
-    run_pipeline_rpc(loaded_llm_cpu, tokenizer, dist_cfg, chunk=2, sharding_strategy=sharding_strategy)
+    if dist_cfg.rank == 0:
+        model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
+        model_pre_and_post = model_pre_and_post.cuda()
+
+    run_pipeline_rpc(loaded_llm_cpu, tokenizer, dist_cfg, chunk=chunk, sharding_strategy=sharding_strategy)
