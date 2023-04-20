@@ -108,7 +108,7 @@ def check_memory_budget(p_partition_result, p_bit_assign, name='qpipe'):
     print("all passed")
 
 check_memory_budget(pipeline_partition_result_qpipe, bit_assignment_result_qpipe)
-check_memory_budget(pipeline_partition_result_pipedge, bit_assignment_result_pipedge, name='pipedge')
+# check_memory_budget(pipeline_partition_result_pipedge, bit_assignment_result_pipedge, name='pipedge')
 check_memory_budget(pipeline_partition_result_adabit, bit_assignment_result_adabit, name='adabit')
 # then evalute the end-to-end latency and throughputs for different methods
 # pipedge

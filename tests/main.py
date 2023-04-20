@@ -224,10 +224,10 @@ if __name__ == '__main__':
     #     }
     # }
     # control the token generation
-    num_tokens_to_generate = 100
+    num_tokens_to_generate = 50
     prompt_length = 512
-    bs_token = 16 # how many sentence in a batch
-    request_numbers = 1 # how many requests
+    bs_token = 4 # how many sentence in a batch
+    request_numbers = 4 # how many requests
     chunk = 1
 
     infer_configs = (bs_token, prompt_length, num_tokens_to_generate, request_numbers)

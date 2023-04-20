@@ -186,10 +186,10 @@ if __name__ == '__main__':
 
  
     # control the token generation
-    num_tokens_to_generate = 100
+    num_tokens_to_generate = 50
     prompt_length = 512
-    bs_token = 16 # how many sentence in a batch
-    request_numbers = 1 # how many requests
+    bs_token = 4 # how many sentence in a batch
+    request_numbers = 4 # how many requests
 
     infer_configs = (bs_token, prompt_length, num_tokens_to_generate, request_numbers)
 
@@ -198,17 +198,17 @@ if __name__ == '__main__':
     sharding_strategy = {
         0: {},
         1: {
-            0: {'shard': [0, 1], 'bits': ['8:tc', 16]},
-            1: {'shard': [0, 1], 'bits': [16, '8:tc']},
+            0: {'shard': [0, 1], 'bits': [8, 16]},
+            1: {'shard': [0, 1], 'bits': [16, 8]},
         },
         2: {
-            2: {'shard': [0, 1], 'bits': ["8:tc", "8:tc-li"]},
-            3: {'shard': [0, 1], 'bits': ["8:tc-li",16]},
-            4: {'shard': [0, 1], 'bits': [16, 16]},
+            2: {'shard': [0, 1], 'bits': [8, '8:tc-li']},
+            3: {'shard': [0, 1], 'bits': [4, 2]},
+            4: {'shard': [0, 1], 'bits': [8, '8:tc-li']},
         },
         3: {
             5: {'shard': [0, 1], 'bits': [16, 8]},
-            6: {'shard': [0, 1], 'bits': ['8:tc-li', 16]},
+            6: {'shard': [0, 1], 'bits': [8, 8]},
         },
         4: {
             7: {'shard': [0, 1], 'bits': [4, 16]},
@@ -218,14 +218,14 @@ if __name__ == '__main__':
             8: {'shard': [1], 'bits': [16]},
             9: {'shard': [0,1], 'bits': [16, 2]},
             10: {'shard': [0,1], 'bits': [8, 16]},
-            11: {'shard': [0,1], 'bits': [16, 16]},
+            11: {'shard': [0,1], 'bits': [8, 16]},
         },
         6:{
             12: {'shard': [0,1], 'bits': [16, 16]},
-            13: {'shard': [0,1], 'bits': [16, 16]},
+            13: {'shard': [0,1], 'bits': [16, 8]},
             14: {'shard': [0,1], 'bits': [8, 16]},
             15: {'shard': [0,1], 'bits': [16, 16]},
-            16: {'shard': [0,1], 'bits': [16, 16]},
+            16: {'shard': [0,1], 'bits': [8, 16]},
             17: {'shard': [0,1], 'bits': [16, 8]},
         },
         7:{

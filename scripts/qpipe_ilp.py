@@ -56,7 +56,7 @@ if use_profiler_prediction:
 file_name = 'qpipe_result.pkl' 
 result_file_name = 'qpipe_result.txt'
 available_bits = [2, 4, 8, '8:tc', '8:tc-li', 16] # we now can do hardware-aware quantization with 8:tc and 8:tc-li
-
+# available_bits = [2, 4, 8, 16] # cutlass causes illegal memory error for 8:tc and 8:tc-li
 
 def get_mem_available_devices(T, D, allocation_schemes, bit_assignment):
     if len(allocation_schemes) == 0: return D 
@@ -116,7 +116,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta):
     
     # Solve the problem
     # prob.solve(pulp.apis.PULP_CBC_CMD())
-    solver = pulp.GUROBI(msg=True, threads=0, timeLimit=100, MIPGap=0.003)
+    solver = pulp.GUROBI(msg=True, threads=0, timeLimit=100, MIPGap=0.01)
     # solver = pulp.GUROBI(msg=True)
     prob.solve(solver)
 
