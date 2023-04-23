@@ -75,27 +75,28 @@ def find_pairs(n):
     return pairs
 
 class LatCostModel:
-    def __init__(self, lat_cost_model_folder, device_names) -> None:
-        assert os.path.exists(lat_cost_model_folder), f"Folder {lat_cost_model_folder} does not exist."
+    def __init__(self, device_names=[], lat_cost_model_folder=None) -> None:
         self.device_names = device_names
-        self.cost_model = {}
-        # for each device, load the cost model
-        for device_name in device_names:
-            self.cost_model[device_name] = {}
-            self_attn_cost_model_name = f"{device_name}_{0}"
-            ffn_cost_model_name = f"{device_name}_{1}"
-            for file in os.listdir(lat_cost_model_folder):
-                file_path = os.path.join(lat_cost_model_folder, file)
-                if 'lat_model' in file and file.endswith('.pkl') and device_name in file:
-                    if self_attn_cost_model_name in file:
-                        with open(file_path, 'rb') as f:
-                            self.cost_model[device_name][0] = pickle.load(f)
-                    elif ffn_cost_model_name in file:
-                        with open(file_path, 'rb') as f:
-                            self.cost_model[device_name][1] = pickle.load(f)
-        # make sure that each device has two cost model
-        for device_name in device_names:
-            assert len(self.cost_model[device_name]) == 2, f"Cannot find cost model for {device_name}"
+        if lat_cost_model_folder is not None: # use ana predictor
+            assert os.path.exists(lat_cost_model_folder), f"Folder {lat_cost_model_folder} does not exist."
+            self.cost_model = {}
+            # for each device, load the cost model
+            for device_name in device_names:
+                self.cost_model[device_name] = {}
+                self_attn_cost_model_name = f"{device_name}_{0}"
+                ffn_cost_model_name = f"{device_name}_{1}"
+                for file in os.listdir(lat_cost_model_folder):
+                    file_path = os.path.join(lat_cost_model_folder, file)
+                    if 'lat_model' in file and file.endswith('.pkl') and device_name in file:
+                        if self_attn_cost_model_name in file:
+                            with open(file_path, 'rb') as f:
+                                self.cost_model[device_name][0] = pickle.load(f)
+                        elif ffn_cost_model_name in file:
+                            with open(file_path, 'rb') as f:
+                                self.cost_model[device_name][1] = pickle.load(f)
+            # make sure that each device has two cost model
+            for device_name in device_names:
+                assert len(self.cost_model[device_name]) == 2, f"Cannot find cost model for {device_name}"
 
         self.has_hypers = False
         self.has_profiled = False

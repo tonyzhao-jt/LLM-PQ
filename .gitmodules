@@ -1,3 +1,6 @@
 [submodule "3rd_party/QLLM"]
 	path = 3rd_party/QLLM
 	url = https://github.com/SpringWave1/QLLM.git
+[submodule "3rd_party/gptq"]
+	path = 3rd_party/gptq
+	url = https://github.com/IST-DASLab/gptq.git

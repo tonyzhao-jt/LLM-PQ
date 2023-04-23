@@ -13,18 +13,17 @@ def create_mem_estimator(b, s, n, config):
     return model_mem_estimator
 
 # helper, init parameters and cost models
-def init_parameters_and_cost_models(config, device_names=[]):
+def init_parameters_and_cost_models(config, device_names=[], cost_model_store_path=None, \
+                                     global_bz=16, micro_bz=4, prompt_length=512, num_token_to_generate=100):
     # target model configuration
     h1 = config.hidden_size
     h2 = config.ffn_dim
     num_hidden_layers = config.num_hidden_layers # decoder layer numbers
 
-    # micro_batch_size
-    b = 16
-    # set the prompt sequence length
-    s = 512
-    # set the number of generated tokens
-    n = 100
+    b = global_bz
+    s = prompt_length
+    n = num_token_to_generate
+    micro_b = micro_bz
 
     # T equals to num_hidden_layers, 0,1
     T = [0,1] * num_hidden_layers
@@ -34,13 +33,12 @@ def init_parameters_and_cost_models(config, device_names=[]):
     comm_size = (b * 1 * h1 * 2) / 1024 / 1024 # MB
 
     # cost models
-    cost_model_store_path = '/workspace/qpipe/scripts/lat_cost_model'
     comm_cost_model = CommCostModel(comm_cost_model_folder='/workspace/qpipe/scripts/comm_cost_model/')
     if len(device_names) == 0:
         lat_cost_model = None
     else:
-        lat_cost_model = LatCostModel(cost_model_store_path, device_names)
-        lat_cost_model.register_hyper_params(b, s+n, h1, h2)
+        lat_cost_model = LatCostModel(device_names, lat_cost_model_folder=cost_model_store_path)
+        lat_cost_model.register_hyper_params(micro_b, s+n, h1, h2)
     return model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size
 
 
@@ -89,3 +87,29 @@ def calculate_max_throughputs_and_lat(D, p_partition_result, p_bit_assign, \
         minmax_throughputs = max(minmax_throughputs, comp_time, t_comm)
         e2e_lat += max(comp_time, t_comm)
     return minmax_throughputs, e2e_lat
+
+
+from .utils import (
+    create_device_mesh_grid,
+)
+
+def get_device_info(device_names, device_numbers):
+    device_info = [f'{device_name}_{device_numbers[idx]}' for idx, device_name in enumerate(device_names)]
+    device_info = '_'.join(device_info)
+    return device_info
+
+# help create device mesh
+def create_device_mesh_and_mem(device_names, device_numbers):
+    device_rank = []
+    start_rank = 0
+    for i in range(len(device_numbers)):
+        device_rank.append(start_rank)
+        start_rank += device_numbers[i]
+
+    # create device mesh
+    device_mesh = {device_rank[i]: [device_numbers[i], device_names[i]] for i in range(len(device_numbers))}
+
+    D = create_device_mesh_grid(device_mesh)
+    max_device_mem = get_device_mesh_overall_mem_constraints(D)
+    return D, max_device_mem
+

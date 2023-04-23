@@ -27,8 +27,8 @@ def assign_omega_uniform(L, BITs):
     for l_idx in range(omega.shape[0]):
         for b_idx, bit_pair in enumerate(BITs):
             self_attn, ffn = bit_pair
-            attn_omega = omega_dict[self_attn] * np.random.uniform(0, 1)
-            ffn_omega = omega_dict[ffn] * np.random.uniform(0, 1)
+            attn_omega = omega_dict[self_attn] + np.random.uniform(0, 1)
+            ffn_omega = omega_dict[ffn] + np.random.uniform(0, 1)
             omega_layer_bitpair = attn_omega + ffn_omega
             omega[l_idx, b_idx] = omega_layer_bitpair
     return omega
@@ -47,8 +47,8 @@ def assign_omega_constant(L, BITs):
     for l_idx in range(omega.shape[0]):
         for b_idx, bit_pair in enumerate(BITs):
             self_attn, ffn = bit_pair
-            attn_omega = omega_dict[self_attn] * np.random.uniform(0, 1)
-            ffn_omega = omega_dict[ffn] * np.random.uniform(0, 1)
+            attn_omega = omega_dict[self_attn] + np.random.uniform(0, 1)
+            ffn_omega = omega_dict[ffn] + np.random.uniform(0, 1)
             omega_layer_bitpair = attn_omega + ffn_omega
             omega[l_idx, b_idx] = omega_layer_bitpair
     return omega

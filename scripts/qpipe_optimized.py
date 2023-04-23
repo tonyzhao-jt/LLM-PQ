@@ -1,52 +1,60 @@
-# qllm libs
+# qpipe algorithm has a hyper parameter theta to determine the concern for the precision
+# higher theta means more concern for the precision, lower theta means more concern for the latency/throughput
 from qllm.models.OPT.opt import model_cards
-# qpipe libs
-import qpipe
 from qpipe.partitioner.indicator import (
     assign_omega_uniform
 )
 from qpipe.partitioner.utils import (
+    create_device_mesh_grid,
     interpret_ilp_result_i_j_b
 )
+
 from qpipe.cost_model import (
     estimate_single_layer_mem
 )
-from qpipe.cost_model import price as price_model
+
+import qpipe
+import pickle
+import numpy as np 
 from qpipe.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
-    create_device_mesh_and_mem,
+    calculate_max_throughputs_and_lat
 )
 
-# default libs
-import pickle
-import os 
-import numpy as np 
-
-# setup ilp configs
-import pulp
-import gurobipy as gp
-env = gp.Env(empty=True)
-env.setParam('WLSACCESSID',"1b28dca7-337e-4811-b346-01087e09cd64")
-env.setParam('WLSSECRET', "629520bd-a114-45d7-b828-bfc5235c198d")
-env.setParam('LICENSEID', 965996)
-env.start()
-
-import argparse
-parser = argparse.ArgumentParser()
-parser.add_argument('--model_size', type=str, required=True)
-parser.add_argument('--device_names',  nargs='+', type=str, required=True)
-parser.add_argument('--device_numbers',  nargs='+', type=int, required=True)
-args = parser.parse_args()
+from qpipe.cost_model import price as price_model
 
 unit = qpipe._globals.MEM_UNIT
 time_mult_times = qpipe._globals.TIME_MULT_TIMES
-# model size
-model_size = args.model_size # '66b'
-device_names = args.device_names # ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']
-device_numbers = args.device_numbers # [2, 3]
-assert len(device_names) == len(device_numbers), "device_names and device_numbers should have the same length"
 
+# device configuration
+device_names = ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']
+# device mesh
+device_mesh = {
+    0: [4, device_names[1]], # start rank, numbers, device_type
+    4: [4, device_names[0]],
+}
+
+D = create_device_mesh_grid(device_mesh)
+
+use_profiler_prediction = True
+
+# target model configuration
+model_size = '175b'
+config = model_cards[model_size]
+model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names)
+num_hidden_layers = len(T) // 2
+# comm_cost_model.print_model_available_keys()
+# comm_cost = comm_cost_model.predict_comm_time(start_rank=0, end_rank=1, data_size=get_size_cpu(x, unit='MB'))
+# predicted_cost = lat_cost_model.predict(device, shard, b, i, h1, h2, bit)
+
+if use_profiler_prediction:
+    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts/lat_profiled_result')
+
+file_name = 'qpipe_result.pkl' 
+result_file_name = 'qpipe_result.txt'
+available_bits = [2, 4, 8, '8:tc', '8:tc-li', 16] # we now can do hardware-aware quantization with 8:tc and 8:tc-li
+# available_bits = [2, 4, 8, 16] # cutlass causes illegal memory error for 8:tc and 8:tc-li
 
 def get_mem_available_devices(T, D, allocation_schemes, bit_assignment):
     if len(allocation_schemes) == 0: return D 
@@ -72,7 +80,13 @@ def get_mem_available_devices(T, D, allocation_schemes, bit_assignment):
                 available_devices[rank] = device_mem - est_mem_usage[rank]
     return available_devices
 
-
+import pulp
+import gurobipy as gp
+env = gp.Env(empty=True)
+env.setParam('WLSACCESSID',"1b28dca7-337e-4811-b346-01087e09cd64")
+env.setParam('WLSSECRET', "629520bd-a114-45d7-b828-bfc5235c198d")
+env.setParam('LICENSEID', 965996)
+env.start()
 
 def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta):
     prob = pulp.LpProblem("max Latency Minimization Problem", pulp.LpMinimize)
@@ -279,37 +293,31 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
     for i in range(N):
         price[i] = price_model.get_price(D[i])
     return L, N, BITs, M_d, M, l, omega, comm, price, theta, gamma
-
-'''
-    Initiailization
-'''
-from qpipe.partitioner import gen_config
-# generation configs
-global_bz = gen_config.global_bz
-micro_bz = gen_config.micro_bz
-s = gen_config.s
-n = gen_config.n
-
-config = model_cards[model_size]
-D, max_device_mem = create_device_mesh_and_mem(device_names, device_numbers)
-# max_device_mem can be used to check whether OOM or not
-use_profiler_prediction = True
-# target model configuration
-cost_model_store_path = None # initialize the cost model
-model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, cost_model_store_path, \
-                                                                                                     global_bz, micro_bz, s, n)
-num_hidden_layers = len(T) // 2
-num_devices = len(D)
-
-if use_profiler_prediction:
-    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts/lat_profiled_result')
-
-available_bits = [2, 3, 4, 8, '8:tc', '8:tc-li', 16] # we now can do hardware-aware quantization with 8:tc and 8:tc-li
-
-file_name = 'qpipe_result.pkl' 
-result_file_name = 'qpipe_result.txt'
-
-
+    
+# solve_ilp(L, N, BITs, M, M_d, l, omega, comm, theta)
+# add chunk searching
+available_chunks = lat_cost_model.get_available_chunks()
+# test chunk spliting.
+# max_throughput = 0
+# for chunk in available_chunks: # chunk with number of chunks and bs
+#     num_chunks, bs = chunk
+#     lat_cost_model.change_bs(bs) # change lat cost model is enough, maximum memory won't change.
+#     L, N, BITs, M_d, M, l, omega, comm, theta = prepare_for_ilp(num_hidden_layers, D, available_bits)
+#     result, obj_value = solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta)
+#     result = interpret_ilp_result_i_j_b(result, available_bits)
+#     partition_result, bit_assignment = result['partition_result'], result['bit_assignment']
+#     minmax_throughputs, e2e_lat = calculate_max_throughputs_and_lat(D, partition_result, bit_assignment, \
+#                                       lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size)
+#     minmax_throughputs = bs * minmax_throughputs
+#     # the final throughput should be bs/obj_value
+#     if minmax_throughputs > max_throughput:
+#         max_throughput = minmax_throughputs
+#         best_result = result
+#         best_chunk = chunk
+#         best_bs = bs
+#         print("update best result: ", max_throughput, best_chunk, best_bs)
+# timeLimit=100
+# MIPGap=0.001
 L, N, BITs, M_d, M, l, omega, comm, price, theta, gamma = prepare_for_ilp(num_hidden_layers, D, available_bits)
 result, obj_value = solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta)
 # result, obj_value, device_used = solve_ilp_pulp_with_price(L, N, BITs, M, M_d, l, omega, comm, price, theta, gamma)
@@ -317,7 +325,7 @@ result = interpret_ilp_result_i_j_b(result, available_bits)
 # store result
 result_file_name = 'qpipe_ilp_result.pkl'
 root_path = './baseline_result'
-
+import os 
 result_path = os.path.join(root_path, result_file_name)
 with open(result_path, 'wb') as f:
     pickle.dump(result, f)
