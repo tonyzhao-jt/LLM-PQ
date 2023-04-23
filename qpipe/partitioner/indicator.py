@@ -18,6 +18,7 @@ def assign_omega_uniform(L, BITs):
     # suppose to collect from the model
     omega_dict = {
         2: 6.4,
+        3: 4.8,
         4: 1.6,
         8: 0.4,
         16: 0.1,
@@ -39,6 +40,7 @@ def assign_omega_constant(L, BITs):
     omega_dict = {
         2: 1,
         4: 1,
+        3: 1,
         8: 1,
         16: 1,
         '8:tc': 1,

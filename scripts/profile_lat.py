@@ -69,7 +69,7 @@ if __name__ == '__main__':
             i = generated_seq_length
             # check if the entry has been profiled
             if len(df[(df['shard'] == shard) & (df['h1'] == h1) & (df['h2'] == h2) & \
-                        (df['bit'] == str(bit)) & (df['batch_size'] == bz) & (df['input_seq_length'] == input_seq_length) & \
+                        (df['bit'].astype(str) == str(bit)) & (df['batch_size'] == bz) & (df['input_seq_length'] == input_seq_length) & \
                         (df['past_seq_length'] == past_seq_length + i)]) > 0:
                 print("Entry has been profiled, skip")
                 continue

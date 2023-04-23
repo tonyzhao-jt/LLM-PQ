@@ -1,11 +1,12 @@
+from qllm.models.OPT.opt import model_cards
+
+import qpipe 
 from qpipe.partitioner.indicator import (
     assign_omega_uniform,
-    assign_omega_constant
 )
 from qpipe.partitioner.utils import (
     assign_uniform_bit, 
     estimate_min_max_mem,
-    create_device_mesh_grid,
     interpret_ilp_result_i_j_b
 )
 
@@ -14,47 +15,23 @@ from qpipe.cost_model import (
     estimate_all_layer_mem
 )
 
-from qllm.models.OPT.opt import model_cards
-import numpy as np 
+from qpipe.utils import (
+    save_with_pickle
+)
+
 from qpipe.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
-    get_device_mesh_overall_mem_constraints,
-    
+    create_device_mesh_and_mem,
+    get_device_info
 )
 
-import argparse
-import qpipe
-parser = argparse.ArgumentParser()
-# parser.add_argument('--extra_mem_reduced', type=int, default=0)
-args = parser.parse_args()
+# default libs
+import pickle
+import os 
+import numpy as np 
 
-time_mult_times = qpipe._globals.TIME_MULT_TIMES
-
-# device configuration
-device_names = ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']
-# device mesh
-device_mesh = {
-    0: [4, device_names[1]], # start rank, numbers, device_type
-    4: [4, device_names[0]],
-}
-
-D = create_device_mesh_grid(device_mesh)
-max_device_mem = get_device_mesh_overall_mem_constraints(D)
-
-# read basic configuration from the model_cfg
-model_size = '175b'
-config = model_cards[model_size]
-model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names)
-
-# assign bits
-bit_map = {}
-assign_uniform_bit(T, 16, bit_map)
-initial_mem = estimate_all_layer_mem(model_mem_estimator, T, bit_map)
-max_model_mem, min_model_mem = estimate_min_max_mem(model_mem_estimator, T)
-
-hidden_layer_num = len(T) // 2
-
+# setup ilp configs
 import pulp
 import gurobipy as gp
 env = gp.Env(empty=True)
@@ -63,7 +40,22 @@ env.setParam('WLSSECRET', "629520bd-a114-45d7-b828-bfc5235c198d")
 env.setParam('LICENSEID', 965996)
 env.start()
 
-avaliable_solvers = pulp.list_solvers(onlyAvailable=True)
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('--model_size', type=str, required=True)
+parser.add_argument('--device_names',  nargs='+', type=str, required=True)
+parser.add_argument('--device_numbers',  nargs='+', type=int, required=True)
+args = parser.parse_args()
+
+unit = qpipe._globals.MEM_UNIT
+time_mult_times = qpipe._globals.TIME_MULT_TIMES
+# model size
+model_size = args.model_size # '66b'
+device_names = args.device_names # ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']
+device_numbers = args.device_numbers # [2, 3]
+
+assert len(device_names) == len(device_numbers), "device_names and device_numbers should have the same length"
+
 def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
     prob = pulp.LpProblem("max Latency Minimization Problem", pulp.LpMinimize)
     # Create a new PuLP model
@@ -85,6 +77,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
     
     # Solve the problem
     prob.solve(pulp.GUROBI(MIPGap=0.004))
+    # prob.solve(pulp.GUROBI())
     # prob.solve()
     # Print the solution status
     print("Status:", pulp.LpStatus[prob.status])
@@ -126,13 +119,48 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
     post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
     temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size(unit='MB')[0]
     M_d[0] -= post_pre_mem
-    M_d -= time_mult_times * temp_tensor_mem
-    M_d = M_d.astype(int)
-    M = M.astype(int)
+    M_d -= time_mult_times * temp_tensor_mem # torch may not release the tensor immediately, modify the 2 to ensure won't oom
+    M_d = np.floor(M_d).astype(int) # floor
+    M = np.ceil(M).astype(int) # ceil
     # omega
     # omega = assign_omega_constant(L, BITs)
     omega = assign_omega_uniform(L, BITs)
     return L, N, BITs, M_d, M, omega
+
+
+'''
+    Initiailization
+'''
+from qpipe.partitioner import gen_config
+# generation configs
+global_bz = gen_config.global_bz
+micro_bz = gen_config.micro_bz
+s = gen_config.s
+n = gen_config.n
+
+config = model_cards[model_size]
+D, max_device_mem = create_device_mesh_and_mem(device_names, device_numbers)
+# max_device_mem can be used to check whether OOM or not
+use_profiler_prediction = True
+# target model configuration
+device_info = get_device_info(device_names, device_numbers)
+comm_cost_model_dir = f'/workspace/qpipe/scripts/comm_cost_model/{device_info}'
+cost_model_store_path = None # initialize the cost model
+model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, cost_model_store_path, \
+                                                                                                     global_bz, micro_bz, s, n, \
+                                                                                                    comm_cost_model_folder=comm_cost_model_dir)
+
+# assign bits
+bit_map = {}
+assign_uniform_bit(T, 16, bit_map)
+initial_mem = estimate_all_layer_mem(model_mem_estimator, T, bit_map)
+max_model_mem, min_model_mem = estimate_min_max_mem(model_mem_estimator, T)
+
+num_hidden_layers = len(T) // 2
+num_devices = len(D)
+
+# set available bits
+available_bits = [2, 4, 8, 16]
 
 if min_model_mem > max_device_mem:
     print(f"Minimum model size {min_model_mem} is larger than device memory {max_device_mem}")
@@ -153,14 +181,12 @@ else:
         # each layer has a quantization sensitivity indicator i_(l,b) for different quantization bits b
         # the total memory requirement of the model is the sum of the memory requirement of each layer M(l,b)
         # try to minimize the sum of indicator i_(l,b) while satisfying the memory constraint
-        available_bits = [2, 4, 8, 16]
-        L, N, BITs, M_d, M, omega = prepare_for_ilp(hidden_layer_num, D, available_bits)
+        L, N, BITs, M_d, M, omega = prepare_for_ilp(num_hidden_layers, D, available_bits)
         result = solve_ilp_pulp(L, N, BITs, M, M_d, omega)
         result = interpret_ilp_result_i_j_b(result, available_bits)
-        # store result
-        result_file_name = 'bit_adaptive.pkl'
-        root_path = './baseline_result'
-        import os, pickle 
-        result_path = os.path.join(root_path, result_file_name)
-        with open(result_path, 'wb') as f:
-            pickle.dump(result, f)
+
+        device_info = get_device_info(device_names, device_numbers)
+
+        file_name = f'adaptive_bit_' + model_size + '_' + device_info + '.pkl'
+        folder = '/workspace/qpipe/scripts/strategy'
+        save_with_pickle(result, file_name, folder)

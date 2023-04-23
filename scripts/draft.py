@@ -1,23 +1,48 @@
-import numpy as np
-from scipy.stats import zipf
 
-# Define the weight matrix
-num_rows = 10
-num_cols = 5
-weights = np.random.randn(num_rows, num_cols)
+from qpipe.partitioner.utils import (
+    assign_uniform_bit, 
+)
 
-# Define the Zipf distribution
-alpha = 2.0
-zipf_dist = zipf(alpha, num_rows)
+from qpipe.partitioner.helper import (
+    init_parameters_and_cost_models, 
+    get_single_device_mem_constraints,
+    create_device_mesh_and_mem,
+    get_device_info
+)
 
-# Compute the probabilities for each row index
-probs = zipf_dist.pmf(np.arange(num_rows))
-print(probs)
+from qpipe.partitioner.helper import (
+    init_parameters_and_cost_models, 
+    get_slo
+)
+from qllm.models.OPT.opt import model_cards
 
-probs /= probs.sum()
+# help input the config
+from qpipe.partitioner import gen_config
+# generation configs
+global_bz = gen_config.global_bz
+micro_bz = gen_config.micro_bz
+s = gen_config.s
+n = gen_config.n
 
-# Sample a row index from the probability distribution
-row_idx = np.random.choice(np.arange(num_rows), p=probs)
+model_size = '30b'
 
-# Return the sampled row from the weight matrix
-sampled_row = weights[row_idx, :]
+device_names = ['Tesla_T4', 'Tesla_V100-SXM2-32GB']
+device_numbers = [1, 2]
+
+config = model_cards[model_size]
+D, max_device_mem = create_device_mesh_and_mem(device_names, device_numbers)
+# max_device_mem can be used to check whether OOM or not
+use_profiler_prediction = True
+# target model configuration
+cost_model_store_path = None # initialize the cost model
+model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, cost_model_store_path, \
+                                                                                                     global_bz, micro_bz, s, n)
+num_hidden_layers = len(T) // 2
+num_devices = len(D)
+
+if use_profiler_prediction:
+    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts/lat_profiled_result')
+
+SLO_lat = get_slo(model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size, \
+            device_names, use_profiler_prediction=True, verbose=True)
+print(SLO_lat)

@@ -1,71 +1,47 @@
 
+# qllm libs
 from qllm.models.OPT.opt import model_cards
-from qpipe.partitioner.utils import (
-    assign_uniform_bit, 
-    create_device_mesh_grid
-)
-
-from qpipe.cost_model import (
-    estimate_all_layer_mem, estimate_single_layer_mem
-)
+# qpipe libs
 import qpipe
-import pickle
-
+from qpipe.partitioner.utils import (
+    assign_uniform_bit
+)
+from qpipe.cost_model import (
+    estimate_single_layer_mem,
+    estimate_all_layer_mem
+)
 from qpipe.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
-    get_device_mesh_overall_mem_constraints
+    create_device_mesh_and_mem,
+    get_device_info,
+    get_slo
 )
+
+from qpipe.utils import (
+    save_with_pickle
+)
+
+# default libs
+import pickle
 
 import argparse
 parser = argparse.ArgumentParser()
-parser.add_argument('--model_size', type=str, default='175b')
-# adaptive 
+parser.add_argument('--model_size', type=str, required=True)
+parser.add_argument('--device_names',  nargs='+', type=str, required=True)
+parser.add_argument('--device_numbers',  nargs='+', type=int, required=True)
+# adaptive
 parser.add_argument('--adaptive', action='store_true')
 args = parser.parse_args()
 
 unit = qpipe._globals.MEM_UNIT
+time_mult_times = qpipe._globals.TIME_MULT_TIMES
 
-# device configuration
-device_names = ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']
-# device mesh
-device_mesh = {
-    0: [4, device_names[1]], # start rank, numbers, device_type
-    4: [4, device_names[0]],
-}
-
-D = create_device_mesh_grid(device_mesh)
-max_device_mem = get_device_mesh_overall_mem_constraints(D)
-
-use_profiler_prediction = True
-
-model_size = '175b'
-config = model_cards[model_size]
-model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names)
-
-if use_profiler_prediction:
-    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts/lat_profiled_result')
-
-# comm_cost_model.print_model_available_keys()
-# comm_cost = comm_cost_model.predict_comm_time(start_rank=0, end_rank=1, data_size=get_size_cpu(x, unit='MB'))
-# predicted_cost = lat_cost_model.predict(device, shard, b, i, h1, h2, bit)
-# load bit assignment
-adaptive = args.adaptive
-if adaptive:
-    with open('./baseline_result/bit_adaptive.pkl', 'rb') as f:
-        result = pickle.load(f)
-        bit_assignment = result['bit_assignment']
-else:
-    bit_assignment = {}
-    assign_uniform_bit(T, 8, bit_assignment)
-
-mem_required = estimate_all_layer_mem(model_mem_estimator, T, bit_assignment)
-assert mem_required < max_device_mem, "The model is too large to fit in the device mesh"
-print(f"Total memory required: {mem_required / 1024 } GB", "available memory: ", max_device_mem / 1024, "GB")
-# user input here, press any to continue
-input("Press any key to continue")
-file_name = 'pipedge_result.pkl' if not adaptive else 'pipedge_result_adaptive.pkl'
-result_file_name = 'pipedge_result.pkl' if not adaptive else 'pipedge_result_adaptive.pkl'
+# model size
+model_size = args.model_size # '66b'
+device_names = args.device_names # ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']
+device_numbers = args.device_numbers # [2, 3]
+assert len(device_names) == len(device_numbers), "device_names and device_numbers should have the same length"
 
 import itertools
 def transition_equation(h, i, S, j, u, T, D):
@@ -167,14 +143,63 @@ def interpret_result(T):
         j_idx = i
     # sort by rank number
     final_result = {k: final_result[k] for k in sorted(final_result)}
-    print(final_result)
-    import json
-    with open(f'./baseline_result/{result_file_name}', 'w') as f:
-        json.dump(final_result, f)
-        print("result saved to ", f'./baseline_result/{result_file_name}')
-    # times: 196608, answer: 0.34138697775843824, adaptive
     return final_result
+
+'''
+    Initiailization
+'''
+from qpipe.partitioner import gen_config
+# generation configs
+global_bz = gen_config.global_bz
+micro_bz = gen_config.micro_bz
+s = gen_config.s
+n = gen_config.n
+
+config = model_cards[model_size]
+D, max_device_mem = create_device_mesh_and_mem(device_names, device_numbers)
+# max_device_mem can be used to check whether OOM or not
+use_profiler_prediction = True
+# target model configuration
+device_info = get_device_info(device_names, device_numbers)
+comm_cost_model_dir = f'/workspace/qpipe/scripts/comm_cost_model/{device_info}'
+cost_model_store_path = None # initialize the cost model
+model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, cost_model_store_path, \
+                                                                                                     global_bz, micro_bz, s, n, \
+                                                                                                    comm_cost_model_folder=comm_cost_model_dir)
+num_hidden_layers = len(T) // 2
+num_devices = len(D)
+
+if use_profiler_prediction:
+    lat_cost_model.update_profiled_result('/workspace/qpipe/scripts/lat_profiled_result')
+
+available_bits = [2, 3, 4, 8, 16] # pipe edge cannot
+
+adaptive = args.adaptive
+if adaptive:
+    with open('./baseline_result/bit_adaptive.pkl', 'rb') as f:
+        result = pickle.load(f)
+        bit_assignment = result['bit_assignment']
+else:
+    bit_assignment = {}
+    assign_uniform_bit(T, 8, bit_assignment)
+
+mem_required = estimate_all_layer_mem(model_mem_estimator, T, bit_assignment)
+assert mem_required < max_device_mem, "The model is too large to fit in the device mesh"
+print(f"Total memory required: {mem_required / 1024 } GB", "available memory: ", max_device_mem / 1024, "GB")
+# user input here, press any to continue
+input("Press any key to continue")
+file_name = 'pipedge_result.pkl' if not adaptive else 'pipedge_result_adaptive.pkl'
+result_file_name = 'pipedge_result.pkl' if not adaptive else 'pipedge_result_adaptive.pkl'
 
 post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
 pipeedge_partition(T, D)
-interpret_result(T)
+result = interpret_result(T)
+result = {'bit_assignment': bit_assignment, 'partition_result': result}
+# save the result
+device_info = get_device_info(device_names, device_numbers)
+if adaptive:
+    file_name = f'pipeedge_adaptive_' + model_size + '_' + device_info + '.pkl'
+else:
+    file_name = f'pipeedge_' + model_size + '_' + device_info + '.pkl'
+folder = '/workspace/qpipe/scripts/strategy'
+save_with_pickle(result, file_name, folder)

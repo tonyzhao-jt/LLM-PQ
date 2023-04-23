@@ -16,11 +16,15 @@ from qpipe.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
     create_device_mesh_and_mem,
+    get_device_info,
+    get_slo
+)
+
+from qpipe.utils import (
+    save_with_pickle
 )
 
 # default libs
-import pickle
-import os 
 import numpy as np 
 
 # setup ilp configs
@@ -37,14 +41,18 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--model_size', type=str, required=True)
 parser.add_argument('--device_names',  nargs='+', type=str, required=True)
 parser.add_argument('--device_numbers',  nargs='+', type=int, required=True)
+parser.add_argument('--SLO-aware',  action='store_true', help='add slo into constraints')
 args = parser.parse_args()
 
 unit = qpipe._globals.MEM_UNIT
 time_mult_times = qpipe._globals.TIME_MULT_TIMES
+slo_rate = qpipe._globals.SLO_RATE
+
 # model size
 model_size = args.model_size # '66b'
 device_names = args.device_names # ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']
 device_numbers = args.device_numbers # [2, 3]
+slo_aware = args.SLO_aware
 assert len(device_names) == len(device_numbers), "device_names and device_numbers should have the same length"
 
 
@@ -74,7 +82,7 @@ def get_mem_available_devices(T, D, allocation_schemes, bit_assignment):
 
 
 
-def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta):
+def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, SLO_lat=None):
     prob = pulp.LpProblem("max Latency Minimization Problem", pulp.LpMinimize)
     # Create a new PuLP model
     B = len(BITs)
@@ -98,9 +106,14 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta):
         prob += LAT_max >= LAT[j]
         prob += LAT_max >= comm[j]
     
+    # add constraint of SLORate if exits
+    if SLO_lat is not None:
+        prob += LAT_max <= SLO_lat
+    
     # Solve the problem
     # prob.solve(pulp.apis.PULP_CBC_CMD())
-    solver = pulp.GUROBI(msg=True, threads=0, timeLimit=100, MIPGap=0.01)
+    solver = pulp.GUROBI(msg=True, threads=0, timeLimit=100, MIPGap=0.003)
+    # solver = pulp.GUROBI()
     # solver = pulp.GUROBI(msg=True)
     prob.solve(solver)
 
@@ -254,8 +267,8 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
     temp_emb_mem = model_mem_estimator.calculate_temp_embedding_tensor_size(unit='MB')[0]
     M_d[0] -= post_pre_mem
     M_d -= time_mult_times * temp_tensor_mem # torch may not release the tensor immediately, modify the 2 to ensure won't oom
-    M_d = M_d.astype(int)
-    M = M.astype(int)
+    M_d = np.floor(M_d).astype(int) # floor
+    M = np.ceil(M).astype(int) # ceil
 
     # latency
     l = np.zeros((L, N, len(BITs)))
@@ -295,9 +308,12 @@ D, max_device_mem = create_device_mesh_and_mem(device_names, device_numbers)
 # max_device_mem can be used to check whether OOM or not
 use_profiler_prediction = True
 # target model configuration
+device_info = get_device_info(device_names, device_numbers)
+comm_cost_model_dir = f'/workspace/qpipe/scripts/comm_cost_model/{device_info}'
 cost_model_store_path = None # initialize the cost model
 model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, cost_model_store_path, \
-                                                                                                     global_bz, micro_bz, s, n)
+                                                                                                     global_bz, micro_bz, s, n, \
+                                                                                                    comm_cost_model_folder=comm_cost_model_dir)
 num_hidden_layers = len(T) // 2
 num_devices = len(D)
 
@@ -306,18 +322,22 @@ if use_profiler_prediction:
 
 available_bits = [2, 3, 4, 8, '8:tc', '8:tc-li', 16] # we now can do hardware-aware quantization with 8:tc and 8:tc-li
 
-file_name = 'qpipe_result.pkl' 
-result_file_name = 'qpipe_result.txt'
-
+if slo_aware:
+    SLO_lat = get_slo(model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size, \
+                device_names, use_profiler_prediction=True, verbose=True)
+else:
+    SLO_lat = None
 
 L, N, BITs, M_d, M, l, omega, comm, price, theta, gamma = prepare_for_ilp(num_hidden_layers, D, available_bits)
-result, obj_value = solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta)
+
+result, obj_value = solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, SLO_lat=SLO_lat)
 # result, obj_value, device_used = solve_ilp_pulp_with_price(L, N, BITs, M, M_d, l, omega, comm, price, theta, gamma)
 result = interpret_ilp_result_i_j_b(result, available_bits)
-# store result
-result_file_name = 'qpipe_ilp_result.pkl'
-root_path = './baseline_result'
 
-result_path = os.path.join(root_path, result_file_name)
-with open(result_path, 'wb') as f:
-    pickle.dump(result, f)
+# save the result
+if slo_aware:
+    file_name = f'adaqpipe_slo_' + model_size + '_' + device_info + '.pkl'
+else:
+    file_name = f'adaqpipe_' + model_size + '_' + device_info + '.pkl'
+folder = '/workspace/qpipe/scripts/strategy'
+save_with_pickle(result, file_name, folder)

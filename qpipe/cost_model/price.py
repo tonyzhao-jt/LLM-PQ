@@ -1,7 +1,8 @@
 price_table = {
+    'A100-SXM-80GB': 8.80,
     "NVIDIA_A100-SXM4-40GB": 2.34, # use reserved price
     "TESLA_V100-SXM2-32GB": 1.86,
-    "T4": 0.70,
+    "TESLA_T4": 0.70,
 }
 
 def get_price(device_name):

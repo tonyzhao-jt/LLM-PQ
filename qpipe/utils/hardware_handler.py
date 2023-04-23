@@ -126,6 +126,10 @@ def query_cc(gpu_model):
     ''' Query the compute capability '''
     return DEVICE_INFO[short_device_name(gpu_model)]["capability"]
 
+def query_bandwidth(gpu_model):
+    ''' Query the bandwidth '''
+    return DEVICE_INFO[short_device_name(gpu_model)]["BW_GB_per_s"]
+
 def query_core_num(gpu_model, dtype, tensor_core_or_not):
     ''' Return the number of arithmetic units corresponding to `dtype` '''
     if dtype == "fp16":

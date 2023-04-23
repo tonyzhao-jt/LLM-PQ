@@ -21,7 +21,8 @@ from qpipe.cost_model import (
 )
 
 from qpipe.utils import (
-    save_with_pickle
+    save_with_pickle,
+    partition_a_into_b_bins
 )
 
 import argparse
@@ -58,25 +59,23 @@ def generate_uniform_partition(bit=8):
         return None
     # create the partition
     # partition T accoding to layer numbers
-    remainders = num_hidden_layers % num_devices
-    ideal_allocation = num_hidden_layers // num_devices
-    allocation = []
-    for i in range(num_devices):
-        allocation.append(ideal_allocation) 
-    for i in range(remainders):
-        allocation[i] += 1 
+    allocation = partition_a_into_b_bins(num_hidden_layers, num_devices)
     # allocate
     partition_result = {}
     idx_start = 0
     for d_rank, device_name in D.items():
-        partition_result[d_rank] = [idx_start, idx_start + allocation[d_rank]]
-        idx_start += allocation[d_rank]
+        layer_nums = allocation[d_rank] * 2
+        partition_result[d_rank] = [idx_start, idx_start + layer_nums]
+        idx_start += layer_nums
     
     return {
         'partition_result': partition_result,
         'bit_assignment': bit_assignment,
     }
 
+'''
+    Initialization
+'''
 # help input the config
 from qpipe.partitioner import gen_config
 # generation configs
@@ -90,24 +89,22 @@ D, max_device_mem = create_device_mesh_and_mem(device_names, device_numbers)
 # max_device_mem can be used to check whether OOM or not
 use_profiler_prediction = True
 # target model configuration
+device_info = get_device_info(device_names, device_numbers)
+comm_cost_model_dir = f'/workspace/qpipe/scripts/comm_cost_model/{device_info}'
 cost_model_store_path = None # initialize the cost model
 model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, cost_model_store_path, \
-                                                                                                     global_bz, micro_bz, s, n)
+                                                                                                     global_bz, micro_bz, s, n, \
+                                                                                                    comm_cost_model_folder=comm_cost_model_dir)
 num_hidden_layers = len(T) // 2
 num_devices = len(D)
 
 if use_profiler_prediction:
     lat_cost_model.update_profiled_result('/workspace/qpipe/scripts/lat_profiled_result')
 
-available_bits = [2, 4, 8, 16] # cutlass causes illegal memory error for 8:tc and 8:tc-li
+available_bits = [2, 3, 4, 8, 16] # cutlass causes illegal memory error for 8:tc and 8:tc-li
 
-res_int8 = generate_uniform_partition(8)
-res_fp16 = generate_uniform_partition(16)
-
-device_info = get_device_info(device_names, device_numbers)
-
-file_name_int8 = f'uniform_partition_bit_{8}_' + model_size + '_' + device_info + '.pkl'
-file_name_fp16 = f'uniform_partition_bit_{16}_' + model_size + '_' + device_info + '.pkl'
-folder = '/workspace/qpipe/scripts/strategy'
-save_with_pickle(res_int8, file_name_int8, folder)
-save_with_pickle(res_fp16, file_name_fp16, folder)
+for bit in available_bits:
+    res_bit = generate_uniform_partition(bit)
+    file_name_bit = f'uniform_partition_bit_{bit}_' + model_size + '_' + device_info + '.pkl'
+    folder = '/workspace/qpipe/scripts/strategy'
+    save_with_pickle(res_bit, file_name_bit, folder)
