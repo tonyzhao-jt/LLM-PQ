@@ -175,96 +175,31 @@ def run_pipeline_p2p(loaded_llm_cpu, tokenizer, dist_cfg, sharding_strategy=None
 if __name__ == '__main__':
     # set env
     os.environ['SET_DECODERS_META'] = "1"
-    # test case
-    model_size = "350m"
-    config = model_cards[model_size]
-    tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
-    loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
 
-    # load the fake calibration data
+    model_size = "175b"
+    config = model_cards[model_size]
+    loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
+    loaded_llm_cpu.eval() # eval mode
+    tokenizer = AutoTokenizer.from_pretrained("facebook/opt-66b")
+
     caliber = lptorch.inner_caliber
     caliber.set_fake() 
     caliber.load_fake_calib_data(f'fake_calib_{model_size}.pkl')
 
-    sharding_strategy = {
-        0: {},
-        1: {
-            0: {'shard': [0, 1], 'bits': [16, 16]},
-            1: {'shard': [0, 1], 'bits': [16, 16]},
-            2: {'shard': [0, 1], 'bits': [8, 16]},
-            3: {'shard': [0, 1], 'bits': [16, 16]},
-            4: {'shard': [0, 1], 'bits': [16, '8:tc-li']},
-            5: {'shard': [0, 1], 'bits': [16, 8]},
-            6: {'shard': [0, 1], 'bits': [16, 16]},
-            7: {'shard': [0, 1], 'bits': [16, 16]},
-            8: {'shard': [0], 'bits': [16]},
-        },
-        2: {
-            8: {'shard': [1], 'bits': [16]},
-            9: {'shard': [0,1], 'bits': [16, 8]},
-            10: {'shard': [0,1], 'bits': [8, 16]},
-            11: {'shard': [0,1], 'bits': [2, 16]},
-            # 350M
-            12: {'shard': [0,1], 'bits': [16, 16]},
-            13: {'shard': [0,1], 'bits': [16, 4]},
-            14: {'shard': [0,1], 'bits': [8, 16]},
-            15: {'shard': [0,1], 'bits': [16, 16]},
-            16: {'shard': [0,1], 'bits': [16, 8]},
-            17: {'shard': [0,1], 'bits': [16, 8]},
-        },
-        3:{
-            18: {'shard': [0,1], 'bits': [16, 16]},
-            19: {'shard': [0,1], 'bits': [16, 16]},
-            20: {'shard': [0,1], 'bits': [8, 16]},
-            21: {'shard': [0,1], 'bits': [4, 16]},
-            22: {'shard': [0,1], 'bits': [16, 16]}, 
-            23: {'shard': [0,1], 'bits': [16, 16]},
-        }
-    }
-
-    # sharding_strategy = {
-    #     0: {},
-    #     1: {
-    #         0: {'shard': [0, 1], 'bits': [16, 16]},
-    #         1: {'shard': [0, 1], 'bits': ['8:tc', 16]},
-    #         2: {'shard': [0, 1], 'bits': [16, 16]},
-    #         3: {'shard': [0, 1], 'bits': [8, '8:tc-li']},
-    #         4: {'shard': [0, 1], 'bits': [16, '8:tc']},
-    #         5: {'shard': [0, 1], 'bits': [16, 8]},
-    #         6: {'shard': [0, 1], 'bits': [16, 16]},
-    #         7: {'shard': [0, 1], 'bits': [16, 16]},
-    #         8: {'shard': [0], 'bits': [16]},
-    #     },
-    #     2: {
-    #         8: {'shard': [1], 'bits': [16]},
-    #         9: {'shard': [0,1], 'bits': [16, 8]},
-    #         10: {'shard': [0,1], 'bits': [8, 16]},
-    #         11: {'shard': [0,1], 'bits': [2, 16]},
-    #         # 350M
-    #         12: {'shard': [0,1], 'bits': [16, 16]},
-    #         13: {'shard': [0,1], 'bits': [16, 4]},
-    #         14: {'shard': [0,1], 'bits': [8, 16]},
-    #         15: {'shard': [0,1], 'bits': [16, 16]},
-    #         16: {'shard': [0,1], 'bits': [16, 8]},
-    #         17: {'shard': [0,1], 'bits': [16, 8]},
-    #     },
-    #     3:{
-    #         18: {'shard': [0,1], 'bits': [16, 16]},
-    #         19: {'shard': [0,1], 'bits': [16, 16]},
-    #         20: {'shard': [0,1], 'bits': [8, 16]},
-    #         21: {'shard': [0,1], 'bits': [4, 16]},
-    #         22: {'shard': [0,1], 'bits': [16, 16]}, 
-    #         23: {'shard': [0,1], 'bits': [16, 16]},
-    #     }
-    # }
+    
     # control the token generation
     num_tokens_to_generate = 100
     prompt_length = 512
-    bs_token = 32 # how many sentence in a batch
+    bs_token = 4 # how many sentence in a batch
     request_numbers = 4 # how many requests
 
-    infer_configs = (bs_token, prompt_length, num_tokens_to_generate, request_numbers)
+
+    pipeline_strategy_result_qpipe = "qpipe_Tesla_V100-SXM2-32GB_4_NVIDIA_A100-SXM4-40GB_4_final_strategy.pkl"
+    pipeline_strategy_result_qpipe = f'/workspace/qpipe/scripts/part_strategy/{pipeline_strategy_result_qpipe}'
+    sharding_strategy = pickle.load(open(pipeline_strategy_result_qpipe, "rb"))
     loaded_llm_cpu._verify_shard_strategy(sharding_strategy)
+
+    infer_configs = (bs_token, prompt_length, num_tokens_to_generate, request_numbers)
 
     # init env
     seed = 42

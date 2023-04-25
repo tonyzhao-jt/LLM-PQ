@@ -321,7 +321,7 @@ num_devices = len(D)
 if use_profiler_prediction:
     lat_cost_model.update_profiled_result('/workspace/qpipe/scripts/lat_profiled_result')
 
-available_bits = [2, 3, 4, 8, '8:tc', '8:tc-li', 16] # we now can do hardware-aware quantization with 8:tc and 8:tc-li
+available_bits = [2, 3, 4, 8, '8:tc-li', 16] # we now can do hardware-aware quantization with 8:tc and 8:tc-li
 
 if slo_aware:
     SLO_lat = get_slo(model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size, \

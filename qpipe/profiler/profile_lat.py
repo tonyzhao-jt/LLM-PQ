@@ -31,7 +31,7 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
     with torch.no_grad():
         decoder_layer(fake_input)
     caliber.remove_forward_hooks()
-
+ 
     # shard and verify the kernel
     decoder_layer = decoder_layer.to(torch.float16)  # need to first convert weight to fp16
     try:

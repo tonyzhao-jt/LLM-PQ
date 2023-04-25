@@ -50,6 +50,7 @@ from qpipe.partitioner import gen_config
 # generation configs
 global_bz = gen_config.global_bz
 micro_bz = gen_config.micro_bz
+chunk_size = global_bz // micro_bz
 s = gen_config.s
 n = gen_config.n
 
@@ -75,8 +76,8 @@ folder = '/workspace/qpipe/scripts/strategy'
 device_info = get_device_info(device_names, device_numbers)
 
 partition_bit_result_dict = {}
-target_test_strategies = ['qpipe', 'qpipe_slo', 'pipeedge', 'pipeedge_adaptive', 'adabit', 'uniform']
-# target_test_strategies = ['qpipe', 'adabit', 'uniform']
+# target_test_strategies = ['qpipe', 'qpipe_slo', 'pipeedge', 'pipeedge_adaptive', 'adabit', 'uniform']
+target_test_strategies = ['qpipe', 'adabit', 'uniform']
 
 '''
     PipeEdge Result
@@ -131,7 +132,7 @@ def check_memory_budget_single_device(device_rank, p_partition_result, p_bit_ass
     i, j = p_partition_result[device_rank]
     i_to_j_mem = sum(estimate_single_layer_mem(model_mem_estimator, T[k], p_bit_assign[k]) for k in range(i, j))
     device_mem = get_single_device_mem_constraints(device_name)
-    tmp_mem = model_mem_estimator.calculate_temp_tensor_size(unit='MB')[0]
+    tmp_mem = model_mem_estimator.calculate_temp_tensor_size(unit='MB')[0] / chunk_size
     device_mem -= time_mult_times * tmp_mem
     if device_rank == 0:
         post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
