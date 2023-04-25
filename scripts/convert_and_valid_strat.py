@@ -75,8 +75,8 @@ folder = '/workspace/qpipe/scripts/strategy'
 device_info = get_device_info(device_names, device_numbers)
 
 partition_bit_result_dict = {}
-# target_test_strategies = ['qpipe', 'qpipe_slo', 'pipeedge', 'pipeedge_adaptive', 'adabit', 'uniform']
-target_test_strategies = ['qpipe', 'adabit', 'uniform']
+target_test_strategies = ['qpipe', 'qpipe_slo', 'pipeedge', 'pipeedge_adaptive', 'adabit', 'uniform']
+# target_test_strategies = ['qpipe', 'adabit', 'uniform']
 
 '''
     PipeEdge Result
@@ -217,11 +217,10 @@ for name, val in partition_bit_result_dict.items():
     partition_result, bit_assignment = val['partition_result'], val['bit_assignment']
     # reinterpret result and calculte the latency
     partition_result, bit_assignment = reset_result_rank_index(partition_result, bit_assignment)
-
     result = calculate_max_throughputs_and_lat(D, partition_result, bit_assignment, \
                                                  lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size)
     log_result(result, name)
     final_partition_strategies = convert_to_qpipe_result2partitions(partition_result, bit_assignment)
-    final_result_file_name = f"{name}_final_strategy.pkl"
+    final_result_file_name = f"{name}_{device_info}_final_strategy.pkl"
     save_with_pickle(final_partition_strategies, final_result_file_name, partition_strategy_folder)
 

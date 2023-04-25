@@ -24,6 +24,7 @@ from qpipe.utils import (
 
 # default libs
 import pickle
+import os 
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -93,6 +94,8 @@ def pipeedge_partition(T, D):
                     # i to j-1 layer. e.g. i=0, j=1, then only layer 0
                     i_to_j_mem = sum(estimate_single_layer_mem(model_mem_estimator, T[k], bit_assignment[k]) for k in range(i, j))
                     device_mem = get_single_device_mem_constraints(D[u])
+                    temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size(unit='MB')[0] / chunk_size
+                    device_mem -= temp_tensor_mem
                     if u == 0:
                         device_mem -= post_pre_mem # first layer need to load data and embedding
 
@@ -152,6 +155,7 @@ from qpipe.partitioner import gen_config
 # generation configs
 global_bz = gen_config.global_bz
 micro_bz = gen_config.micro_bz
+chunk_size = global_bz // micro_bz
 s = gen_config.s
 n = gen_config.n
 
@@ -176,7 +180,10 @@ available_bits = [2, 3, 4, 8, 16] # pipe edge cannot
 
 adaptive = args.adaptive
 if adaptive:
-    with open('./baseline_result/bit_adaptive.pkl', 'rb') as f:
+    file_name = f'adaptive_bit_' + model_size + '_' + device_info + '.pkl'
+    folder = '/workspace/qpipe/scripts/strategy'
+    adapt_file = os.path.join(folder, file_name)
+    with open(adapt_file, 'rb') as f:
         result = pickle.load(f)
         bit_assignment = result['bit_assignment']
 else:

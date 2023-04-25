@@ -263,7 +263,7 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
 
     # reduce the embedding size on device 0 for M_d
     post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
-    temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size(unit='MB')[0]
+    temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size(unit='MB')[0] / chunk_size
     temp_emb_mem = model_mem_estimator.calculate_temp_embedding_tensor_size(unit='MB')[0]
     M_d[0] -= post_pre_mem
     M_d -= time_mult_times * temp_tensor_mem # torch may not release the tensor immediately, modify the 2 to ensure won't oom
@@ -300,6 +300,7 @@ from qpipe.partitioner import gen_config
 # generation configs
 global_bz = gen_config.global_bz
 micro_bz = gen_config.micro_bz
+chunk_size = global_bz // micro_bz
 s = gen_config.s
 n = gen_config.n
 

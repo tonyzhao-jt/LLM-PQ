@@ -27,4 +27,6 @@ class CommCostModel:
         model = self.cost_model[key]
         poly = np.poly1d(model)
         cost = poly(data_size)
-        return cost
+        # return cost in ms
+        # what i want is s
+        return cost / 1000

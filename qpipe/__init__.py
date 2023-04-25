@@ -1,5 +1,6 @@
 from . import logger
 from . import rpc 
+from . import p2p
 from . import pipe
 from . import thread
 from . import partitioner

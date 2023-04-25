@@ -1,0 +1,279 @@
+import os
+import pickle
+
+import torch 
+import torch.distributed as dist
+from time import perf_counter
+from transformers import AutoTokenizer
+from transformers import LogitsProcessorList
+
+import lptorch 
+
+from qllm.models.OPT import OPTForCausalLMSeq
+from qllm.utils import (
+    to_device_recursive
+)
+from qllm.models.OPT.opt import model_cards
+
+CMD_STOP = 0
+CMD_SCHED = 1
+
+from qpipe import (
+    init_random_seed,
+    fetch_prompts
+)
+from qpipe.logger import logger
+# dist
+from qpipe.p2p import (
+    init_env, DistP2pContext,
+    handle_cmd, stop_event,
+    create_device_mesh
+)
+from qpipe.thread import ThreadSafeCounter
+from qpipe.p2p.dist_pipe import (
+    dist_p2p_pipeline_stage_factory
+)
+
+master_stage_context = None
+
+results_counter = ThreadSafeCounter()
+final_result = {}
+request_input_ids = {}
+request_logit_processor = {}
+request_loop_counter = {}
+def handle_results(final_intermediate_result) -> None:
+    request_id = final_intermediate_result[-1]
+    request_loop_counter[request_id] += 1
+    results_counter.add(1)
+    # get original input id
+    input_ids = request_input_ids[request_id]
+    logits_processor = request_logit_processor[request_id]
+    # generate new tokens
+    final_intermediate_result = to_device_recursive(final_intermediate_result, 'cuda:0')
+    outputs = model_pre_and_post.postprocess(final_intermediate_result, None)
+    
+    next_token_logits = outputs.logits[:, -1, :]
+    next_tokens_scores = logits_processor(input_ids, next_token_logits)
+    next_tokens = torch.argmax(next_tokens_scores, dim=-1)
+    new_input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
+    if request_loop_counter[request_id] < num_tokens_to_generate:
+        request_input_ids[request_id] = new_input_ids
+        request_token = model_pre_and_post.preprocess_one_token(new_input_ids, next_tokens, use_cache=True, request_id=request_id)
+        logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
+        master_stage_context.enqueue_tensor(to_device_recursive(request_token, 'cpu'))
+
+
+# prepare test data
+def prepare_input(batched_ids, request_id):
+    batched_ids = to_device_recursive(dict(batched_ids), 'cuda:0')
+    generation_config = model_pre_and_post.generation_config
+    request_token = model_pre_and_post.preprocess(**batched_ids, use_cache=True, request_id=request_id)
+    p_input_ids = batched_ids['input_ids']
+    inputs_tensor, model_input_name, model_kwargs = model_pre_and_post._prepare_model_inputs(
+        p_input_ids, generation_config.bos_token_id, {}
+    )
+    input_ids_seq_length = p_input_ids.shape[-1]
+    logits_processor = LogitsProcessorList()
+    # 8. prepare distribution pre_processing samplers
+    logits_processor = model_pre_and_post._get_logits_processor(
+        generation_config=generation_config,
+        input_ids_seq_length=input_ids_seq_length,
+        encoder_input_ids=inputs_tensor,
+        prefix_allowed_tokens_fn=None,
+        logits_processor=logits_processor,
+    )
+    final_result[request_id] = None
+    request_input_ids[request_id] = p_input_ids
+    request_logit_processor[request_id] = logits_processor
+    request_loop_counter[request_id] = 0
+
+    return to_device_recursive(request_token, 'cpu')
+
+
+
+
+def run_pipeline_p2p(loaded_llm_cpu, tokenizer, dist_cfg, sharding_strategy=None):
+    global master_stage_context
+    rank = dist_cfg.rank
+    local_rank = dist_cfg.local_rank
+    data_rank = 0 # by default, use rank 0 as the data rank
+    world_size = dist_cfg.world_size
+    # verify the scheduling is ok to be set
+    if rank == 0:
+        if not sharding_strategy:
+            raise ValueError("sharding strategy is not set")
+        else:
+            loaded_llm_cpu._verify_shard_strategy(sharding_strategy)  
+    with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank }, handle_cmd) \
+        as dist_ctx:
+        device_mesh = create_device_mesh(rank, local_rank, world_size)
+        # print("dist context created for: ", rank)
+        # print(device_mesh) 
+
+        if rank == data_rank:
+            data_chunks = []
+            for i in range(request_numbers):
+                batched_ids = tokenizer.batch_encode_plus(fetch_prompts(bs_token, prompt_length), padding='max_length', max_length=prompt_length, return_tensors="pt")
+                request_token = prepare_input(batched_ids, request_id=i)
+                data_chunks.append(request_token)
+            # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
+            batch_size = len(data_chunks)
+            print("Pipeline Data Loaded")
+            
+        
+        # get stage
+        if rank not in sharding_strategy:
+            stage_id = None
+        else:
+            stage_ranks = sorted(list(sharding_strategy.keys()))
+            stage_id = stage_ranks.index(rank)
+            # shard model
+            print("rank {} is in stage {}".format(rank, stage_id))
+        
+        # sharded module init
+        shard_config = sharding_strategy[rank]
+        module = loaded_llm_cpu
+        module._shard_model_current(shard_config, f'cuda:{local_rank}')
+        print(f"Stage {stage_id} module sharded")
+        for request_id in range(request_numbers):
+            module.init_kv_cache(bs_token, prompt_length, num_tokens_to_generate, request_id)
+        print(f"Stage {stage_id} kv initialized")
+        module.eval()
+        module.on_device = f'cuda:{local_rank}'
+        dist.barrier() # wait all device sharded finished.
+
+        with dist_p2p_pipeline_stage_factory(stage_ranks, data_rank, rank, stage_id, module,
+                                                        handle_results) as stage_ctx:
+
+            if rank == data_rank:
+                master_stage_context = stage_ctx
+                # pipeline.rpc_register_forward_hook(forward_hook_to_cpu)
+                # pipeline.rpc_register_forward_pre_hook(forward_pre_hook_to_device)
+                tik_data = perf_counter()
+                # start results monitoring - see comments in handle_results
+                # this call is asynchronous - wait for results to get end-to-end timings
+                logger.info("start pipe data")
+                start_count = results_counter.value
+                # this only launch the tasks but not actually finish the tasks.
+                for data_chunk in data_chunks:
+                    stage_ctx.enqueue_tensor(data_chunk)
+                results_counter.wait_gte(start_count + len(data_chunks) * num_tokens_to_generate)
+                tok_data = perf_counter()
+                latency = tok_data - tik_data
+                # throughput  = bs * N(token generated) / latency
+                throughput = batch_size / latency
+                token_throughput = throughput * num_tokens_to_generate
+                logger.info("Latency is %f, throughput is %f", latency, throughput)
+                logger.info('Token throughput is %f', token_throughput)
+                dist_ctx.cmd_broadcast(CMD_STOP)
+                stop_event.set()
+            else:
+                stop_event.wait()
+        
+    pass
+
+if __name__ == '__main__':
+    # set env
+    os.environ['SET_DECODERS_META'] = "1"
+    # test case
+    model_size = "350m"
+    config = model_cards[model_size]
+    tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
+    loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
+
+    # load the fake calibration data
+    caliber = lptorch.inner_caliber
+    caliber.set_fake() 
+    caliber.load_fake_calib_data(f'fake_calib_{model_size}.pkl')
+
+    sharding_strategy = {
+        0: {},
+        1: {
+            0: {'shard': [0, 1], 'bits': [16, 16]},
+            1: {'shard': [0, 1], 'bits': [16, 16]},
+            2: {'shard': [0, 1], 'bits': [16, 16]},
+            3: {'shard': [0, 1], 'bits': [16, 16]},
+            4: {'shard': [0, 1], 'bits': [16, 16]},
+            5: {'shard': [0, 1], 'bits': [16, 8]},
+            6: {'shard': [0, 1], 'bits': [16, 16]},
+            7: {'shard': [0, 1], 'bits': [16, 16]},
+            8: {'shard': [0], 'bits': [16]},
+        },
+        2: {
+            8: {'shard': [1], 'bits': [16]},
+            9: {'shard': [0,1], 'bits': [16, 8]},
+            10: {'shard': [0,1], 'bits': [8, 16]},
+            11: {'shard': [0,1], 'bits': [2, 16]},
+            # 350M
+            12: {'shard': [0,1], 'bits': [16, 16]},
+            13: {'shard': [0,1], 'bits': [16, 4]},
+            14: {'shard': [0,1], 'bits': [8, 16]},
+            15: {'shard': [0,1], 'bits': [16, 16]},
+            16: {'shard': [0,1], 'bits': [16, 8]},
+            17: {'shard': [0,1], 'bits': [16, 8]},
+        },
+        3:{
+            18: {'shard': [0,1], 'bits': [16, 16]},
+            19: {'shard': [0,1], 'bits': [16, 16]},
+            20: {'shard': [0,1], 'bits': [8, 16]},
+            21: {'shard': [0,1], 'bits': [4, 16]},
+            22: {'shard': [0,1], 'bits': [16, 16]}, 
+            23: {'shard': [0,1], 'bits': [16, 16]},
+        }
+    }
+
+    # sharding_strategy = {
+    #     0: {},
+    #     1: {
+    #         0: {'shard': [0, 1], 'bits': [16, 16]},
+    #         1: {'shard': [0, 1], 'bits': ['8:tc', 16]},
+    #         2: {'shard': [0, 1], 'bits': [16, 16]},
+    #         3: {'shard': [0, 1], 'bits': [8, '8:tc-li']},
+    #         4: {'shard': [0, 1], 'bits': [16, '8:tc']},
+    #         5: {'shard': [0, 1], 'bits': [16, 8]},
+    #         6: {'shard': [0, 1], 'bits': [16, 16]},
+    #         7: {'shard': [0, 1], 'bits': [16, 16]},
+    #         8: {'shard': [0], 'bits': [16]},
+    #     },
+    #     2: {
+    #         8: {'shard': [1], 'bits': [16]},
+    #         9: {'shard': [0,1], 'bits': [16, 8]},
+    #         10: {'shard': [0,1], 'bits': [8, 16]},
+    #         11: {'shard': [0,1], 'bits': [2, 16]},
+    #         # 350M
+    #         12: {'shard': [0,1], 'bits': [16, 16]},
+    #         13: {'shard': [0,1], 'bits': [16, 4]},
+    #         14: {'shard': [0,1], 'bits': [8, 16]},
+    #         15: {'shard': [0,1], 'bits': [16, 16]},
+    #         16: {'shard': [0,1], 'bits': [16, 8]},
+    #         17: {'shard': [0,1], 'bits': [16, 8]},
+    #     },
+    #     3:{
+    #         18: {'shard': [0,1], 'bits': [16, 16]},
+    #         19: {'shard': [0,1], 'bits': [16, 16]},
+    #         20: {'shard': [0,1], 'bits': [8, 16]},
+    #         21: {'shard': [0,1], 'bits': [4, 16]},
+    #         22: {'shard': [0,1], 'bits': [16, 16]}, 
+    #         23: {'shard': [0,1], 'bits': [16, 16]},
+    #     }
+    # }
+    # control the token generation
+    num_tokens_to_generate = 100
+    prompt_length = 512
+    bs_token = 4 # how many sentence in a batch
+    request_numbers = 4 # how many requests
+
+    infer_configs = (bs_token, prompt_length, num_tokens_to_generate, request_numbers)
+    loaded_llm_cpu._verify_shard_strategy(sharding_strategy)
+
+    # init env
+    seed = 42
+    init_random_seed(seed)
+    dist_cfg = init_env()
+    assert dist_cfg.world_size > 1, "world size should be larger than 1, else single device"
+
+    if dist_cfg.rank == 0:
+        model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
+        model_pre_and_post = model_pre_and_post.cuda()
+
+    run_pipeline_p2p(loaded_llm_cpu, tokenizer, dist_cfg, sharding_strategy=sharding_strategy)

@@ -1,4 +1,5 @@
 import logging
+import threading
 from qpipe.logger import logger
 # encode schedule to 1d list for communication
 def encode_schedule(schedule):
