@@ -10,6 +10,7 @@ from .quant import *
 from .gptq import GPTQ
 
 import numpy as np 
+import pickle
 
 class OPTClass(BaseLM):
     def __init__(self, args):
@@ -264,37 +265,37 @@ class OPTClass(BaseLM):
 
         print('Ready.')
 
+        if self.args.ada_file is not None:
+            file_name = self.args.ada_file
+            with open(file_name, 'rb') as f:
+                bit_assignment = pickle.load(f)
+            # check numbers
+            assert len(bit_assignment) == len(layers), "bit assignment length is not equal to layer length"
+        else:
+            bit_assignment = None 
+
         quantizers = {}
         for i in range(len(layers)):
             layer = layers[i].to(dev)
 
             subset = find_layers(layer)
             gptq = {}
-            for name in subset:
+
+            if bit_assignment is not None:
+                bit_for_layer = bit_assignment[i]
+
+            for n_idx, name in enumerate(subset):
                 gptq[name] = GPTQ(subset[name])
                 gptq[name].quantizer = Quantizer()
                 rand_bit = self.args.wbits
-                if rand_bit == 2:
-                    # randomly with 8
-                    random_num = np.random.randint(0, 3)
-                    # 0 use 4, 1 use 8
-                    if random_num == 0:
-                        gptq[name].quantizer.configure(
-                            2, perchannel=True, sym=False, mse=False
-                        )
-                    elif random_num == 1:
-                        gptq[name].quantizer.configure(
-                            4, perchannel=True, sym=False, mse=False
-                        )
+                if bit_assignment is not None:
+                    if 'qproj' in name or 'k_proj' in name or 'v_proj' in name or 'out' in name:
+                        rand_bit = bit_for_layer[0]
                     else:
-                        gptq[name].quantizer.configure(
-                            8, perchannel=True, sym=False, mse=False
-                        )
-                    print("use rand bit", random_num)
-                else:
-                    gptq[name].quantizer.configure(
-                        self.args.wbits, perchannel=True, sym=False, mse=False
-                    )
+                        rand_bit = bit_for_layer[1]
+                gptq[name].quantizer.configure(
+                    rand_bit, perchannel=True, sym=False, mse=False
+                )
                 # can adaptive here.
 
             def add_batch(name):

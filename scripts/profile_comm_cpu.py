@@ -25,6 +25,9 @@ if __name__ == "__main__":
 
     # save cost_model into folder
     file_name = f"cost_model_{rank}.pkl"
+    # check if tmp folder exists
+    if not os.path.exists('tmp'):
+        os.mkdir('tmp')
     file_path = os.path.join('tmp', file_name)
     with open(file_path, 'wb') as f:
         pickle.dump(cost_model, f)

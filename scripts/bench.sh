@@ -5,7 +5,7 @@ model_sizes=("30b" "30b" \
             "175b" "175b")
 
 # Set the list of device names and numbers for each model size
-device_names=("Tesla_T4 Tesla_V100-SXM2-32GB" "Tesla_V100-SXM2-32GB NVIDIA_A100-SXM4-40GB" \
+device_names=("Tesla_T4 Tesla_V100-SXM2-32GB" "Tesla_T4 Tesla_V100-SXM2-32GB" \
               "Tesla_T4 Tesla_V100-SXM2-32GB" "Tesla_V100-SXM2-32GB NVIDIA_A100-SXM4-40GB" \
               "Tesla_V100-SXM2-32GB NVIDIA_A100-SXM4-40GB" "Tesla_V100-SXM2-32GB A100-SXM-80GB")
 device_numbers=("2 1" "4 1" \

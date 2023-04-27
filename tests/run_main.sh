@@ -10,7 +10,9 @@ torchrun --nnodes=2 --nproc_per_node=4 --master_addr ***REMOVED*** --master_port
 
 # test scripts for functionality
 torchrun --nnodes=1 --nproc_per_node=4 --master_addr net-g14 --master_port 6666 test_single_p2p.py 
-torchrun --nnodes=1 --nproc_per_node=4 --master_addr net-g14 --master_port 6666 test_single.py 
+torchrun --nnodes=1 --nproc_per_node=4 --master_addr net-g14 --master_port 6666 test_single.py
+
+torchrun --nnodes=1 --nproc_per_node=4 --master_addr net-g14 --master_port 6666 test_single_p2p.py --model_name bloom --model_size "560m"
 
 
 # rpc

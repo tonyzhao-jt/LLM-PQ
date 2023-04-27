@@ -31,6 +31,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--model_size', type=str, required=True)
 parser.add_argument('--device_names',  nargs='+', type=str, required=True)
 parser.add_argument('--device_numbers',  nargs='+', type=int, required=True)
+# default bit
+parser.add_argument('--bit', type=int, default=8)
 # adaptive
 parser.add_argument('--adaptive', action='store_true')
 args = parser.parse_args()
@@ -187,8 +189,9 @@ if adaptive:
         result = pickle.load(f)
         bit_assignment = result['bit_assignment']
 else:
+    bit = args.bit
     bit_assignment = {}
-    assign_uniform_bit(T, 8, bit_assignment)
+    assign_uniform_bit(T, bit, bit_assignment)
 
 mem_required = estimate_all_layer_mem(model_mem_estimator, T, bit_assignment)
 assert mem_required < max_device_mem, "The model is too large to fit in the device mesh"

@@ -10,6 +10,7 @@ from .quant import *
 from .gptq import GPTQ
 
 import numpy as np 
+import pickle
 
 class BLOOMClass(BaseLM):
     def __init__(self, args):
@@ -131,17 +132,17 @@ class BLOOMClass(BaseLM):
 
         attention_masks = cache['attention_masks']
         alibis = cache['alibis']
+        
 
         for i in range(len(layers)):
-            print(i)
             layer = layers[i].to(dev)
 
             if self.args.nearest:
                 subset = find_layers(layer)
-                for name in subset:
+                for n_idx, name in enumerate(subset):
                     quantizer = Quantizer()
                     rand_bit = self.args.wbits
-
+                    print("rand_bit: ", rand_bit)
                     quantizer.configure(
                         rand_bit, perchannel=True, sym=False, mse=False
                     )
@@ -341,48 +342,30 @@ class BLOOMClass(BaseLM):
 
         print('Ready.')
 
+        if self.args.ada_file is not None:
+            file_name = self.args.ada_file
+            with open(file_name, 'rb') as f:
+                bit_assignment = pickle.load(f)
+            # check numbers
+            assert len(bit_assignment) == len(layers), "bit assignment length is not equal to layer length"
+        else:
+            bit_assignment = None 
+
         for i in range(len(layers)):
             layer = layers[i].to(dev)
 
             subset = find_layers(layer)
             gptq = {}
-            for name in subset:
+            if bit_assignment is not None:
+                bit_for_layer = bit_assignment[i]
+            for n_idx, name in enumerate(subset):
                 gptq[name] = GPTQ(subset[name])
                 rand_bit = self.args.wbits
-                if rand_bit == 2:
-                    # randomly with 8
-                    random_num = np.random.randint(0, 3)
-                    # 0 use 4, 1 use 8
-                    if random_num == 0:
-                        rand_bit = 2
-                    elif random_num == 1:
-                        rand_bit = 4
+                if bit_assignment is not None:
+                    if 'qproj' in name or 'k_proj' in name or 'v_proj' in name or 'out' in name:
+                        rand_bit = bit_for_layer[0]
                     else:
-                        rand_bit = 8
-                    print("use random bit: ", rand_bit)
-                
-                if rand_bit == 4:
-                    # randomly with 8
-                    random_num = np.random.randint(0, 2)
-                    # 0 use 4, 1 use 8
-                    if random_num == 0:
-                        rand_bit = 4
-                    elif random_num == 1:
-                        rand_bit = 8
-                    print("use random bit: ", rand_bit)
-                
-                if rand_bit == 3:
-                    # randomly with 8
-                    random_num = np.random.randint(0, 3)
-                    # 0 use 4, 1 use 8
-                    if random_num == 0:
-                        rand_bit = 3
-                    elif random_num == 1:
-                        rand_bit = 4
-                    elif random_num == 2:
-                        rand_bit = 8
-                    print("use random bit: ", rand_bit)
-
+                        rand_bit = bit_for_layer[1]
                 gptq[name].quantizer = Quantizer()
                 gptq[name].quantizer.configure(
                     rand_bit, perchannel=True, sym=False, mse=False

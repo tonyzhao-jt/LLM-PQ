@@ -20,7 +20,7 @@ from qpipe.partitioner.helper import (
 
 # default libs
 import pickle
-
+import os 
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -77,7 +77,8 @@ device_info = get_device_info(device_names, device_numbers)
 
 partition_bit_result_dict = {}
 # target_test_strategies = ['qpipe', 'qpipe_slo', 'pipeedge', 'pipeedge_adaptive', 'adabit', 'uniform']
-target_test_strategies = ['qpipe', 'adabit', 'uniform']
+target_test_strategies = ['qpipe', 'adabit', 'uniform', 'pipeedge']
+# target_test_strategies = ['qpipe', 'adabit', 'uniform']
 
 '''
     PipeEdge Result
@@ -114,8 +115,12 @@ if 'qpipe' in target_test_strategies:
 if 'adabit' in target_test_strategies:
     # adaptive bit result
     file_name = f'adaptive_bit_' + model_size + '_' + device_info + '.pkl'
-    adaptive_result = pickle.load(open(f'{folder}/{file_name}', 'rb'))
-    partition_bit_result_dict['adabit'] = adaptive_result
+    # if not exits:
+    if not os.path.exists(f'{folder}/{file_name}'):
+        print("Memory is enough, no need for adabit")
+    else:
+        adaptive_result = pickle.load(open(f'{folder}/{file_name}', 'rb'))
+        partition_bit_result_dict['adabit'] = adaptive_result
 
 '''
     Uniform results
@@ -222,6 +227,6 @@ for name, val in partition_bit_result_dict.items():
                                                  lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size)
     log_result(result, name)
     final_partition_strategies = convert_to_qpipe_result2partitions(partition_result, bit_assignment)
-    final_result_file_name = f"{name}_{device_info}_final_strategy.pkl"
+    final_result_file_name = f"{name}_{model_size}_{device_info}_final_strategy.pkl"
     save_with_pickle(final_partition_strategies, final_result_file_name, partition_strategy_folder)
 

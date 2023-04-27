@@ -3,4 +3,6 @@ statsmodels
 bitsandbytes
 datasets
 accelerate
+pulp
+gurobipy
 # transformers

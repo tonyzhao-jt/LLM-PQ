@@ -1,13 +1,22 @@
 from qllm.utils import ModelMemEstimator
 from ..cost_model import CommCostModel, LatCostModel
 
+from transformers import (
+    BloomConfig,
+    OPTConfig,
+)
 
 def create_mem_estimator(b, s, n, config):
     vocab_size = config.vocab_size
-    max_position_embeddings = config.max_position_embeddings
-    word_embed_proj_dim = config.word_embed_proj_dim
     h1 = config.hidden_size
-    h2 = config.ffn_dim
+    if isinstance(config, OPTConfig):
+        max_position_embeddings = config.max_position_embeddings
+        word_embed_proj_dim = config.word_embed_proj_dim
+        h2 = config.ffn_dim
+    else:
+        max_position_embeddings = 0
+        word_embed_proj_dim = h1
+        h2 = h1 * 4
     model_mem_estimator = ModelMemEstimator(h1, h2, b, s, n, \
                                             vocab_size=vocab_size, max_position_embeddings=max_position_embeddings, word_embed_proj_dim=word_embed_proj_dim)
     return model_mem_estimator

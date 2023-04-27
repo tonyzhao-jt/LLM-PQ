@@ -161,7 +161,8 @@ num_hidden_layers = len(T) // 2
 num_devices = len(D)
 
 # set available bits
-available_bits = [2, 4, 8, 16]
+available_bits = [2, 3, 4, 8, 16]
+
 
 if min_model_mem > max_device_mem:
     print(f"Minimum model size {min_model_mem} is larger than device memory {max_device_mem}")

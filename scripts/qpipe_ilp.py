@@ -112,9 +112,9 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, SLO_lat=None):
     
     # Solve the problem
     # prob.solve(pulp.apis.PULP_CBC_CMD())
-    solver = pulp.GUROBI(msg=True, threads=0, timeLimit=100, MIPGap=0.003)
+    # solver = pulp.GUROBI(msg=True, threads=0, timeLimit=100, MIPGap=0.003)
     # solver = pulp.GUROBI()
-    # solver = pulp.GUROBI(msg=True)
+    solver = pulp.GUROBI(msg=True)
     prob.solve(solver)
 
     # Print the solution status

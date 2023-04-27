@@ -4,9 +4,18 @@ CUDA_VISIBLE_DEVICES=0 python3 main.py facebook/opt-125m c4 --wbits 4 --task piq
 
 CUDA_VISIBLE_DEVICES=0 python3 main.py facebook/opt-1.3b c4 --task piqa
 CUDA_VISIBLE_DEVICES=0 python3 main.py facebook/opt-1.3b c4 --wbits 4 --task piqa
+CUDA_VISIBLE_DEVICES=0 python3 main.py facebook/opt-1.3b c4 --wbits 4 --task piqa \
+--ada-file "/workspace/qpipe/scripts/accuracy/bit_for_gptq_test/rand_opt_1.3b_bit_ass.pkl"
 
 CUDA_VISIBLE_DEVICES=0 python3 main.py bigscience/bloom-560m c4 --task piqa
 CUDA_VISIBLE_DEVICES=0 python3 main.py bigscience/bloom-560m c4 --wbits 4 --task piqa
+
+CUDA_VISIBLE_DEVICES=0 python3 main.py bigscience/bloom-560m c4 --wbits 4 --task piqa \
+--ada-file '/workspace/qpipe/scripts/accuracy/bit_for_gptq_test/rand_bloom_560m_bit_ass.pkl'
+
+CUDA_VISIBLE_DEVICES=0 python3 main.py facebook/opt-30b c4 --wbits 4 --task piqa \
+--ada-file '/workspace/qpipe/scripts/accuracy/bit_for_gptq_test/qpipe_30b_Tesla_T4_2_Tesla_V100-SXM2-32GB_1_acc_test.pkl'
+
 
 CUDA_VISIBLE_DEVICES=0 python3 main.py bigscience/bloom-560m c4 --task piqa --batch-size 4
 CUDA_VISIBLE_DEVICES=0 python3 main.py bigscience/bloom-560m c4 --wbits 4 --task piqa --batch_size 4

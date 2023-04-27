@@ -57,7 +57,7 @@ def handle_results(final_intermediate_result) -> None:
 
 
 master_pipeline = None
-def run_pipeline_rpc(model_cpu:list, tokenizer, dist_cfg: DistConfig, chunk:int=1, sharding_strategy=None) -> None:
+def run_pipeline_rpc(model_cpu:list, dist_cfg: DistConfig, chunk:int=1, sharding_strategy=None) -> None:
     global master_pipeline
     """Run the pipeline using RPC communication."""
     rpc_opts = rpc.TensorPipeRpcBackendOptions(num_worker_threads=128, rpc_timeout=60 * 100) # the loading of weight takes a lot of time
@@ -245,4 +245,4 @@ if __name__ == '__main__':
         model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
         model_pre_and_post = model_pre_and_post.cuda()
 
-    run_pipeline_rpc(loaded_llm_cpu, tokenizer, dist_cfg, chunk=chunk, sharding_strategy=sharding_strategy)
+    run_pipeline_rpc(loaded_llm_cpu, dist_cfg, chunk=chunk, sharding_strategy=sharding_strategy)

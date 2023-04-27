@@ -9,11 +9,15 @@ from transformers import LogitsProcessorList
 
 import lptorch 
 
-from qllm.models.OPT import OPTForCausalLMSeq
 from qllm.utils import (
     to_device_recursive
 )
-from qllm.models.OPT.opt import model_cards
+
+from qllm.models.OPT import OPTForCausalLMSeq
+from qllm.models import opt
+
+from qllm.models.BLOOM import BloomForCausalLMSeq
+from qllm.models import bloom
 
 CMD_STOP = 0
 CMD_SCHED = 1
@@ -90,9 +94,16 @@ def prepare_input(batched_ids, request_id):
     return to_device_recursive(request_token, 'cpu')
 
 
+from datetime import timedelta
 
 
-def run_pipeline_p2p(loaded_llm_cpu, tokenizer, dist_cfg, sharding_strategy=None):
+def init_tokenizer():
+    if model_name == 'opt':
+        return AutoTokenizer.from_pretrained("facebook/opt-66b")
+    elif model_name == 'bloom':
+        return AutoTokenizer.from_pretrained("bigscience/bloom")
+
+def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
     global master_stage_context
     rank = dist_cfg.rank
     local_rank = dist_cfg.local_rank
@@ -104,13 +115,15 @@ def run_pipeline_p2p(loaded_llm_cpu, tokenizer, dist_cfg, sharding_strategy=None
             raise ValueError("sharding strategy is not set")
         else:
             loaded_llm_cpu._verify_shard_strategy(sharding_strategy)  
-    with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank }, handle_cmd) \
+    with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=1800)}, handle_cmd) \
         as dist_ctx:
         device_mesh = create_device_mesh(rank, local_rank, world_size)
         # print("dist context created for: ", rank)
         # print(device_mesh) 
 
         if rank == data_rank:
+            # init tokenizer
+            tokenizer = init_tokenizer()
             data_chunks = []
             for i in range(request_numbers):
                 batched_ids = tokenizer.batch_encode_plus(fetch_prompts(bs_token, prompt_length), padding='max_length', max_length=prompt_length, return_tensors="pt")
@@ -172,19 +185,42 @@ def run_pipeline_p2p(loaded_llm_cpu, tokenizer, dist_cfg, sharding_strategy=None
         
     pass
 
+import argparse
+def parse_args():
+    # add argparser for model name and model_size
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_size", type=str, default="350m", help="model size")
+    parser.add_argument("--model_name", type=str, default="opt", help="model name")
+    parser.add_argument("--bs_token", type=int, default=4, help="batch size for token")
+    parser.add_argument("--prompt_length", type=int, default=512, help="prompt length")
+    parser.add_argument("--num_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
+    parser.add_argument("--request_numbers", type=int, default=4, help="number of requests")
+    parser.parse_args()
+    args = parser.parse_args()
+    return args
+
 if __name__ == '__main__':
     # set env
     os.environ['SET_DECODERS_META'] = "1"
+    args = parse_args()
     # test case
-    model_size = "350m"
-    config = model_cards[model_size]
-    tokenizer = AutoTokenizer.from_pretrained("facebook/opt-350m")
-    loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
+    model_name = args.model_name
+    model_size = args.model_size
+    if model_name == 'opt':
+        model_cards = opt.model_cards
+        assert model_size in model_cards, f"model size {model_size} is not in model cards {model_cards.keys()}"
+        config = model_cards[model_size]
+        loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
+    elif model_name == 'bloom':
+        model_cards = bloom.model_cards
+        assert model_size in model_cards, f"model size {model_size} is not in model cards {model_cards.keys()}"
+        config = model_cards[model_size]
+        loaded_llm_cpu = BloomForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
 
     # load the fake calibration data
     caliber = lptorch.inner_caliber
     caliber.set_fake() 
-    caliber.load_fake_calib_data(f'fake_calib_{model_size}.pkl')
+    caliber.load_fake_calib_data(f'fake_calib_{model_name}_{model_size}.pkl')
 
     sharding_strategy = {
         0: {},
@@ -222,46 +258,11 @@ if __name__ == '__main__':
         }
     }
 
-    # sharding_strategy = {
-    #     0: {},
-    #     1: {
-    #         0: {'shard': [0, 1], 'bits': [16, 16]},
-    #         1: {'shard': [0, 1], 'bits': ['8:tc', 16]},
-    #         2: {'shard': [0, 1], 'bits': [16, 16]},
-    #         3: {'shard': [0, 1], 'bits': [8, '8:tc-li']},
-    #         4: {'shard': [0, 1], 'bits': [16, '8:tc']},
-    #         5: {'shard': [0, 1], 'bits': [16, 8]},
-    #         6: {'shard': [0, 1], 'bits': [16, 16]},
-    #         7: {'shard': [0, 1], 'bits': [16, 16]},
-    #         8: {'shard': [0], 'bits': [16]},
-    #     },
-    #     2: {
-    #         8: {'shard': [1], 'bits': [16]},
-    #         9: {'shard': [0,1], 'bits': [16, 8]},
-    #         10: {'shard': [0,1], 'bits': [8, 16]},
-    #         11: {'shard': [0,1], 'bits': [2, 16]},
-    #         # 350M
-    #         12: {'shard': [0,1], 'bits': [16, 16]},
-    #         13: {'shard': [0,1], 'bits': [16, 4]},
-    #         14: {'shard': [0,1], 'bits': [8, 16]},
-    #         15: {'shard': [0,1], 'bits': [16, 16]},
-    #         16: {'shard': [0,1], 'bits': [16, 8]},
-    #         17: {'shard': [0,1], 'bits': [16, 8]},
-    #     },
-    #     3:{
-    #         18: {'shard': [0,1], 'bits': [16, 16]},
-    #         19: {'shard': [0,1], 'bits': [16, 16]},
-    #         20: {'shard': [0,1], 'bits': [8, 16]},
-    #         21: {'shard': [0,1], 'bits': [4, 16]},
-    #         22: {'shard': [0,1], 'bits': [16, 16]}, 
-    #         23: {'shard': [0,1], 'bits': [16, 16]},
-    #     }
-    # }
     # control the token generation
-    num_tokens_to_generate = 100
-    prompt_length = 512
-    bs_token = 32 # how many sentence in a batch
-    request_numbers = 4 # how many requests
+    num_tokens_to_generate = args.num_tokens_to_generate
+    prompt_length = args.prompt_length
+    bs_token = args.bs_token # how many sentence in a batch
+    request_numbers = args.request_numbers # how many requests
 
     infer_configs = (bs_token, prompt_length, num_tokens_to_generate, request_numbers)
     loaded_llm_cpu._verify_shard_strategy(sharding_strategy)
@@ -276,4 +277,4 @@ if __name__ == '__main__':
         model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
         model_pre_and_post = model_pre_and_post.cuda()
 
-    run_pipeline_p2p(loaded_llm_cpu, tokenizer, dist_cfg, sharding_strategy=sharding_strategy)
+    run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
