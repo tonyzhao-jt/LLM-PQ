@@ -9,7 +9,8 @@ from qpipe.partitioner.utils import (
     interpret_ilp_result_i_j_b
 )
 from qpipe.cost_model import (
-    estimate_single_layer_mem
+    estimate_single_layer_mem,
+    get_mem_with_layer_bit_pair
 )
 from qpipe.cost_model import price as price_model
 from qpipe.partitioner.helper import (
@@ -189,15 +190,7 @@ def solve_ilp_pulp_with_price(L, N, BITs, M, M_d, l, omega, comm, price, theta, 
         
     return result, pulp.value(prob.objective), device_used
     
-def get_mem_with_layer_bit_pair(bit_pairs): 
-    mem_bits_vector = np.zeros(len(bit_pairs))
-    for idx, bit_pair in enumerate(bit_pairs):
-        attn_bit, ffn_bit = bit_pair
-        attn_mem = estimate_single_layer_mem(model_mem_estimator, 0, attn_bit)
-        ffn_mem = estimate_single_layer_mem(model_mem_estimator, 1, ffn_bit)
-        mem = attn_mem + ffn_mem
-        mem_bits_vector[idx] = mem
-    return mem_bits_vector
+
 
 def get_latency_with_layer_device_bit_pair(D, bit_pairs):
     device_names = list(D.values())
@@ -258,7 +251,7 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
     # for i in range(L):
     #     M[i, :] = mem_bits_vector
     
-    mem_bits_vector = get_mem_with_layer_bit_pair(BITs)
+    mem_bits_vector = get_mem_with_layer_bit_pair(BITs, model_mem_estimator)
     M = np.tile(mem_bits_vector, (L, 1))
 
     # reduce the embedding size on device 0 for M_d

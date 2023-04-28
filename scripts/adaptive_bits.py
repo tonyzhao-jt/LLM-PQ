@@ -1,4 +1,8 @@
-from qllm.models.OPT.opt import model_cards
+from qllm.models.OPT import OPTForCausalLMSeq
+from qllm.models import opt
+
+from qllm.models.BLOOM import BloomForCausalLMSeq
+from qllm.models import bloom
 
 import qpipe 
 from qpipe.partitioner.indicator import (
@@ -12,7 +16,8 @@ from qpipe.partitioner.utils import (
 
 from qpipe.cost_model import (
     estimate_single_layer_mem,
-    estimate_all_layer_mem
+    estimate_all_layer_mem,
+    get_mem_with_layer_bit_pair
 )
 
 from qpipe.utils import (
@@ -43,6 +48,7 @@ env.start()
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('--model_size', type=str, required=True)
+parser.add_argument('--model_name', type=str, default='opt')
 parser.add_argument('--device_names',  nargs='+', type=str, required=True)
 parser.add_argument('--device_numbers',  nargs='+', type=int, required=True)
 args = parser.parse_args()
@@ -50,6 +56,7 @@ args = parser.parse_args()
 unit = qpipe._globals.MEM_UNIT
 time_mult_times = qpipe._globals.TIME_MULT_TIMES
 # model size
+model_name = args.model_name # 'opt'
 model_size = args.model_size # '66b'
 device_names = args.device_names # ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']
 device_numbers = args.device_numbers # [2, 3]
@@ -95,16 +102,6 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
     return result
 
 
-def get_mem_with_layer_bit_pair(bit_pairs): 
-    mem_bits_vector = np.zeros(len(bit_pairs))
-    for idx, bit_pair in enumerate(bit_pairs):
-        attn_bit, ffn_bit = bit_pair
-        attn_mem = estimate_single_layer_mem(model_mem_estimator, 0, attn_bit)
-        ffn_mem = estimate_single_layer_mem(model_mem_estimator, 1, ffn_bit)
-        mem = attn_mem + ffn_mem
-        mem_bits_vector[idx] = mem
-    return mem_bits_vector
-
 def prepare_for_ilp(num_hidden_layers, D, available_bits):
     L = num_hidden_layers # in partition, regard as a whole
     N = len(D) # number of devices
@@ -113,7 +110,7 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
         (i, j) for i in available_bits for j in available_bits
     ]
     M_d = np.array([get_single_device_mem_constraints(device_name) for d_rank, device_name in D.items()]) 
-    mem_bits_vector = get_mem_with_layer_bit_pair(BITs)
+    mem_bits_vector = get_mem_with_layer_bit_pair(BITs, model_mem_estimator)
     M = np.tile(mem_bits_vector, (L, 1))
     # reduce the embedding size on device 0
     post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
@@ -139,7 +136,13 @@ chunk_size = global_bz // micro_bz
 s = gen_config.s
 n = gen_config.n
 
-config = model_cards[model_size]
+if model_name == 'opt':
+    assert model_size in opt.model_cards.keys(), f"model_size {model_size} not in opt.model_cards.keys()"
+    config = opt.model_cards[model_size]
+elif model_name == 'bloom':
+    assert model_size in bloom.model_cards.keys(), f"model_size {model_size} not in bloom.model_cards.keys()"
+    config = bloom.model_cards[model_size]
+
 D, max_device_mem = create_device_mesh_and_mem(device_names, device_numbers)
 # max_device_mem can be used to check whether OOM or not
 use_profiler_prediction = True
