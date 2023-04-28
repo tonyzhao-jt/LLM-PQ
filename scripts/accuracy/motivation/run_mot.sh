@@ -1,7 +1,7 @@
 cd /workspace/qpipe/3rd_party/gptq/zeroShot
 model_prefix="facebook/opt-"
 model_name='opt'
-model_size="1.3b"
+model_size="30b"
 # model_prefix="bigscience/bloom-"
 # model_name='bloom'
 # model_size="1b1"

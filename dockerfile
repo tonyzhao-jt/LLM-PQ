@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     git ffmpeg libsm6 libxext6 ca-certificates curl jq wget \
     git-lfs net-tools
 
-RUN pip install gurobipy pulp
+RUN pip install gurobipy pulp sacrebleu
 RUN pip install -U scikit-learn scipy matplotlib 
 
 

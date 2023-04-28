@@ -366,6 +366,7 @@ class BLOOMClass(BaseLM):
                         rand_bit = bit_for_layer[0]
                     else:
                         rand_bit = bit_for_layer[1]
+                    print("use rand bit", rand_bit)
                 gptq[name].quantizer = Quantizer()
                 gptq[name].quantizer.configure(
                     rand_bit, perchannel=True, sym=False, mse=False
