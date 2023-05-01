@@ -23,7 +23,7 @@ from qpipe.utils import (
 )
 
 from qpipe.logger import logger
-
+import pickle
 from qllm.models import opt
 from qllm.models import bloom
 
@@ -44,6 +44,7 @@ parser.add_argument('--model_name', type=str, default='opt')
 parser.add_argument('--ratio', type=float, default=0.5)
 # add the indicator typ
 parser.add_argument('-it', '--indicator_type', type=str, default='uniform')
+parser.add_argument('--file_name', type=str, default=None)
 args = parser.parse_args()
 
 unit = qpipe._globals.MEM_UNIT
@@ -101,6 +102,12 @@ if indicator_type == 'uniform':
     omega = assign_omega_uniform(L, BITs)
 elif indicator_type == 'constant':
     omega = assign_omega_constant(L, BITs)
+elif indicator_type == 'mag':
+    # use magnitude as the indicator
+    file_name = args.file_name
+    assert file_name is not None, "file_name is None"
+    omega = pickle.load(open(file_name, 'rb'))
+
 # memory constaints
 mem_bits_vector = get_mem_with_layer_bit_pair(BITs, model_mem_estimator)
 M = np.tile(mem_bits_vector, (L, 1))
