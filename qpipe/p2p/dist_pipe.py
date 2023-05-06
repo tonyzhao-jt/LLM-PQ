@@ -255,7 +255,7 @@ class TensorWorkThread(threading.Thread):
                 if self.device_index is None:
                     tensor_out = to_device(tensor_out, 'cpu') # move to cpu / test
             else:
-                tensor_out = self._callback.decode(tensor_in)
+                tensor_out = self._callback(tensor_in)
 
             if tensor_out is not None:
                 # Sender thread must be running to avoid indefinite blocking
@@ -421,7 +421,7 @@ def dist_p2p_pipeline_stage_factory(stage_ranks: List[int], data_rank: int, rank
 
         # tp related
         tp_index = qpipe._globals.__TP__LOCAL__RANK__
-        if tp_index != 0: 
+        if tp_index is not None and tp_index != 0: 
             # only need to recv signal from the previous stage
             rank_src = rank - tp_index # direcly launched by the master rank in the tp group
             rank_dst = None # don't need to send signal to the next stage
