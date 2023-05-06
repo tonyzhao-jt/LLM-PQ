@@ -14,11 +14,8 @@ from qllm.utils import (
     to_device_recursive
 )
 
-from qllm.models.OPT import OPTForCausalLMSeq
-from qllm.models import opt
+from qllm.models import create_empty_model
 
-from qllm.models.BLOOM import BloomForCausalLMSeq
-from qllm.models import bloom
 
 CMD_STOP = 0
 CMD_SCHED = 1
@@ -114,6 +111,8 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
             raise ValueError("sharding strategy is not set")
         else:
             loaded_llm_cpu._verify_shard_strategy(sharding_strategy)  
+    
+    
     with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=60 * 1000)}, handle_cmd) \
         as dist_ctx:
         device_mesh = create_device_mesh(rank, local_rank, world_size)
@@ -136,6 +135,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
         if rank not in sharding_strategy:
             stage_id = None
         else:
+            # PS: change here when add TP.
             stage_ranks = sorted(list(sharding_strategy.keys()))
             stage_id = stage_ranks.index(rank)
             # shard model
@@ -206,16 +206,7 @@ if __name__ == '__main__':
     # test case
     model_name = args.model_name
     model_size = args.model_size
-    if model_name == 'opt':
-        model_cards = opt.model_cards
-        assert model_size in model_cards, f"model size {model_size} is not in model cards {model_cards.keys()}"
-        config = model_cards[model_size]
-        loaded_llm_cpu = OPTForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
-    elif model_name == 'bloom':
-        model_cards = bloom.model_cards
-        assert model_size in model_cards, f"model size {model_size} is not in model cards {model_cards.keys()}"
-        config = model_cards[model_size]
-        loaded_llm_cpu = BloomForCausalLMSeq._from_config(config, torch_dtype=torch.float16)
+    loaded_llm_cpu = create_empty_model(model_name, model_size)
 
     # load the fake calibration data
     caliber = lptorch.inner_caliber

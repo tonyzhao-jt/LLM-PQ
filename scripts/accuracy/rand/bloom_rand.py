@@ -294,6 +294,10 @@ class BLOOMClass(BaseLM):
     def bloom_sequential(self, dataloader):
         print('Starting ...')
 
+        if self.args.profile:
+            self.bloom_profile(dataloader)
+            exit()
+
         model = self.model
         dev = self.device
 
@@ -361,6 +365,11 @@ class BLOOMClass(BaseLM):
             for n_idx, name in enumerate(subset):
                 gptq[name] = GPTQ(subset[name])
                 rand_bit = self.args.wbits
+                if self.args.rand_bit:
+                    if rand_bit == 4:
+                        rand_bit = np.random.choice([4, 8])
+                    elif rand_bit == 3:
+                        rand_bit = np.random.choice([3, 4])
                 if bit_assignment is not None:
                     if 'qproj' in name or 'k_proj' in name or 'v_proj' in name or 'out' in name:
                         rand_bit = bit_for_layer[0]
@@ -400,6 +409,146 @@ class BLOOMClass(BaseLM):
             inps, outs = outs, inps
 
         model.config.use_cache = use_cache
+
+
+    @torch.no_grad()
+    def bloom_profile(self, dataloader):
+        print('Starting ...')
+
+        model = self.model
+        dev = self.device
+
+        use_cache = model.config.use_cache
+        model.config.use_cache = False
+        layers = model.transformer.h
+
+        model.transformer.word_embeddings = model.transformer.word_embeddings.to(dev)
+        model.transformer.word_embeddings_layernorm = model.transformer.word_embeddings_layernorm.to(dev)
+        layers[0] = layers[0].to(dev)
+
+        dtype = next(iter(model.parameters())).dtype
+        inps = torch.zeros(
+            (self.args.nsamples, self.seqlen, model.config.hidden_size), dtype=dtype, device=dev
+        )
+        cache = {'i': 0, 'attention_mask': None, 'alibi': None}
+
+        class Catcher(nn.Module):
+            def __init__(self, module):
+                super().__init__()
+                self.module = module
+
+            def forward(self, inp, **kwargs):
+                inps[cache['i']] = inp
+                cache['i'] += 1
+                cache['attention_mask'] = kwargs['attention_mask']
+                cache['alibi'] = kwargs['alibi']
+                raise ValueError
+
+        layers[0] = Catcher(layers[0])
+        for batch in dataloader:
+            try:
+                model(batch[0].to(dev))
+            except ValueError:
+                pass
+        layers[0] = layers[0].module
+
+        layers[0] = layers[0].cpu()
+        model.transformer.word_embeddings = model.transformer.word_embeddings.cpu()
+        model.transformer.word_embeddings_layernorm = model.transformer.word_embeddings_layernorm.cpu()
+        torch.cuda.empty_cache()
+
+        outs = torch.zeros_like(inps)
+        attention_mask = cache['attention_mask']
+        alibi = cache['alibi']
+
+        print('Ready.')
+
+        if self.args.ada_file is not None:
+            file_name = self.args.ada_file
+            with open(file_name, 'rb') as f:
+                bit_assignment = pickle.load(f)
+            # check numbers
+            assert len(bit_assignment) == len(layers), "bit assignment length is not equal to layer length"
+        else:
+            bit_assignment = None 
+
+        collected_information = {} # xmax, xmin, wmax, wmin
+
+        for i in range(len(layers)):
+            layer = layers[i].to(dev)
+
+            subset = find_layers(layer)
+            gptq = {}
+            if bit_assignment is not None:
+                bit_for_layer = bit_assignment[i]
+            # for n_idx, name in enumerate(subset):
+            #     gptq[name] = GPTQ(subset[name])
+            #     rand_bit = self.args.wbits
+            #     if bit_assignment is not None:
+            #         if 'qproj' in name or 'k_proj' in name or 'v_proj' in name or 'out' in name:
+            #             rand_bit = bit_for_layer[0]
+            #         else:
+            #             rand_bit = bit_for_layer[1]
+            #         print("use rand bit", rand_bit)
+            #     gptq[name].quantizer = Quantizer()
+            #     gptq[name].quantizer.configure(
+            #         rand_bit, perchannel=True, sym=False, mse=False
+            #     )
+
+            # def add_batch(name):
+            #     def tmp(_, inp, out):
+            #         gptq[name].add_batch(inp[0].data, out.data)
+
+            #     return tmp
+
+            def collect_in_w_scale(module, inp, out):
+                weight = module.weight.data
+                wmax = weight.max(dim=-1).values.detach().cpu().numpy()
+                wmin = weight.min(dim=-1).values.detach().cpu().numpy()
+
+                inp_max = inp[0].max(dim=-1).values.detach().cpu().numpy()
+                inp_min = inp[0].min(dim=-1).values.detach().cpu().numpy()
+
+                if module.layer_idx not in collected_information:
+                    collected_information[module.layer_idx] = {}
+                if module.name not in collected_information:
+                    collected_information[module.layer_idx][module.name] = {'xmax': inp_max, 'xmin': inp_min, 'wmax': wmax, 'wmin': wmin}
+                else:
+                    # running average the inp_max and inp_min
+                    collected_information[module.layer_idx][module.name]['xmax'] += inp_max
+                    collected_information[module.layer_idx][module.name]['xmin'] += inp_min
+
+            handles = []
+            for name in subset:
+                subset[name].name = name
+                subset[name].layer_idx = i
+                handles.append(subset[name].register_forward_hook(collect_in_w_scale))
+
+            for j in range(self.args.nsamples):
+                outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask, alibi=alibi)[0]
+            for h in handles:
+                h.remove()
+
+            # for name in subset:
+            #     print(i, name)
+            #     print('Quantizing ...')
+            #     gptq[name].fasterquant(percdamp=self.args.percdamp, groupsize=self.args.groupsize)
+            # for j in range(self.args.nsamples):
+            #     outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask, alibi=alibi)[0]
+
+            layers[i] = layer.cpu()
+            del gptq
+            torch.cuda.empty_cache()
+
+            inps, outs = outs, inps
+
+        file_path = self.args.prof_file
+        model = self.args.model
+        dataset = self.args.dataset
+        model = model.replace('/', '_')
+        file_path = f'{model}_{dataset}_stat.pkl'
+        # store the collected information
+        with open(file_path, 'wb') as f: pickle.dump(collected_information, f)
 
 
 # for backwards compatibility

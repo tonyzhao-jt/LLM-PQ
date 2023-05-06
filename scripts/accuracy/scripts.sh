@@ -26,8 +26,11 @@ CUDA_VISIBLE_DEVICES=0 python3 main.py bigscience/bloom-560m c4 --wbits 4 --task
 CUDA_VISIBLE_DEVICES=0 python3 main.py facebook/opt-125m c4 --wbits 4 --task piqa --profile 
 CUDA_VISIBLE_DEVICES=0 python3 main.py bigscience/bloom-560m c4 --wbits 4 --task piqa --profile
 
-CUDA_VISIBLE_DEVICES=0 python3 main.py facebook/opt-1.3b c4 --wbits 4 --task piqa --profile
-CUDA_VISIBLE_DEVICES=0 python3 main.py bigscience/bloom-1b1 c4 --wbits 4 --task piqa --profile
+CUDA_VISIBLE_DEVICES=0 python3 main.py facebook/opt-1.3b c4 --wbits 4 --task piqa arc lambada --profile
+CUDA_VISIBLE_DEVICES=0 python3 main.py bigscience/bloom-3b c4 --wbits 4 --task piqa arc lambada --profile
+
+
+
 
 # TASK_REGISTRY = {
 #     "lambada": LAMBADA,

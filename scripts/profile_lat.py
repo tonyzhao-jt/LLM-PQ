@@ -2,14 +2,14 @@
 # load an OPTSharded Decoder
 from qpipe.profiler import profile_lat
 from qpipe.utils import get_device_name_and_mem
-from qllm.models.OPT.opt import model_cards
-from qllm.models.OPT.seq_layers import OPTDecoderLayerSharded
+from qllm.models import create_empty_decoder
 import os 
 import argparse
 import pandas as pd 
 import copy 
 def parse_args():
     parser = argparse.ArgumentParser(description='Profile a transformer model')
+    parser.add_argument('--model-name', type=str, default='opt', help='model name')
     parser.add_argument('--model-size', type=str, default='175b', help='Size of the transformer model')
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size range(1,32)')
     parser.add_argument('--input-seq-length', type=int, default=1, help='Length of input sequence')
@@ -25,6 +25,7 @@ def parse_args():
 if __name__ == '__main__':
     args = parse_args()
     # Access the hyperparameters
+    model_name = args.model_name
     model_size = args.model_size
     batch_size = args.batch_size
     input_seq_length = args.input_seq_length
@@ -40,10 +41,7 @@ if __name__ == '__main__':
 
     file_name = device_name + "_" + str(model_size) + ".csv"
 
-    config = model_cards[model_size]
-    decoder_layer = OPTDecoderLayerSharded(config)
-    h1 = config.hidden_size
-    h2 = config.ffn_dim
+    decoder_layer, (h1, h2), config = create_empty_decoder(model_name, model_size)
 
     # print(h1, h2)
     def convert_to_int(x):

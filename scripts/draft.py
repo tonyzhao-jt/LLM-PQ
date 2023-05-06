@@ -46,3 +46,5 @@ if use_profiler_prediction:
 SLO_lat = get_slo(model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size, \
             device_names, use_profiler_prediction=True, verbose=True)
 print(SLO_lat)
+
+import pdb; pdb.set_trace()

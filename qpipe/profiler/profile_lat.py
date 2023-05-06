@@ -4,7 +4,7 @@ import torch
 from qllm.utils import to_device_recursive
 import lptorch
 from time import perf_counter
-from ..utils import get_size_cuda
+from ..utils import get_size_cuda, get_iter_variable_size
 import copy
 
 # inf = float('inf')
@@ -19,9 +19,6 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
 
     # fake input = b * 1 * hidden_size
     fake_input = torch.randn(batch_size, input_seq_length, h1)
-
-    # fake kv size = b * (past_seq_length) * num_head, head_dims
-    num_heads, head_dim = config.num_attention_heads, config.hidden_size // config.num_attention_heads
 
     # caliber run
     caliber = lptorch.inner_caliber
@@ -41,49 +38,39 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
     availability_result = decoder_layer.verify_kernel()
 
     if False not in availability_result:
-        if bit == '8:tc':
-            input_bit = 8
-        else:
-            input_bit = 16
-        if input_bit != 8:
-            fake_k = torch.randn(batch_size, past_seq_length, num_heads, head_dim).to(torch.float16)
-            fake_v = torch.randn(batch_size, past_seq_length, num_heads, head_dim).to(torch.float16)
-        else:
-            # int8
-            fake_k = torch.randint(-128, 127, (batch_size, past_seq_length, num_heads, head_dim), dtype=torch.int8)
-            fake_v = torch.randint(-128, 127, (batch_size, past_seq_length, num_heads, head_dim), dtype=torch.int8)
+        torch_dtype = torch.float16
+        input_bit = 16
+        # if bit == '8:tc':
+        #     input_bit = 8
+        #     torch_dtype = torch.int8
 
-        fake_k.transpose_(1, 2)  # follow attn implementation
-        fake_v.transpose_(1, 2)
-        past_key_value = (fake_k, fake_v)
-
-        # to fp16
         hidden_states = fake_input.to(torch.float16)
         if input_bit == 8:
             hidden_states = 127 * hidden_states
             hidden_states = hidden_states.to(torch.int8)
-
-        # profile
-        decoder_layer = decoder_layer.cuda()
+        
         hidden_states = hidden_states.cuda()
-        past_key_value = to_device_recursive(past_key_value, torch.device("cuda:0"))
-
+        decoder_layer = decoder_layer.cuda()
+        if 0 in shard_strategy['shard']:
+            # init kv cache 
+            decoder_layer.self_attention.init_kv_cache(batch_size, past_seq_length, input_seq_length, 1, torch_dtype=torch_dtype)
+            decoder_layer.self_attention.profile = True # set profile to make the kv didn't increase 
 
         # warmup
         for i in range(warmup):
-            decoder_layer(hidden_states, past_key_value=past_key_value)
+            decoder_layer(hidden_states)
             torch.cuda.synchronize()
         start = perf_counter()
         for i in range(repeat):
-            decoder_layer(hidden_states, past_key_value=past_key_value)
+            decoder_layer(hidden_states)
             torch.cuda.synchronize()
         end = perf_counter()
         lat_avg = (end - start) / repeat
 
         # calculate weight memory, kv memory and embedding memory
         mem_weight = get_size_cuda(decoder_layer, unit=mem_unit)
-        if shard == 0:
-            mem_kv = get_size_cuda(past_key_value[0], unit=mem_unit) * 2
+        if 0 in shard_strategy['shard']:
+            mem_kv = get_iter_variable_size(decoder_layer.self_attention.kv_cache, unit=mem_unit) * 2
         else:
             mem_kv = 0
         mem_embedding = get_size_cuda(hidden_states, unit=mem_unit)
@@ -101,9 +88,6 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
     del decoder_layer
     del fake_input
     if False not in availability_result:
-        del fake_k
-        del fake_v
-        del past_key_value
         del hidden_states
     torch.cuda.empty_cache()
 

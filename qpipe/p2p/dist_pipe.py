@@ -10,8 +10,9 @@ from .comm import _send_tensor, _recv_tensor
 from .TYPES import *
 from . import util
 
-
+import qpipe
 from qpipe.utils import to_device
+
 
 class ConditionQueue(queue.Queue):
     """A Queue with a public `condition: threading.Condition` variable for synchronization."""
@@ -50,7 +51,6 @@ class AbstractTensorExchangeThread(threading.Thread):
     def _call_post_hooks(self, tensors):
         for hook, args in self._post_hooks:
             hook(tensors, *args)
-
 
 class TensorSendThread(AbstractTensorExchangeThread):
     """Thread for sending tensors."""
@@ -172,12 +172,59 @@ class TensorWorkThread(threading.Thread):
             self.on_device = self._callback.on_device
         else:
             self.on_device = None
+        self.device_index = qpipe._globals.__DEVICE__INDEX__
+        
+        self.enable_tp = False
+        self._tp_signal_threads = {}
+        self._tp_cond_queue = {}
+        self.global_rank = qpipe._globals.__GLOBAL__RANK__
+        if queue_out is not None:
+            # if queue_out is none, it is the last thread return value to the user.
+            self.init_tp()
+    
+    def init_tp(self):
+        tp_group = qpipe._globals.__TENSOR__MODEL__PARALLEL__GROUP__
+        tp_world_size = qpipe._globals.__TP__LOCAL__WORLD__SIZE__
+        tp_index = qpipe._globals.__TP__LOCAL__RANK__
+        global_rank = qpipe._globals.__GLOBAL__RANK__
+        if tp_index == 0 and tp_world_size != 1: # only the first rank need to send signal to other ranks.
+            for i in range(1, tp_world_size):
+                signal_name = 'tp_signal_' + str(global_rank+i)
+                self._tp_cond_queue[signal_name] = ConditionQueue(maxsize=1)
+                # each threads is protected by a condition variable.
+                self._tp_signal_threads[signal_name] = TensorSendThread(self._tp_cond_queue[signal_name], global_rank+i)
+                self._tp_signal_threads[signal_name].start()
+        # print(" init tp send threds: ", global_rank, self._tp_signal_threads)
+        if tp_group is not None:
+            self.enable_tp = True
+            self.tp_index = tp_index
+            self.tp_comm_group = tp_group
+    
+    def tp_broadcast(self, tensor):
+        # tp master send tensor to other ranks.
+        if self.tp_index == 0:
+            for tp_signal_name, cond_queue in self._tp_cond_queue.items():
+                # print(tp_signal_name)
+                with cond_queue.condition:
+                    while cond_queue.full():
+                        cond_queue.condition.wait()
+                    cond_queue.put(tensor)
+                    cond_queue.condition.notify_all()
+        dist.barrier(group=self.tp_comm_group)
+        return tensor
+    
 
     def stop(self) -> None:
         """Direct the thread to stop."""
+        if self.enable_tp:
+            for trd in self._tp_signal_threads.values():
+                trd.stop()
+                trd.join()
+
         with self._queue_in.condition:
             self._evt_stop_thread.set()
             self._queue_in.condition.notify_all()
+
 
     def run(self):
         """Dequeue, process, enqueue."""
@@ -191,13 +238,24 @@ class TensorWorkThread(threading.Thread):
                 tensor_in = self._queue_in.get(block=False)
                 self._queue_in.condition.notify_all()
             
-            # here, execute the module
+            # print(f"before tp broadcast {self.global_rank} {self.tp_index} {tensor_in}")
+            # TP related
+            if self.enable_tp:
+                # when tp is enabled, always cuda
+                tensor_in = self.tp_broadcast(tensor_in)
+            # dist.barrier(group=self.tp_comm_group)
+            # print(f"runnnnnnnnn------{self.global_rank} -- {self.tp_index}")
+            # print(tensor_in)
+            # dist.barrier(group=self.tp_comm_group)
+            # execute the model
             if self.on_device is not None:
-                tensor_in = to_device(tensor_in, self.on_device) # move to gpu
+                if self.on_device is not None:
+                    tensor_in = to_device(tensor_in, self.on_device) # move to gpu if needed
                 tensor_out = self._callback.decode(tensor_in)
-                tensor_out = to_device(tensor_out, 'cpu') # move to cpu / test
+                if self.device_index is None:
+                    tensor_out = to_device(tensor_out, 'cpu') # move to cpu / test
             else:
-                tensor_out = self._callback(tensor_in)
+                tensor_out = self._callback.decode(tensor_in)
 
             if tensor_out is not None:
                 # Sender thread must be running to avoid indefinite blocking
@@ -247,13 +305,14 @@ class DistP2pPipelineStage:
         self._queues['out'] = ConditionQueue(maxsize=1)
         self._queues['res'] = ConditionQueue(maxsize=1)
 
+        # worker threads
         if work_cb is None:
             # Short-circuit from the inbound queue (can relay data without a worker thread)
             self._queues['out'] = self._queues['in']
         else:
             self._threads['work'] = TensorWorkThread(self._queues['in'], self._queues['out'],
                                                      work_cb)
-
+        # return result to target
         if results_cb is not None:
             queue_res = self._queues['out'] if rank_dst is None else self._queues['res']
             self._threads['res'] = TensorWorkThread(queue_res, None, results_cb)
@@ -359,4 +418,12 @@ def dist_p2p_pipeline_stage_factory(stage_ranks: List[int], data_rank: int, rank
         rank_dst = data_rank if stage == len(stage_ranks) - 1 else stage_ranks[(stage + 1)]
         work_cb = module
         results_cb = None
+
+        # tp related
+        tp_index = qpipe._globals.__TP__LOCAL__RANK__
+        if tp_index != 0: 
+            # only need to recv signal from the previous stage
+            rank_src = rank - tp_index # direcly launched by the master rank in the tp group
+            rank_dst = None # don't need to send signal to the next stage
+    print(f"rank_src: {rank_src}, rank_dst: {rank_dst}, rank: {rank}, results_cb: {results_cb}")
     return DistP2pPipelineStage(rank_src, rank_dst, work_cb, results_cb)

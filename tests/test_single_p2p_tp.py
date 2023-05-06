@@ -18,7 +18,6 @@ from qllm.models import create_empty_model
 CMD_STOP = 0
 CMD_SCHED = 1
 
-import qpipe 
 from qpipe import (
     init_random_seed,
     fetch_prompts
@@ -34,8 +33,6 @@ from qpipe.thread import ThreadSafeCounter
 from qpipe.p2p.dist_pipe import (
     dist_p2p_pipeline_stage_factory
 )
-
-import qllm.tp.utils as qllm_tp_utils
 
 master_stage_context = None
 
@@ -63,10 +60,7 @@ def handle_results(final_intermediate_result) -> None:
         request_input_ids[request_id] = new_input_ids
         request_token = model_pre_and_post.preprocess_one_token(new_input_ids, next_tokens, use_cache=True, request_id=request_id)
         logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
-        if not args.nccl:
-            master_stage_context.enqueue_tensor(to_device_recursive(request_token, 'cpu'))
-        else:
-            master_stage_context.enqueue_tensor(request_token)
+        master_stage_context.enqueue_tensor(to_device_recursive(request_token, 'cpu'))
 
 
 # prepare test data
@@ -117,11 +111,9 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
             raise ValueError("sharding strategy is not set")
         else:
             loaded_llm_cpu._verify_shard_strategy(sharding_strategy)  
-    
-    # the context is used to manager the the signal.
-    with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=1800)}, handle_cmd) \
+    with DistP2pContext(('nccl',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=1800)}, handle_cmd) \
         as dist_ctx:
-        # device_mesh = create_device_mesh(rank, local_rank, world_size)
+        device_mesh = create_device_mesh(rank, local_rank, world_size)
         # print("dist context created for: ", rank)
         # print(device_mesh) 
 
@@ -132,70 +124,34 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
             for i in range(request_numbers):
                 batched_ids = tokenizer.batch_encode_plus(fetch_prompts(bs_token, prompt_length), padding='max_length', max_length=prompt_length, return_tensors="pt")
                 request_token = prepare_input(batched_ids, request_id=i)
-                if args.nccl:
-                    device = torch.device(f'cuda:{local_rank}')
-                    request_token = to_device_recursive(request_token, device=device)
                 data_chunks.append(request_token)
             # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
             batch_size = len(data_chunks)
             print("Pipeline Data Loaded")
+            
         
-        qpipe._globals.__DEVICE__INDEX__ = local_rank
-        qpipe._globals.__GLOBAL__RANK__ = rank
-        # create another communication group for cuda p2p if nccl is specified
-        if args.nccl:
-            # model_parallel_nccl_group = dist.new_group(head_stage_ranks, backend="nccl")
-            # if rank in head_stage_ranks:
-            #     print("head stage ranks", head_stage_ranks)
-            #     qpipe._globals.__PIPELINE__MODEL__PARALLEL__GROUP__ = model_parallel_nccl_group # if not specified, use gloo by default.
-            #     qpipe._globals.__DEVICE__INDEX__ = local_rank
-            #     dist.barrier(model_parallel_nccl_group)
-            all_ranks = list(range(world_size))
-            model_parallel_nccl_group = dist.new_group(all_ranks, backend="nccl")
-            qpipe._globals.__PIPELINE__MODEL__PARALLEL__GROUP__ = model_parallel_nccl_group
-            dist.barrier(model_parallel_nccl_group)
-
-        # read device_mesh
-        head_stage_ranks = [value[0] for value in device_mesh.values()] # first rank
-        for head_stage_id, stage_ranks in device_mesh.items():
-            if rank in stage_ranks:
-                stage_id = qpipe._globals.__STAGE__ID__ = head_stage_id
-                if len(stage_ranks) > 0:
-                    # init inder qllm tp group
-                    _, tp_index, tp_small_world_size = qllm_tp_utils.register_tp_group_and_update_strategy(stage_ranks, sharding_strategy)
-                    qllm_tp_utils.disable_broadcast() # disable broadcast inside layer, do single broadcast outside (in begining of pipiline stage)
-                    qpipe._globals.__TP__LOCAL__RANK__ = tp_index
-                    qpipe._globals.__TENSOR__MODEL__PARALLEL__GROUP__ = qllm_tp_utils.get_tp_group()
-                    qpipe._globals.__TP__LOCAL__WORLD__SIZE__ = tp_small_world_size
-                    dist.barrier(qllm_tp_utils.get_tp_group())
-                    if tp_index == 0:
-                        print('init tp group', stage_ranks)
-
-
-        
-
+        # get stage
+        if rank not in sharding_strategy:
+            stage_id = None
+        else:
+            stage_ranks = sorted(list(sharding_strategy.keys()))
+            stage_id = stage_ranks.index(rank)
+            # shard model
+            print("rank {} is in stage {}".format(rank, stage_id))
         
         # sharded module init
-        dist.barrier() 
-        # now, the module initialization should be done within each tp group
-        current_stage_ranks = device_mesh[stage_id]
-        print("current rank {} on stage {}, with {}".format(rank, stage_id, current_stage_ranks))
-        if rank in current_stage_ranks:
-            shard_config = sharding_strategy[rank]
-            module = loaded_llm_cpu
-            module._shard_model_current(shard_config, f'cuda:{local_rank}')
-            if len(current_stage_ranks) > 0: # TP is initialized
-                dist.barrier(qllm_tp_utils.get_tp_group())
-            print(f"Stage {stage_id} - {qpipe._globals.__TP__LOCAL__RANK__} module sharded")
+        shard_config = sharding_strategy[rank]
+        module = loaded_llm_cpu
+        module._shard_model_current(shard_config, f'cuda:{local_rank}')
+        print(f"Stage {stage_id} module sharded")
+        for request_id in range(request_numbers):
+            module.init_kv_cache(bs_token, prompt_length, num_tokens_to_generate, request_id)
+        print(f"Stage {stage_id} kv initialized")
+        module.eval()
+        module.on_device = f'cuda:{local_rank}'
+        dist.barrier() # wait all device sharded finished.
 
-            for request_id in range(request_numbers):
-                module.init_kv_cache(bs_token, prompt_length, num_tokens_to_generate, request_id)
-            print(f"Stage {stage_id} - {qpipe._globals.__TP__LOCAL__RANK__} kv initialized")
-            module.eval()
-            module.on_device = f'cuda:{local_rank}' # set device for the module
-        dist.barrier()
-
-        with dist_p2p_pipeline_stage_factory(head_stage_ranks, data_rank, rank, stage_id, module,
+        with dist_p2p_pipeline_stage_factory(stage_ranks, data_rank, rank, stage_id, module,
                                                         handle_results) as stage_ctx:
 
             if rank == data_rank:
@@ -235,7 +191,6 @@ def parse_args():
     parser.add_argument("--prompt_length", type=int, default=512, help="prompt length")
     parser.add_argument("--num_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
     parser.add_argument("--request_numbers", type=int, default=4, help="number of requests")
-    parser.add_argument("--nccl", action='store_true', default=False, help="use nccl")
     parser.parse_args()
     args = parser.parse_args()
     return args
@@ -254,25 +209,8 @@ if __name__ == '__main__':
     caliber.set_fake() 
     caliber.load_fake_calib_data(f'fake_calib_{model_name}_{model_size}.pkl')
 
-    # 2d device_mesh
-    # stage_id: [tp_1, tp_2]
-    device_mesh = {
-        0: [0, 1],
-        1: [2, 3]
-    }
-
     sharding_strategy = {
-        0: {
-            0: {'shard': [0, 1], 'bits': [16, 16]},
-            1: {'shard': [0, 1], 'bits': [16, 16]},
-            2: {'shard': [0, 1], 'bits': [8, 16]},
-            3: {'shard': [0, 1], 'bits': [16, 16]},
-            4: {'shard': [0, 1], 'bits': [16, '8:tc-li']},
-            5: {'shard': [0, 1], 'bits': [16, 8]},
-            6: {'shard': [0, 1], 'bits': [16, 16]},
-            7: {'shard': [0, 1], 'bits': [16, 16]},
-            8: {'shard': [0, 1], 'bits': [16, 16]},
-        },
+        0: {},
         1: {
             0: {'shard': [0, 1], 'bits': [16, 16]},
             1: {'shard': [0, 1], 'bits': [16, 16]},
@@ -295,24 +233,8 @@ if __name__ == '__main__':
             15: {'shard': [0,1], 'bits': [16, 16]},
             16: {'shard': [0,1], 'bits': [16, 8]},
             17: {'shard': [0,1], 'bits': [16, 8]},
-            18: {'shard': [0,1], 'bits': [16, 16]},
-            19: {'shard': [0,1], 'bits': [16, 16]},
-            20: {'shard': [0,1], 'bits': [8, 16]},
-            21: {'shard': [0,1], 'bits': [4, 16]},
-            22: {'shard': [0,1], 'bits': [16, 16]}, 
-            23: {'shard': [0,1], 'bits': [16, 16]},
         },
         3:{
-            9: {'shard': [0,1], 'bits': [16, 8]},
-            10: {'shard': [0,1], 'bits': [8, 16]},
-            11: {'shard': [0,1], 'bits': [2, 16]},
-            # 350M
-            12: {'shard': [0,1], 'bits': [16, 16]},
-            13: {'shard': [0,1], 'bits': [16, 4]},
-            14: {'shard': [0,1], 'bits': [8, 16]},
-            15: {'shard': [0,1], 'bits': [16, 16]},
-            16: {'shard': [0,1], 'bits': [16, 8]},
-            17: {'shard': [0,1], 'bits': [16, 8]},
             18: {'shard': [0,1], 'bits': [16, 16]},
             19: {'shard': [0,1], 'bits': [16, 16]},
             20: {'shard': [0,1], 'bits': [8, 16]},

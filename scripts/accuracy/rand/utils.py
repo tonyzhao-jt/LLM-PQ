@@ -89,6 +89,10 @@ def parse_args():
     parser.add_argument('--load', type=str, default='')
 
     parser.add_argument('--ada-file', type=str, default=None)
+    parser.add_argument('--rand-bit', action="store_true")
+    parser.add_argument('--profile', action="store_true")
+    parser.add_argument('--prof-file', type=str, default="profile.pkl")
+
 
     args = parser.parse_args()
     args.batch_size = 1  # BS=1 is used for zeroShot tasks!
