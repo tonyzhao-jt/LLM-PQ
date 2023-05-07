@@ -157,19 +157,25 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
 
         # read device_mesh
         head_stage_ranks = [value[0] for value in device_mesh.values()] # first rank
+        all_ranks_involved = list(set(value for sublist in device_mesh.values() for value in sublist))
         for head_stage_id, stage_ranks in device_mesh.items():
             if rank in stage_ranks:
                 stage_id = qpipe._globals.__STAGE__ID__ = head_stage_id
-                if len(stage_ranks) > 0:
-                    # init inder qllm tp group
-                    _, tp_index, tp_small_world_size = qllm_tp_utils.register_tp_group_and_update_strategy(stage_ranks, sharding_strategy)
+            if len(stage_ranks) > 0:
+                # init inder qllm tp group
+                res = qllm_tp_utils.register_tp_group_and_update_strategy(stage_ranks, sharding_strategy)
+                if res is not None:
+                    _, tp_index, tp_small_world_size = res
                     qllm_tp_utils.disable_broadcast() # disable broadcast inside layer, do single broadcast outside (in begining of pipiline stage)
                     qpipe._globals.__TP__LOCAL__RANK__ = tp_index
                     qpipe._globals.__TENSOR__MODEL__PARALLEL__GROUP__ = qllm_tp_utils.get_tp_group()
                     qpipe._globals.__TP__LOCAL__WORLD__SIZE__ = tp_small_world_size
-                    dist.barrier(qllm_tp_utils.get_tp_group())
+                    qpipe._globals.__TP__GROUP__RANKS__ = stage_ranks
                     if tp_index == 0:
                         print('init tp group', stage_ranks)
+
+        # log each rank's tp_index
+        print(f"rank {rank} tp_index {qpipe._globals.__TP__LOCAL__RANK__}")
         
         # sharded module init
         dist.barrier() 

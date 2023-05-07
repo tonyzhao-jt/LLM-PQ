@@ -34,8 +34,9 @@ def decode_schedule(stage_ranks, stage_layers, stage_qlvs):
         schedule[rank] = {'layers': [layer_start, layer_end], 'bits': qlvs}
     return schedule
 
-
+import torch
 import queue
+from typing import Any, Callable, List, Optional, Tuple, Type, Union
 sched_q = queue.Queue()
 stop_event = threading.Event()
 CMD_STOP = 0

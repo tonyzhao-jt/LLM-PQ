@@ -11,8 +11,13 @@ AVAILBLE_BITS=[2, 3, 4, 8, '8:tc-li', 16]
 __TENSOR__MODEL__PARALLEL__GROUP__ = None
 __TP__LOCAL__WORLD__SIZE__ = None
 __TP__LOCAL__RANK__ = None
+__TP__GROUP__RANKS__ = None
 __GLOBAL__RANK__ = None
 
 __PIPELINE__MODEL__PARALLEL__GROUP__ = None
 __DEVICE__INDEX__ = None # the device rank
 __STAGE__ID__ = None # the stage rank
+
+
+# RPC
+__CURRENT__SHARDED__MODEL__ = None

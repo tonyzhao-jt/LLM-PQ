@@ -9,18 +9,21 @@ import torch
 import torch.nn as nn 
 import threading
 from torch.distributed import rpc
+import torch.distributed as dist
 from typing import Any, Callable, List, Optional, Tuple, Type, Union
 
+import qpipe
 from qpipe.utils import to_device
 from qpipe.rpc import get_neighbor_ranks
 from qpipe.logger import logger
+
 class DistRpcPipelineStage:
     """Wrap a module that is not RPC-aware to manage threading and memory."""
     # NOTE: message ordering is NOT enforced!
 
-    def __init__(self, module_cls: Type[nn.Module], module_args: Optional[tuple]=None,
+    def __init__(self, module_cls, module_args: Optional[tuple]=None,
                  module_kwargs: Optional[dict]=None, \
-                 stage_id:int = None, local_rank:int=None, comm_type:str=None,):
+                 stage_id:int = None, comm_type:str=None,):
         super().__init__()
         if module_args is None:
             module_args = ()
@@ -38,40 +41,35 @@ class DistRpcPipelineStage:
         self._sem_fwd = threading.Semaphore(value=3) # value = 3*N
         self._sem_mod = threading.Semaphore(value=1) # value = N
         # here should me a nn.Sequential Module, and a function that set quantization bit should be here
-        # self._module = module_cls(*module_args, **module_kwargs)
         # TODO: replace with single node strategy
-        self.stage_device = torch.device(f"cuda:{local_rank}")
+        self.stage_device = torch.device("cuda", qpipe._globals.__DEVICE__INDEX__)
+        self.stage_id = stage_id
+        self.comm_type = comm_type
 
-        self.shard_config = module_kwargs['shard_config']
-        self.infer_configs = module_kwargs['infer_configs']
-        self._module = module_cls
+        # self._module = module_cls
+        self._module = module_cls.to_here().local_value()
+        self.enable_tp = False
+        self.global_rank = qpipe._globals.__GLOBAL__RANK__
+        if stage_id == -1:
+            self.enable_tp = True
+            self.tp_group = qpipe._globals.__TENSOR__MODEL__PARALLEL__GROUP__
+        self.tp_rrefs = []
 
-        self.is_master = stage_id==0
         self._next_rref = None
         self._results_to = None
         self._results_cb = None
 
-        self.stage_id = stage_id
-        self.comm_type = comm_type
-    
-    def init_module(self):
-        shard_config = self.shard_config
-        infer_configs = self.infer_configs
-        self._module._shard_model_current(shard_config, self.stage_device)
-        print(f"Stage {self.stage_id} module sharded")
-        bs, prompt_length, num_tokens_to_generate, request_numbers = infer_configs
-        for request_id in range(request_numbers):
-            self._module.init_kv_cache(bs, prompt_length, num_tokens_to_generate, request_id)
-        print(f"Stage {self.stage_id} kv initialized")
-        self._module.eval()
 
-    def module_to(self, *args, **kwargs) -> None:
-        """Wrap the module's `nn.Module.to` method (`device` can be be a `str`)."""
-        if self.is_master:
-            self._module = self._module.to(*args, **kwargs)
-        else:
-            self._module.decoder_layers_to_device(*args, **kwargs)
-        # print(self._module, args, kwargs)
+        logger.info("Stage %d on %d", self.stage_id, self.global_rank)
+    
+    def set_tp_ref(self, cur_tp_rrefs) -> None:
+        self.enable_tp = True if len(cur_tp_rrefs) > 0 else False
+        if self.enable_tp:
+            for ref in cur_tp_rrefs:
+                self.tp_rrefs.append(ref)
+            nums = len(self.tp_rrefs)
+            self.tp_group = qpipe._globals.__TENSOR__MODEL__PARALLEL__GROUP__
+            logger.info(f"rank {self.global_rank} setup tprefs: {nums}")
 
     def set_next(self, stage_rref: rpc.RRef) -> None:
         """Set the RRef of the next pipeline stage - used by all stages except the last."""
@@ -91,8 +89,15 @@ class DistRpcPipelineStage:
         
     def __call__(self, inputs: Any) -> None:
         """Wrap the module's callable method."""
+        
+        if self.enable_tp:
+            for ref in self.tp_rrefs:
+                print("wait for ready", self.global_rank)
+                ref.rpc_sync().wait_for_ready()
+                ref.rpc_async().__call__(inputs)
+        logger.info(f"on rank {self.global_rank} - stage: {self.stage_id}")
         inputs = to_device(inputs, self.stage_device)
-        # print("on", self.stage_id)
+
         with self._sem_mod:
             outputs = self._module.decode(inputs)
         if self._next_rref is not None:
@@ -137,10 +142,11 @@ class DistRpcPipelineStage:
 class DistRpcPipeline:
     """A distributed RPC pipeline which links `DistRpcPipelineStage` RRefs."""
 
-    def __init__(self, stage_rrefs: List[rpc.RRef], results_to: Union[int, rpc.WorkerInfo, str],
+    def __init__(self, stage_rrefs: List[rpc.RRef], tp_rrefs, results_to: Union[int, rpc.WorkerInfo, str],
                  results_cb: Callable[[Any], None]):
         super().__init__()
         self._rref_list = stage_rrefs
+        self._tp_rrefs = tp_rrefs
         self._link_pipeline(results_to, results_cb)
 
     def rpc_register_buffer(self, name: str, tensors: List[Optional[torch.Tensor]],
@@ -168,11 +174,16 @@ class DistRpcPipeline:
 
     def _link_pipeline(self, results_to, results_cb):
         n_stages = len(self._rref_list)
+        print("try link pipeline")
         futs = [self._rref_list[i].rpc_async().set_next(self._rref_list[i + 1])
                 for i in range(n_stages - 1)]
         futs.append(self._rref_list[-1].rpc_async().set_results(results_to, results_cb))
         torch.futures.wait_all(futs)
-
+        print("link pipeline done")
+        futs = [self._rref_list[i].rpc_async().set_tp_ref(self._tp_rrefs[self._rref_list[i]])
+                for i in range(n_stages)]
+        torch.futures.wait_all(futs)
+        print("TP set") 
         # [self._rref_list[i].rpc_sync().set_next(self._rref_list[i + 1])
         #         for i in range(n_stages - 1)]
         # self._rref_list[-1].rpc_sync().set_results(results_to, results_cb)
@@ -189,44 +200,46 @@ def _dist_rpc_pipeline_stage_factory(*args, **kwargs) -> DistRpcPipelineStage:
     return stage
 
 
-def dist_rpc_pipeline_factory(model_cpu: nn.Module, sharding_strategy: dict, device_mesh, infer_configs, results_to: int,
+def dist_rpc_pipeline_factory(head_stage_ranks, hard_device_mesh, all_ranks_involved, rref_dict, results_to: int,
                               results_cb: Callable[[Any], None]) -> DistRpcPipeline:
     """Get an RPC pipeline instance."""
     stage_rrefs = []
-    stage_cnt = 0
+    tp_rrefs = {}
 
-    dst_rank_order = list(sharding_strategy.keys())
-    stage_numbers = len(dst_rank_order)
-
-    for dst_rank, stage_cfgs in sharding_strategy.items():
-        neighbor_ranks = get_neighbor_ranks(device_mesh, dst_rank)
-        if stage_cnt == stage_numbers - 1:
-            next_rank = 0 # meet the last one
-            comm_type = "cpu"
-        else:
-            next_rank = dst_rank_order[stage_cnt + 1]
+    num_stages = len(head_stage_ranks)
+    # for each device, create a pipeline stage
+    for rank in all_ranks_involved:
+        module_rref = rref_dict[rank]
+        if rank in head_stage_ranks:
+            neighbor_ranks = get_neighbor_ranks(hard_device_mesh, rank)
+            stage_id = head_stage_ranks.index(rank)
+            next_rank = (rank + 1) % num_stages
             if next_rank in neighbor_ranks:
                 comm_type = f"cuda:{neighbor_ranks.index(next_rank)}"
             else:
                 comm_type = "cpu"
-        dst_local_rank = neighbor_ranks.index(dst_rank)
-        logger.info(f"Stage {stage_cnt} on {dst_rank} with {comm_type} communication to {next_rank}, local rank {dst_local_rank}")
-
-        rref = rpc.remote(dst_rank, _dist_rpc_pipeline_stage_factory, args=(model_cpu,),
-                           kwargs={'stage_id': stage_cnt, 'module_kwargs': {'infer_configs':infer_configs, 'shard_config': sharding_strategy[dst_rank]}, \
-                                   'local_rank':dst_local_rank, 'comm_type': comm_type})
-        rpc.remote(dst_rank, logger.info,
-                    args=("======= Stage %d on %d =======", stage_cnt, dst_rank))
-        stage_cnt += 1
-        stage_rrefs.append(rref)
+            
+            rref = rpc.remote(f"worker{rank}", _dist_rpc_pipeline_stage_factory, args=([module_rref]),
+                            kwargs={'stage_id': stage_id, 'module_kwargs': {}, \
+                                    'comm_type': comm_type})
+            stage_rrefs.append(rref)
+            tp_rrefs[rref] = []
+        else:
+            stage_id = -1
+            comm_type = 'cpu'
+            tp_rref = rpc.remote(f"worker{rank}", _dist_rpc_pipeline_stage_factory, args=([module_rref]),
+                            kwargs={'stage_id': stage_id, 'module_kwargs': {}, \
+                                    'comm_type': comm_type})
+            if rref not in tp_rrefs:
+                tp_rrefs[rref] = [tp_rref]
+            else:
+                tp_rrefs[rref].append(tp_rref)
     
-    # start module init
-    logger.info("start remote module init")
-    futs = [ref.rpc_async().init_module() for ref in stage_rrefs]
-    torch.futures.wait_all(futs)
+    assert len(stage_rrefs) == len(head_stage_ranks), \
+        f"stage_rrefs length ({len(stage_rrefs)}) doesn't match head_stage_ranks length " 
 
     logger.info("results to rank %d", results_to)
     logger.info("results callback %s", results_cb.__name__ if results_cb else "None")
     logger.info("======= Pipeline created =======")
     logger.info("with %d stages", len(stage_rrefs))
-    return DistRpcPipeline(stage_rrefs, results_to, results_cb)
+    return DistRpcPipeline(stage_rrefs, tp_rrefs, results_to, results_cb)

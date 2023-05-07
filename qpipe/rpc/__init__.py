@@ -1,11 +1,12 @@
 from .distconfig import DistConfig
-from .device import create_device_mesh, set_device_map, get_neighbor_ranks
+from .device import create_device_mesh_nccl, set_device_map, get_neighbor_ranks
 
 import os 
 import torch
 from typing import Any, Callable, List, Optional, Tuple, Type, Union
 from torch.distributed import rpc
-
+import torch.distributed as dist
+from .comm import stop_event
 # RPC CONTEXT
 DistCmdHandler: Type = Callable[[int, Tuple[torch.Tensor, ...]], None]
 
@@ -69,6 +70,11 @@ def init_env():
     world_size = int(os.environ['WORLD_SIZE'])
     group_rank = int(os.environ['GROUP_RANK'])
     # neighbor ranks
-    device_mesh = create_device_mesh(rank, local_rank, world_size)
+    torch.cuda.set_device(local_rank)
+    hard_device_mesh = create_device_mesh_nccl(rank, local_rank, world_size)
     dist_cfg = DistConfig(local_rank, rank, group_rank, world_size, ngpus)
-    return dist_cfg, device_mesh
+    return dist_cfg, hard_device_mesh
+
+
+
+
