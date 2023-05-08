@@ -16,6 +16,7 @@ import qpipe
 from qpipe.utils import to_device
 from qpipe.rpc import get_neighbor_ranks
 from qpipe.logger import logger
+import qllm.tp.utils as qllm_tp_utils
 
 class DistRpcPipelineStage:
     """Wrap a module that is not RPC-aware to manage threading and memory."""
@@ -40,36 +41,23 @@ class DistRpcPipelineStage:
         # depending on its performance relative to other stages and network conditions.
         self._sem_fwd = threading.Semaphore(value=3) # value = 3*N
         self._sem_mod = threading.Semaphore(value=1) # value = N
-        # here should me a nn.Sequential Module, and a function that set quantization bit should be here
+        # here should be a nn.Sequential Module, and a function that set quantization bit should be here
         # TODO: replace with single node strategy
         self.stage_device = torch.device("cuda", qpipe._globals.__DEVICE__INDEX__)
         self.stage_id = stage_id
+        self.tp_index = qpipe._globals.__TP__LOCAL__RANK__
         self.comm_type = comm_type
 
         # self._module = module_cls
         self._module = module_cls.to_here().local_value()
-        self.enable_tp = False
-        self.global_rank = qpipe._globals.__GLOBAL__RANK__
-        if stage_id == -1:
-            self.enable_tp = True
-            self.tp_group = qpipe._globals.__TENSOR__MODEL__PARALLEL__GROUP__
-        self.tp_rrefs = []
+
 
         self._next_rref = None
         self._results_to = None
         self._results_cb = None
 
-
-        logger.info("Stage %d on %d", self.stage_id, self.global_rank)
+        logger.info("Device %d on %d", self.stage_id, self.tp_index)
     
-    def set_tp_ref(self, cur_tp_rrefs) -> None:
-        self.enable_tp = True if len(cur_tp_rrefs) > 0 else False
-        if self.enable_tp:
-            for ref in cur_tp_rrefs:
-                self.tp_rrefs.append(ref)
-            nums = len(self.tp_rrefs)
-            self.tp_group = qpipe._globals.__TENSOR__MODEL__PARALLEL__GROUP__
-            logger.info(f"rank {self.global_rank} setup tprefs: {nums}")
 
     def set_next(self, stage_rref: rpc.RRef) -> None:
         """Set the RRef of the next pipeline stage - used by all stages except the last."""
@@ -90,16 +78,16 @@ class DistRpcPipelineStage:
     def __call__(self, inputs: Any) -> None:
         """Wrap the module's callable method."""
         
-        if self.enable_tp:
-            for ref in self.tp_rrefs:
-                print("wait for ready", self.global_rank)
-                ref.rpc_sync().wait_for_ready()
-                ref.rpc_async().__call__(inputs)
-        logger.info(f"on rank {self.global_rank} - stage: {self.stage_id}")
+        # logger.info(f"Stage {self.stage_id} - TP_INDEX {self.tp_index}, Stage device {self.stage_device}")
+        # print(inputs[0].device)
+        # print(self._module.device)
         inputs = to_device(inputs, self.stage_device)
+        group = qllm_tp_utils.get_tp_group()
 
         with self._sem_mod:
             outputs = self._module.decode(inputs)
+            outputs = to_device(outputs, 'cpu')
+            dist.barrier(group=group)
         if self._next_rref is not None:
             # Sending must be asynchronous, otherwise we lose pipeline parallelism.
             # However, don't try to send until the next stage is ready.
@@ -142,11 +130,10 @@ class DistRpcPipelineStage:
 class DistRpcPipeline:
     """A distributed RPC pipeline which links `DistRpcPipelineStage` RRefs."""
 
-    def __init__(self, stage_rrefs: List[rpc.RRef], tp_rrefs, results_to: Union[int, rpc.WorkerInfo, str],
+    def __init__(self, stage_rrefs: List[rpc.RRef], results_to: Union[int, rpc.WorkerInfo, str],
                  results_cb: Callable[[Any], None]):
         super().__init__()
         self._rref_list = stage_rrefs
-        self._tp_rrefs = tp_rrefs
         self._link_pipeline(results_to, results_cb)
 
     def rpc_register_buffer(self, name: str, tensors: List[Optional[torch.Tensor]],
@@ -174,16 +161,10 @@ class DistRpcPipeline:
 
     def _link_pipeline(self, results_to, results_cb):
         n_stages = len(self._rref_list)
-        print("try link pipeline")
         futs = [self._rref_list[i].rpc_async().set_next(self._rref_list[i + 1])
                 for i in range(n_stages - 1)]
         futs.append(self._rref_list[-1].rpc_async().set_results(results_to, results_cb))
         torch.futures.wait_all(futs)
-        print("link pipeline done")
-        futs = [self._rref_list[i].rpc_async().set_tp_ref(self._tp_rrefs[self._rref_list[i]])
-                for i in range(n_stages)]
-        torch.futures.wait_all(futs)
-        print("TP set") 
         # [self._rref_list[i].rpc_sync().set_next(self._rref_list[i + 1])
         #         for i in range(n_stages - 1)]
         # self._rref_list[-1].rpc_sync().set_results(results_to, results_cb)
@@ -200,46 +181,22 @@ def _dist_rpc_pipeline_stage_factory(*args, **kwargs) -> DistRpcPipelineStage:
     return stage
 
 
-def dist_rpc_pipeline_factory(head_stage_ranks, hard_device_mesh, all_ranks_involved, rref_dict, results_to: int,
+def dist_rpc_pipeline_factory(same_row_ranks, rref_dict, results_to: int,
                               results_cb: Callable[[Any], None]) -> DistRpcPipeline:
     """Get an RPC pipeline instance."""
     stage_rrefs = []
-    tp_rrefs = {}
 
-    num_stages = len(head_stage_ranks)
-    # for each device, create a pipeline stage
-    for rank in all_ranks_involved:
-        module_rref = rref_dict[rank]
-        if rank in head_stage_ranks:
-            neighbor_ranks = get_neighbor_ranks(hard_device_mesh, rank)
-            stage_id = head_stage_ranks.index(rank)
-            next_rank = (rank + 1) % num_stages
-            if next_rank in neighbor_ranks:
-                comm_type = f"cuda:{neighbor_ranks.index(next_rank)}"
-            else:
-                comm_type = "cpu"
-            
-            rref = rpc.remote(f"worker{rank}", _dist_rpc_pipeline_stage_factory, args=([module_rref]),
+    for stage_id, same_row_rank in enumerate(same_row_ranks):
+        module_rref = rref_dict[same_row_rank]
+        comm_type = None
+        rref = rpc.remote(f"worker{same_row_rank}", _dist_rpc_pipeline_stage_factory, args=([module_rref]),
                             kwargs={'stage_id': stage_id, 'module_kwargs': {}, \
                                     'comm_type': comm_type})
-            stage_rrefs.append(rref)
-            tp_rrefs[rref] = []
-        else:
-            stage_id = -1
-            comm_type = 'cpu'
-            tp_rref = rpc.remote(f"worker{rank}", _dist_rpc_pipeline_stage_factory, args=([module_rref]),
-                            kwargs={'stage_id': stage_id, 'module_kwargs': {}, \
-                                    'comm_type': comm_type})
-            if rref not in tp_rrefs:
-                tp_rrefs[rref] = [tp_rref]
-            else:
-                tp_rrefs[rref].append(tp_rref)
+        stage_rrefs.append(rref)
     
-    assert len(stage_rrefs) == len(head_stage_ranks), \
-        f"stage_rrefs length ({len(stage_rrefs)}) doesn't match head_stage_ranks length " 
 
     logger.info("results to rank %d", results_to)
     logger.info("results callback %s", results_cb.__name__ if results_cb else "None")
     logger.info("======= Pipeline created =======")
     logger.info("with %d stages", len(stage_rrefs))
-    return DistRpcPipeline(stage_rrefs, tp_rrefs, results_to, results_cb)
+    return DistRpcPipeline(stage_rrefs, results_to, results_cb)

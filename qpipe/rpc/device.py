@@ -1,6 +1,6 @@
 import torch 
 import torch.distributed as dist
-import logging
+import numpy as np
 
 from qpipe.logger import logger
 # dist / comm utils
@@ -58,20 +58,33 @@ def get_local_rank_by_device_mesh(device_mesh, rank):
         if rank in ranks:
             return rank - first_rank
 
-def set_device_map(rank, device_mesh, schedules, rpc_options):
-    stage_rank_order = list(schedules.keys())
-    if rank not in stage_rank_order:
-        return # only when rank is used
-    i = stage_rank_order.index(rank)
-    # determine the mapping from stage to device
-    cur_stage_rank = stage_rank_order[i]
-    next_stage_rank = stage_rank_order[(i + 1) % len(stage_rank_order)] # possible to be in the same node
-    # cur_stage local rank
-    cur_stage_local_rank = get_local_rank_by_device_mesh(device_mesh, cur_stage_rank)
-    # next_stage local rank
-    next_stage_local_rank = get_local_rank_by_device_mesh(device_mesh, next_stage_rank)
-    if cur_stage_rank == next_stage_rank:
-        pass
-    else:
-        logger.info(f"set device map for worker{cur_stage_rank}:{cur_stage_local_rank} to worker{next_stage_rank}:{next_stage_local_rank}")
-        rpc_options.set_device_map(f"worker{next_stage_rank}", {cur_stage_local_rank: next_stage_local_rank})
+def set_device_map(cur_rank, device_mesh, hard_device_mesh, rpc_options):
+    # check whether hard_device mesh is in the right format
+    for first_rank, ranks in hard_device_mesh.items():
+        assert first_rank == ranks[0], "hard_device_mesh should be in the format of {first_rank: [all_ranks on the same node]}"
+    stages_2d = np.array(list(device_mesh.values())).T
+    tp_group_size, stage_nums = stages_2d.shape
+    # create device_map
+    device_maps = {}
+    # start from each row
+    for j in range(stage_nums):
+        # logger.info(f"stage {j} COMM Initialization")
+        # iterate columns
+        ranks_within_stage = stages_2d[:, j]
+        next_stage = (j + 1) % stage_nums
+        for i, rank in enumerate(ranks_within_stage):
+            rank = int(rank)
+            if rank != cur_rank:
+                continue
+            local_rank = get_local_rank_by_device_mesh(hard_device_mesh, rank)
+            neighbor_ranks = get_neighbor_ranks(hard_device_mesh, rank)
+            # for the time being, the communication between gpus on the same stage is done by p2p groups
+            # so we don't need to set device map for them
+            next_rank = int(stages_2d[i, next_stage])
+            next_rank_local_rank = get_local_rank_by_device_mesh(hard_device_mesh, next_rank)
+            # TODO: support the device setup later. 
+            # set map
+            # device_maps[f"worker{rank}"] = {local_rank: next_rank_local_rank}
+            # rpc_options.set_device_map(f"worker{rank}", {local_rank: next_rank_local_rank})
+            # logger.info(f"set device map for worker{rank}:{local_rank} to worker{next_rank}:{next_rank_local_rank}")
+    return stages_2d, rpc_options

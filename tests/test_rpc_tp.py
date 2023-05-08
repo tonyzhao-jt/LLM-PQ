@@ -35,8 +35,10 @@ from qpipe.rpc import (
     init_env, 
     DistConfig, set_device_map,
     DistRpcContext,
-    stop_event
+    stop_event,
+    ConditionQueue
 )
+
 from qpipe.logger import logger
 from qpipe.thread import ThreadSafeCounter
 from qpipe.partitioner import get_shard_strategy
@@ -44,13 +46,24 @@ from qpipe.pipe import (
     dist_rpc_pipeline_factory
 )
 
+import threading
 
 results_counter = ThreadSafeCounter()
 final_result = {}
 request_input_ids = {}
 request_logit_processor = {}
 request_loop_counter = {}
+model_pre_and_post = None
+
+# cq = ConditionQueue(maxsize=1)
+
 def handle_results(final_intermediate_result) -> None:
+    # cq.put(final_intermediate_result)
+    # with cq.condition:
+    #     while cq.empty():
+    #         cq.condition.wait()
+    #     final_intermediate_result = cq.get()
+    #     cq.condition.notify_all()
     request_id = final_intermediate_result[-1]
     request_loop_counter[request_id] += 1
     results_counter.add(1)
@@ -58,23 +71,34 @@ def handle_results(final_intermediate_result) -> None:
     input_ids = request_input_ids[request_id]
     logits_processor = request_logit_processor[request_id]
     # generate new tokens
+    final_intermediate_result = to_device_recursive(final_intermediate_result, f'cuda:{qpipe._globals.__DEVICE__INDEX__}')
     outputs = model_pre_and_post.postprocess(final_intermediate_result, None)
     
     next_token_logits = outputs.logits[:, -1, :]
     next_tokens_scores = logits_processor(input_ids, next_token_logits)
     next_tokens = torch.argmax(next_tokens_scores, dim=-1)
     new_input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
+    print(new_input_ids.device)
     if request_loop_counter[request_id] < num_tokens_to_generate:
         request_input_ids[request_id] = new_input_ids
         request_token = model_pre_and_post.preprocess_one_token(new_input_ids, next_tokens, use_cache=True, request_id=request_id)
         logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
+        # enqueue the request_token tensor
         master_stage_context.enqueue_tensor(to_device_recursive(request_token, 'cpu'))
 
 
+def empty_callback():
+    pass
+
+def create_handle_results_fn(model_pre_and_post):
+    def handle_results_in(final_intermediate_result):
+        return handle_results(final_intermediate_result, model_pre_and_post)
+    return handle_results_in
+
 
 # prepare test data
-def prepare_input(batched_ids, request_id):
-    batched_ids = to_device_recursive(dict(batched_ids), 'cuda:0')
+def prepare_input(model_pre_and_post, batched_ids, request_id, device):
+    batched_ids = to_device_recursive(dict(batched_ids), device)
     generation_config = model_pre_and_post.generation_config
     request_token = model_pre_and_post.preprocess(**batched_ids, use_cache=True, request_id=request_id)
     p_input_ids = batched_ids['input_ids']
@@ -107,51 +131,8 @@ def init_tokenizer():
 def get_model_rref():
     return rpc.RRef(qpipe._globals.__CURRENT__SHARDED__MODEL__)
 
-cur_tp_config = None
-def empty_model_tp_configs():
-    global cur_tp_config
-    cur_tp_config = qllm_tp_utils.get_tp_configs()
-    qllm_tp_utils.empty_tp_configs()
 
-def load_model_tp_configs():
-    qllm_tp_utils.load_tp_configs(cur_tp_config)
-
-master_stage_context = None
-def run_pipeline_rpc(loaded_llm_cpu, dist_cfg, sharding_strategy=None) -> None:
-    global master_stage_context
-    rank = dist_cfg.rank
-    local_rank = dist_cfg.local_rank
-    data_rank = 0 # by default, use rank 0 as the data rank
-    world_size = dist_cfg.world_size
-    # verify the scheduling is ok to be set
-    if rank == 0:
-        if not sharding_strategy:
-            raise ValueError("sharding strategy is not set")
-        else:
-            loaded_llm_cpu._verify_shard_strategy(sharding_strategy)
-
-    if rank == data_rank:
-        # init tokenizer
-        tokenizer = init_tokenizer()
-        data_chunks = []
-        for i in range(request_numbers):
-            batched_ids = tokenizer.batch_encode_plus(fetch_prompts(bs_token, prompt_length), padding='max_length', max_length=prompt_length, return_tensors="pt")
-            request_token = prepare_input(batched_ids, request_id=i)
-            device = torch.device(f'cuda:{local_rank}')
-            # request_token = to_device_recursive(request_token, device=device)
-            request_token = to_device_recursive(request_token, 'cpu') # INPUT FOR RPC.
-            data_chunks.append(request_token)
-        # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
-        batch_size = len(data_chunks)
-        print("Pipeline Data Loaded")
-    
-    qpipe._globals.__DEVICE__INDEX__ = local_rank
-    qpipe._globals.__GLOBAL__RANK__ = rank
-    # all_ranks = list(range(world_size))
-    # model_parallel_nccl_group = dist.new_group(all_ranks, backend="nccl")
-    # qpipe._globals.__PIPELINE__MODEL__PARALLEL__GROUP__ = model_parallel_nccl_group
-    # dist.barrier(model_parallel_nccl_group)
-
+def process_mesh_and_set_env(rank, device_mesh):
     # read device_mesh
     head_stage_ranks = [value[0] for value in device_mesh.values()] # first rank
     all_ranks_involved = list(set(value for sublist in device_mesh.values() for value in sublist))
@@ -170,58 +151,104 @@ def run_pipeline_rpc(loaded_llm_cpu, dist_cfg, sharding_strategy=None) -> None:
                 qpipe._globals.__TP__GROUP__RANKS__ = stage_ranks
                 if tp_index == 0:
                     print('init tp group', stage_ranks)
+    return stage_id, head_stage_ranks, all_ranks_involved
 
-    # log each rank's tp_index
-    print(f"rank {rank} tp_index {qpipe._globals.__TP__LOCAL__RANK__}")
-    dist.barrier()
-    
-    # sharded module init
+cur_tp_config = None
+def empty_model_tp_configs():
+    global cur_tp_config
+    cur_tp_config = qllm_tp_utils.get_tp_configs()
+    qllm_tp_utils.empty_tp_configs()
+
+def load_model_tp_configs():
+    qllm_tp_utils.load_tp_configs(cur_tp_config)
+    # logger.info(f"load tp configs {cur_tp_config}")
+
+master_stage_context = None
+def run_pipeline_rpc(loaded_llm_cpu, dist_cfg, sharding_strategy=None) -> None:
+    global model_pre_and_post
+    global master_stage_context
+    rank = dist_cfg.rank
+    local_rank = dist_cfg.local_rank
+    # verify the scheduling is ok to be set
+    if rank == 0:
+        if not sharding_strategy:
+            raise ValueError("sharding strategy is not set")
+        else:
+            loaded_llm_cpu._verify_shard_strategy(sharding_strategy)
+
+    # init stage
+    stage_id, head_stage_ranks, all_ranks_involved = process_mesh_and_set_env(rank, device_mesh)
+    qpipe._globals.__DEVICE__INDEX__ = local_rank
+    device = torch.device(f'cuda:{local_rank}')
+    qpipe._globals.__GLOBAL__RANK__ = rank    
+    rpc_opts = rpc.TensorPipeRpcBackendOptions(rpc_timeout=60) # the loading of weight takes a lot of time
+    stages_2d, rpc_opts = set_device_map(rank, device_mesh, hard_device_mesh, rpc_opts)
+
+    if stage_id == 0: # first stage is used for data rank.
+        model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
+        model_pre_and_post = model_pre_and_post.to(device)
+        model_pre_and_post.eval()
+        dist.barrier(qllm_tp_utils.get_tp_group())
+    # module initialization
     dist.barrier() 
-    # now, the module initialization should be done within each tp group
     current_stage_ranks = device_mesh[stage_id]
-    print("current rank {} on stage {}, with {}".format(rank, stage_id, current_stage_ranks))
+    logger.info("current rank {} on stage {}, TP GROUP {}".format(rank, stage_id, current_stage_ranks))
     if rank in current_stage_ranks:
         shard_config = sharding_strategy[rank]
         module = loaded_llm_cpu
         module._shard_model_current(shard_config, f'cuda:{local_rank}')
         if len(current_stage_ranks) > 0: # TP is initialized
             dist.barrier(qllm_tp_utils.get_tp_group())
-        print(f"Stage {stage_id} - {qpipe._globals.__TP__LOCAL__RANK__} module sharded")
+        logger.info(f"Stage {stage_id} - {qpipe._globals.__TP__LOCAL__RANK__} module sharded")
 
         for request_id in range(request_numbers):
             module.init_kv_cache(bs_token, prompt_length, num_tokens_to_generate, request_id)
-        print(f"Stage {stage_id} - {qpipe._globals.__TP__LOCAL__RANK__} kv initialized")
+        logger.info(f"Stage {stage_id} - {qpipe._globals.__TP__LOCAL__RANK__} kv initialized")
         module.eval()
         module.on_device = f'cuda:{local_rank}' # set device for the module
-    dist.barrier()
     qpipe._globals.__CURRENT__SHARDED__MODEL__ = module # set module
-    rpc_opts = rpc.TensorPipeRpcBackendOptions(rpc_timeout=60) # the loading of weight takes a lot of time
-    set_device_map(rank, hard_device_mesh, sharding_strategy, rpc_opts)
+    dist.barrier()
 
-    # remove tp configs temporarily, for pickle
+    # Embedding Execution. Prepare data.
+    if stage_id == 0: # first stage is used for data rank.
+        # init tokenizer
+        tokenizer = init_tokenizer()
+        data_chunks = []
+        for i in range(request_numbers):
+            batched_ids = tokenizer.batch_encode_plus(fetch_prompts(bs_token, prompt_length), padding='max_length', max_length=prompt_length, return_tensors="pt")
+            request_token = prepare_input(model_pre_and_post, batched_ids, request_id=i, device=device)
+            # request_token = to_device_recursive(request_token, device=device)
+            request_token = to_device_recursive(request_token, 'cpu') 
+            data_chunks.append(request_token)
+        # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
+        batch_size = len(data_chunks)
+        logger.info(f"Stage {stage_id} - {qpipe._globals.__TP__LOCAL__RANK__} data prepared")
+    dist.barrier()
+
+    # ALERT: Temporarily disable TP
     empty_model_tp_configs()
-
-    
+    logger.warning("RANK {}: TP is disabled TMP".format(rank))
+    dist.barrier()
     # # based on the schedule and device_mesh, determines the communication type
     with DistRpcContext((f"worker{rank}",),
                         { 'world_size': dist_cfg.world_size,
                           'rank': rank,
                           'rpc_backend_options': rpc_opts}
                        ) as dist_ctx:
-        if rank == data_rank:
+        if stage_id == 0:
+            # stage 2d [i, j]: j: stage, i: tp_index
+            i = stages_2d[:, 0].tolist().index(rank)
+            assert i != -1, "rank {} not found in stage 0 in 2d stage mesh".format(rank)
+            same_row_ranks = stages_2d[i, :].tolist()
             rref_dict = {}
-            for involed_rank in all_ranks_involved:
-                if involed_rank == rank:
-                    rref_dict[involed_rank] = rpc.RRef(module)
-                rref_dict[involed_rank] = rpc.remote(f"worker{involed_rank}", get_model_rref)
+            for row_device in same_row_ranks:
+                rref_dict[row_device] = rpc.remote(f"worker{row_device}", get_model_rref)
 
-            print("Rref loaded")
-            pipeline = dist_rpc_pipeline_factory(head_stage_ranks, hard_device_mesh, all_ranks_involved, rref_dict, rank, handle_results)
-
-            # load tp configs back
-            for involed_rank in all_ranks_involved:
-                rpc.remote(f"worker{involed_rank}", load_model_tp_configs)
-
+            pipeline = dist_rpc_pipeline_factory(same_row_ranks, rref_dict, rank, handle_results)
+            logger.info("Pipeline Loaded for stage {}-{}".format(stage_id, i))
+            # reload tp configs back
+            for row_device in same_row_ranks:
+                rpc.remote(f"worker{row_device}", load_model_tp_configs)
             master_stage_context = pipeline
             # pipeline.rpc_register_forward_hook(forward_hook_to_cpu)
             # pipeline.rpc_register_forward_pre_hook(forward_pre_hook_to_device)
@@ -229,10 +256,11 @@ def run_pipeline_rpc(loaded_llm_cpu, dist_cfg, sharding_strategy=None) -> None:
             # start results monitoring - see comments in handle_results
             # this call is asynchronous - wait for results to get end-to-end timings
             logger.info("start pipe data")
+
             start_count = results_counter.value
             # this only launch the tasks but not actually finish the tasks.
             for data_chunk in data_chunks:
-                dist_ctx.enqueue_tensor(data_chunk)
+                pipeline.enqueue_tensor(data_chunk)
             results_counter.wait_gte(start_count + len(data_chunks) * num_tokens_to_generate)
             tok_data = perf_counter()
             latency = tok_data - tik_data
@@ -436,8 +464,5 @@ if __name__ == '__main__':
     dist_cfg, hard_device_mesh = init_env()
     assert dist_cfg.world_size > 1, "world size should be larger than 1, else single device"
 
-    if dist_cfg.rank == 0:
-        model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
-        model_pre_and_post = model_pre_and_post.cuda()
     
     run_pipeline_rpc(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
