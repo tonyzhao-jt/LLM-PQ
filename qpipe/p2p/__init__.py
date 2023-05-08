@@ -16,6 +16,8 @@ from .device import create_device_mesh
 from .TYPES import *
 from .comm import _send_tensor, _recv_tensor
 
+
+import qpipe
 # RPC CONTEXT
 DistCmdHandler: Type = Callable[[int, Tuple[torch.Tensor, ...]], None]
 
@@ -54,6 +56,10 @@ class CommandThread(threading.Thread):
         super().__init__()
         self._callback = callback
         self._evt_stop_thread = threading.Event()
+        self.on_device = torch.device("cuda", qpipe._globals.__DEVICE__INDEX__) if qpipe._globals.__DEVICE__INDEX__ is not None else torch.device('cpu')
+        self.src_rank = qpipe._globals.__ROW__FIRST__RANK__
+        # buffer
+        self.tensor_cmd = torch.zeros(2, dtype=torch.int, device=self.on_device)
 
     def stop(self) -> None:
         """Direct the thread to stop."""
@@ -63,8 +69,8 @@ class CommandThread(threading.Thread):
         """Listen for commands."""
         while True:
             # contains (1) CMD enumeration and (2) an optional tensor count
-            tensor_cmd = torch.zeros(2, dtype=torch.int)
-            ircv_req = dist.irecv(tensor=tensor_cmd, tag=TAG_BASE_CMD)
+            tensor_cmd = torch.zeros(2, dtype=torch.int, device=self.on_device)
+            ircv_req = dist.irecv(tensor=tensor_cmd, src=self.src_rank, tag=TAG_BASE_CMD)
             ircv_req_t = util.DistRequestWaitDaemon(ircv_req)
             ircv_req_t.start()
             while ircv_req_t.is_alive():
@@ -99,10 +105,14 @@ class DistP2pContext(DistContext):
         super().__init__(ipg_args, ipg_kwargs)
         self._thread_cmd = CommandThread(cmd_cb)
 
+        self.on_device = torch.device("cuda", qpipe._globals.__DEVICE__INDEX__) if qpipe._globals.__DEVICE__INDEX__ is not None else torch.device('cpu')
+
     def init(self) -> None:
         """Initialize the distributed context and threads."""
         super().init()
-        dist.init_process_group(*self._init_args, **self._init_kwargs)
+        # check whether we're already initialized
+        if not dist.is_initialized():
+            dist.init_process_group(*self._init_args, **self._init_kwargs)
         self._thread_cmd.start()
 
     def shutdown(self) -> None:
@@ -117,7 +127,7 @@ class DistP2pContext(DistContext):
         assert self._initialized
         if tensors is None:
             tensors = ()
-        tensor_cmd = torch.tensor([cmd, len(tensors)], dtype=torch.int)
+        tensor_cmd = torch.tensor([cmd, len(tensors)], dtype=torch.int, device=self.on_device)
         reqs = []
         for dst in range(self._world_size):
             if dst != self._rank:

@@ -78,7 +78,6 @@ def handle_results(final_intermediate_result) -> None:
     next_tokens_scores = logits_processor(input_ids, next_token_logits)
     next_tokens = torch.argmax(next_tokens_scores, dim=-1)
     new_input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
-    print(new_input_ids.device)
     if request_loop_counter[request_id] < num_tokens_to_generate:
         request_input_ids[request_id] = new_input_ids
         request_token = model_pre_and_post.preprocess_one_token(new_input_ids, next_tokens, use_cache=True, request_id=request_id)

@@ -258,7 +258,7 @@ if __name__ == '__main__':
     # init env
     seed = 42
     init_random_seed(seed)
-    dist_cfg = init_env()
+    dist_cfg, hard_device_mesh = init_env()
     assert dist_cfg.world_size > 1, "world size should be larger than 1, else single device"
 
     if dist_cfg.rank == 0:

@@ -60,6 +60,10 @@ class TensorSendThread(AbstractTensorExchangeThread):
         self._queue_out = queue_out
         self._dst_rank = dst_rank
         self._evt_stop_thread = threading.Event()
+        self.on_device = torch.device("cuda", qpipe._globals.__DEVICE__INDEX__) if qpipe._globals.__DEVICE__INDEX__ is not None else torch.device('cpu')
+
+        # buffer
+        self.tensor_count = torch.tensor(-1, dtype=torch.int)
 
     def stop(self) -> None:
         """Direct the thread to stop."""
@@ -83,7 +87,7 @@ class TensorSendThread(AbstractTensorExchangeThread):
                 tensor_count = torch.tensor(len(objs), dtype=torch.int)
             else:
                 objs = (payload,)
-                tensor_count = torch.tensor(-1, dtype=torch.int)
+                tensor_count = self.tensor_count
             # pickle as needed
             tensors = ()
             tensor_sizes = ()
@@ -112,6 +116,8 @@ class TensorRecvThread(AbstractTensorExchangeThread):
         self._queue_in = queue_in
         self._src_rank = src_rank
         self._evt_stop_thread = threading.Event()
+        self.on_device = torch.device("cuda", qpipe._globals.__DEVICE__INDEX__) if qpipe._globals.__DEVICE__INDEX__ is not None else torch.device('cpu')
+        # buffer
 
     def stop(self) -> None:
         """Direct the thread to stop."""
@@ -166,6 +172,7 @@ class TensorWorkThread(threading.Thread):
         self._queue_out = queue_out
         self._callback = callback
         self._evt_stop_thread = threading.Event()
+        self.stage_device = torch.device("cuda", qpipe._globals.__DEVICE__INDEX__)
 
         # add device.
         if isinstance(callback, nn.Module):
@@ -178,40 +185,6 @@ class TensorWorkThread(threading.Thread):
         self._tp_signal_threads = {}
         self._tp_cond_queue = {}
         self.global_rank = qpipe._globals.__GLOBAL__RANK__
-        if queue_out is not None:
-            # if queue_out is none, it is the last thread return value to the user.
-            self.init_tp()
-    
-    def init_tp(self):
-        tp_group = qpipe._globals.__TENSOR__MODEL__PARALLEL__GROUP__
-        tp_world_size = qpipe._globals.__TP__LOCAL__WORLD__SIZE__
-        tp_index = qpipe._globals.__TP__LOCAL__RANK__
-        global_rank = qpipe._globals.__GLOBAL__RANK__
-        if tp_index == 0 and tp_world_size != 1: # only the first rank need to send signal to other ranks.
-            for i in range(1, tp_world_size):
-                signal_name = 'tp_signal_' + str(global_rank+i)
-                self._tp_cond_queue[signal_name] = ConditionQueue(maxsize=1)
-                # each threads is protected by a condition variable.
-                self._tp_signal_threads[signal_name] = TensorSendThread(self._tp_cond_queue[signal_name], global_rank+i)
-                self._tp_signal_threads[signal_name].start()
-        # print(" init tp send threds: ", global_rank, self._tp_signal_threads)
-        if tp_group is not None:
-            self.enable_tp = True
-            self.tp_index = tp_index
-            self.tp_comm_group = tp_group
-    
-    def tp_broadcast(self, tensor):
-        # tp master send tensor to other ranks.
-        if self.tp_index == 0:
-            for tp_signal_name, cond_queue in self._tp_cond_queue.items():
-                # print(tp_signal_name)
-                with cond_queue.condition:
-                    while cond_queue.full():
-                        cond_queue.condition.wait()
-                    cond_queue.put(tensor)
-                    cond_queue.condition.notify_all()
-        dist.barrier(group=self.tp_comm_group)
-        return tensor
     
 
     def stop(self) -> None:
@@ -238,16 +211,6 @@ class TensorWorkThread(threading.Thread):
                 tensor_in = self._queue_in.get(block=False)
                 self._queue_in.condition.notify_all()
             
-            # print(f"before tp broadcast {self.global_rank} {self.tp_index} {tensor_in}")
-            # TP related
-            if self.enable_tp:
-                # when tp is enabled, always cuda
-                tensor_in = self.tp_broadcast(tensor_in)
-            # dist.barrier(group=self.tp_comm_group)
-            # print(f"runnnnnnnnn------{self.global_rank} -- {self.tp_index}")
-            # print(tensor_in)
-            # dist.barrier(group=self.tp_comm_group)
-            # execute the model
             if self.on_device is not None:
                 if self.on_device is not None:
                     tensor_in = to_device(tensor_in, self.on_device) # move to gpu if needed
@@ -419,11 +382,5 @@ def dist_p2p_pipeline_stage_factory(stage_ranks: List[int], data_rank: int, rank
         work_cb = module
         results_cb = None
 
-        # tp related
-        tp_index = qpipe._globals.__TP__LOCAL__RANK__
-        if tp_index is not None and tp_index != 0: 
-            # only need to recv signal from the previous stage
-            rank_src = rank - tp_index # direcly launched by the master rank in the tp group
-            rank_dst = None # don't need to send signal to the next stage
     print(f"rank_src: {rank_src}, rank_dst: {rank_dst}, rank: {rank}, results_cb: {results_cb}")
     return DistP2pPipelineStage(rank_src, rank_dst, work_cb, results_cb)

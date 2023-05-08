@@ -2,6 +2,7 @@ import torch
 import os 
 
 from .distconfig import DistConfig
+from .device import create_device_mesh, create_device_mesh_nccl
 def init_env():
     ngpus = torch.cuda.device_count()
     local_rank = int(os.environ["LOCAL_RANK"])
@@ -10,6 +11,7 @@ def init_env():
     group_rank = int(os.environ['GROUP_RANK'])
     # neighbor ranks
     dist_cfg = DistConfig(local_rank, rank, group_rank, world_size, ngpus)
+    # hard_device_mesh = create_device_mesh_nccl(rank, local_rank, world_size)
     # torch set device
     torch.cuda.set_device(local_rank)
-    return dist_cfg
+    return dist_cfg, None

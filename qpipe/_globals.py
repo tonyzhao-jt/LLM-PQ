@@ -14,10 +14,12 @@ __TP__LOCAL__RANK__ = None
 __TP__GROUP__RANKS__ = None
 __GLOBAL__RANK__ = None
 
+
 __PIPELINE__MODEL__PARALLEL__GROUP__ = None
 __DEVICE__INDEX__ = None # the device rank
 __STAGE__ID__ = None # the stage rank
 
+__ROW__FIRST__RANK__ = None
 
 # RPC
 __CURRENT__SHARDED__MODEL__ = None
