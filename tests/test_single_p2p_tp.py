@@ -176,6 +176,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
 
         # log each rank's tp_index
         print(f"rank {rank} tp_index {qpipe._globals.__TP__LOCAL__RANK__}")
+        dist.barrier()
         
         # sharded module init
         dist.barrier() 
@@ -196,6 +197,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
             module.eval()
             module.on_device = f'cuda:{local_rank}' # set device for the module
         dist.barrier()
+        qpipe._globals.__CURRENT__SHARDED__MODEL__ = module # set module
 
         with dist_p2p_pipeline_stage_factory(head_stage_ranks, data_rank, rank, stage_id, module,
                                                         handle_results) as stage_ctx:

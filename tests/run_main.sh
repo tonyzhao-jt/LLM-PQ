@@ -14,8 +14,8 @@ torchrun --nnodes=1 --nproc_per_node=4 --master_addr net-g14 --master_port 6666 
 torchrun --nnodes=1 --nproc_per_node=4 --master_addr net-g14 --master_port 6666 test_single_p2p.py --model_name opt --model_size "350m"
 torchrun --nnodes=1 --nproc_per_node=4 --master_addr net-g14 --master_port 6666 test_single.py
 
-torchrun --nnodes=1 --nproc_per_node=4 --master_addr net-g14 --master_port 5555 test_single_p2p.py --model_name opt --model_size "350m"
-torchrun --nnodes=1 --nproc_per_node=4 --master_port 8888  test_rpc_tp.py --model_name opt --model_size "350m"
+torchrun --nnodes=1 --nproc_per_node=4 --master_addr net-g14 --master_port 5555 test_single_p2p_tp.py --model_name opt --model_size "350m"
+torchrun --nnodes=1 --nproc_per_node=4 --master_port 9999 test_rpc_tp.py --model_name opt --model_size "350m"
 
 torchrun --nnodes=1 --nproc_per_node=4 --master_port 5555 test_rpc.py
 
