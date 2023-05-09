@@ -46,6 +46,7 @@ class DistRpcPipelineStage:
         self.stage_device = torch.device("cuda", qpipe._globals.__DEVICE__INDEX__)
         self.stage_id = stage_id
         self.tp_index = qpipe._globals.__TP__LOCAL__RANK__
+        self.use_nccl = qpipe._globals.__USE__NCCL__ 
         self.comm_type = comm_type
 
         # self._module = module_cls
@@ -81,12 +82,14 @@ class DistRpcPipelineStage:
         # logger.info(f"Stage {self.stage_id} - TP_INDEX {self.tp_index}, Stage device {self.stage_device}")
         # print(inputs[0].device)
         # print(self._module.device)
+        print(inputs[0].device)
         inputs = to_device(inputs, self.stage_device)
         group = qllm_tp_utils.get_tp_group()
 
         with self._sem_mod:
             outputs = self._module.decode(inputs)
-            outputs = to_device(outputs, 'cpu')
+            if not self.use_nccl:
+                outputs = to_device(outputs, 'cpu')
             dist.barrier(group=group)
         if self._next_rref is not None:
             # Sending must be asynchronous, otherwise we lose pipeline parallelism.

@@ -6,3 +6,4 @@ from .hardware_handler import (
 from .mem_handler import get_size_cuda, get_size_cpu, get_iter_variable_size
 from .save import save_with_pickle
 from .simple_partition import partition_a_into_b_bins
+from .tensor_handler import object_to_tensor

@@ -65,13 +65,16 @@ def handle_results(final_intermediate_result) -> None:
     #     final_intermediate_result = cq.get()
     #     cq.condition.notify_all()
     request_id = final_intermediate_result[-1]
+    if isinstance(request_id, torch.Tensor):
+        request_id = request_id.item()
     request_loop_counter[request_id] += 1
     results_counter.add(1)
     # get original input id
     input_ids = request_input_ids[request_id]
     logits_processor = request_logit_processor[request_id]
     # generate new tokens
-    final_intermediate_result = to_device_recursive(final_intermediate_result, f'cuda:{qpipe._globals.__DEVICE__INDEX__}')
+    device = f'cuda:{qpipe._globals.__DEVICE__INDEX__}'
+    final_intermediate_result = to_device_recursive(final_intermediate_result, device)
     outputs = model_pre_and_post.postprocess(final_intermediate_result, None)
     
     next_token_logits = outputs.logits[:, -1, :]
@@ -85,7 +88,10 @@ def handle_results(final_intermediate_result) -> None:
         if qpipe._globals.__GLOBAL__RANK__ == 0:
             logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
         # enqueue the request_token tensor
-        master_stage_context.enqueue_tensor(to_device_recursive(request_token, 'cpu'))
+        if args.nccl:
+            master_stage_context.enqueue_tensor(to_device_recursive(request_token, device))
+        else:
+            master_stage_context.enqueue_tensor(to_device_recursive(request_token, 'cpu'))
 
 
 def empty_callback():
@@ -218,14 +224,15 @@ def run_pipeline_rpc(loaded_llm_cpu, dist_cfg, sharding_strategy=None) -> None:
         for i in range(request_numbers):
             batched_ids = tokenizer.batch_encode_plus(fetch_prompts(bs_token, prompt_length), padding='max_length', max_length=prompt_length, return_tensors="pt")
             request_token = prepare_input(model_pre_and_post, batched_ids, request_id=i, device=device)
-            # request_token = to_device_recursive(request_token, device=device)
-            request_token = to_device_recursive(request_token, 'cpu') 
+            if args.nccl:
+                request_token = to_device_recursive(request_token, device=device)
+            else:
+                request_token = to_device_recursive(request_token, 'cpu')
             data_chunks.append(request_token)
         # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
         batch_size = len(data_chunks)
         logger.info(f"Stage {stage_id} - {qpipe._globals.__TP__LOCAL__RANK__} data prepared")
     dist.barrier()
-
     # ALERT: Temporarily disable TP
     empty_model_tp_configs()
     logger.warning("RANK {}: TP is disabled TMP".format(rank))
@@ -364,6 +371,7 @@ def parse_args():
     parser.add_argument("--prompt_length", type=int, default=512, help="prompt length")
     parser.add_argument("--num_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
     parser.add_argument("--request_numbers", type=int, default=4, help="number of requests")
+    parser.add_argument("--nccl", action='store_true', default=False, help="use nccl")
     parser.parse_args()
     args = parser.parse_args()
     return args

@@ -160,6 +160,8 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
     qpipe._globals.__DEVICE__INDEX__ = local_rank
     device = torch.device(f'cuda:{local_rank}')
     qpipe._globals.__GLOBAL__RANK__ = rank    
+    if args.nccl:
+        qpipe._globals.__USE_NCCL__ = True
     rpc_opts = rpc.TensorPipeRpcBackendOptions(rpc_timeout=60) # the loading of weight takes a lot of time
     stages_2d, rpc_opts = set_device_map(rank, device_mesh, hard_device_mesh, rpc_opts)
 

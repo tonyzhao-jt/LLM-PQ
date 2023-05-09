@@ -23,3 +23,4 @@ __ROW__FIRST__RANK__ = None
 
 # RPC
 __CURRENT__SHARDED__MODEL__ = None
+__USE__NCCL__ = False

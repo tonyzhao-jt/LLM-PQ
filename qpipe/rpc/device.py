@@ -85,6 +85,7 @@ def set_device_map(cur_rank, device_mesh, hard_device_mesh, rpc_options):
             # TODO: support the device setup later. 
             # set map
             # device_maps[f"worker{rank}"] = {local_rank: next_rank_local_rank}
-            # rpc_options.set_device_map(f"worker{rank}", {local_rank: next_rank_local_rank})
-            # logger.info(f"set device map for worker{rank}:{local_rank} to worker{next_rank}:{next_rank_local_rank}")
+            rpc_options.set_device_map(f"worker{next_rank}", {local_rank: next_rank_local_rank})
+            # rpc_options.set_devices([local_rank])
+            logger.info(f"set device map: worker{rank}-{local_rank}: to worker{next_rank}-{next_rank_local_rank}")
     return stages_2d, rpc_options
