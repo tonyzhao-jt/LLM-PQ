@@ -82,7 +82,7 @@ class DistRpcPipelineStage:
         # logger.info(f"Stage {self.stage_id} - TP_INDEX {self.tp_index}, Stage device {self.stage_device}")
         # print(inputs[0].device)
         # print(self._module.device)
-        print(inputs[0].device)
+        # print(inputs[0].device)
         inputs = to_device(inputs, self.stage_device)
         group = qllm_tp_utils.get_tp_group()
 

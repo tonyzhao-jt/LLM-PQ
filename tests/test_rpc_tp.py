@@ -36,7 +36,8 @@ from qpipe.rpc import (
     DistConfig, set_device_map,
     DistRpcContext,
     stop_event,
-    ConditionQueue
+    ConditionQueue,
+    rpc_opt_factory
 )
 
 from qpipe.logger import logger
@@ -188,7 +189,7 @@ def run_pipeline_rpc(loaded_llm_cpu, dist_cfg, sharding_strategy=None) -> None:
     qpipe._globals.__DEVICE__INDEX__ = local_rank
     device = torch.device(f'cuda:{local_rank}')
     qpipe._globals.__GLOBAL__RANK__ = rank    
-    rpc_opts = rpc.TensorPipeRpcBackendOptions(rpc_timeout=60) # the loading of weight takes a lot of time
+    rpc_opts = rpc_opt_factory(rpc_timeout=60)
     stages_2d, rpc_opts = set_device_map(rank, device_mesh, hard_device_mesh, rpc_opts)
 
     if stage_id == 0: # first stage is used for data rank.
@@ -474,5 +475,4 @@ if __name__ == '__main__':
     dist_cfg, hard_device_mesh = init_env()
     assert dist_cfg.world_size > 1, "world size should be larger than 1, else single device"
 
-    
     run_pipeline_rpc(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)

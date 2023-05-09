@@ -76,6 +76,25 @@ def init_env():
     dist_cfg = DistConfig(local_rank, rank, group_rank, world_size, ngpus)
     return dist_cfg, hard_device_mesh
 
-
+# contruct rpc opt by environ
+def rpc_opt_factory(rpc_timeout=60, rpc_disable_shm=False):
+    import random
+    from qpipe.logger import logger
+    MASTER_PORT = int(os.environ['MASTER_PORT'])
+    if 'RPC_PORT' in os.environ:
+        rpc_port = int(os.environ['RPC_PORT'])
+    else:
+        # randomly assign an rpc port
+        # rpc_port = MASTER_PORT + 10 # set a different number
+        rpc_port = MASTER_PORT
+    rpc_options = {}
+    if rpc_disable_shm:
+        rpc_options['_transports'] = ['uv']
+    master_host = os.environ['MASTER_ADDR']
+    rpc_opts = rpc.TensorPipeRpcBackendOptions(
+        rpc_timeout=rpc_timeout, init_method=f'tcp://{master_host}:{rpc_port}', **rpc_options)
+    logger.info("INIT RPC WITH ADDRESS %s:%d" % (master_host, rpc_port))
+    
+    return rpc_opts
 
 
