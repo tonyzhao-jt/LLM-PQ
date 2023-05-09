@@ -43,6 +43,8 @@ request_logit_processor = {}
 request_loop_counter = {}
 def handle_results(final_intermediate_result) -> None:
     request_id = final_intermediate_result[-1]
+    if isinstance(request_id, torch.Tensor):
+        request_id = request_id.item()
     request_loop_counter[request_id] += 1
     results_counter.add(1)
     # get original input id
