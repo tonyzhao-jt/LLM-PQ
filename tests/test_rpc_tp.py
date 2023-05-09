@@ -82,7 +82,8 @@ def handle_results(final_intermediate_result) -> None:
     if request_loop_counter[request_id] < num_tokens_to_generate:
         request_input_ids[request_id] = new_input_ids
         request_token = model_pre_and_post.preprocess_one_token(new_input_ids, next_tokens, use_cache=True, request_id=request_id)
-        logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
+        if qpipe._globals.__GLOBAL__RANK__ == 0:
+            logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
         # enqueue the request_token tensor
         master_stage_context.enqueue_tensor(to_device_recursive(request_token, 'cpu'))
 
