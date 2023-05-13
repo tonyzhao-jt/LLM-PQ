@@ -6,6 +6,14 @@ import lptorch
 from time import perf_counter
 from ..utils import get_size_cuda, get_iter_variable_size
 import copy
+import numpy as np
+
+def remove_outliers(latencies, threshold=3):
+    """Remove outlier latencies using the Z-score method."""
+    latencies = np.array(latencies)
+    z_scores = np.abs((latencies - np.mean(latencies)) / np.std(latencies))
+    filtered_latencies = latencies[z_scores < threshold]
+    return filtered_latencies
 
 # inf = float('inf')
 def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_seq_length=1, past_seq_length=2048, bit=8,\
@@ -53,19 +61,31 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
         decoder_layer = decoder_layer.cuda()
         if 0 in shard_strategy['shard']:
             # init kv cache 
-            decoder_layer.self_attention.init_kv_cache(batch_size, past_seq_length, input_seq_length, 1, torch_dtype=torch_dtype)
+            request_id = 1
+            decoder_layer.self_attention.init_kv_cache(batch_size, past_seq_length, input_seq_length, request_id, \
+                                                        torch_dtype=torch_dtype, init_with_xavier=True)
             decoder_layer.self_attention.profile = True # set profile to make the kv didn't increase 
+            decoder_layer.self_attention.kv_status[request_id][0] = input_seq_length
+            # decoder_layer.self_attention.profile = False # set increase
 
-        # warmup
+        # Warmup
         for i in range(warmup):
             decoder_layer(hidden_states)
             torch.cuda.synchronize()
-        start = perf_counter()
+
+        # Measure latency
+        latencies = []
         for i in range(repeat):
+            torch.cuda.synchronize()
+            start = perf_counter()
             decoder_layer(hidden_states)
             torch.cuda.synchronize()
-        end = perf_counter()
-        lat_avg = (end - start) / repeat
+            end = perf_counter()
+            latencies.append(end - start)
+
+        # Remove outliers and calculate average latency
+        latencies_without_outliers = remove_outliers(latencies)
+        lat_avg = sum(latencies_without_outliers) / len(latencies_without_outliers)
 
         # calculate weight memory, kv memory and embedding memory
         mem_weight = get_size_cuda(decoder_layer, unit=mem_unit)
