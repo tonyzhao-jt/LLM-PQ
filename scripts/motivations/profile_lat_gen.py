@@ -60,7 +60,7 @@ if __name__ == '__main__':
                                     'bit', 'batch_size', 'input_seq_length', 'past_seq_length', \
                                     'lat_avg', 'mem_weight', 'mem_kv', 'mem_embedding'])
 
-    available_bits = [4, 8, '8:tc', '8:tc-li', 16]
+    available_bits = [4, 8, '8:tc', 16] if '8:tc' in available_bits else [4, 8, 16]
     # for shard in [1, 0]:
     for shard in [0]:
         # for bz in range(1, batch_size + 1):
