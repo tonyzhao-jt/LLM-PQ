@@ -3,7 +3,9 @@ import numpy as np
 import pickle
 import pandas as pd 
 import statsmodels.api as sm
-
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score, mean_squared_error
+import joblib
 from . import mops 
 
 def fit_cost_model(profiled_result_folder, cost_model_store_path, target_device=None):
@@ -77,30 +79,11 @@ def find_pairs(n):
 class LatCostModel:
     def __init__(self, device_names=[], lat_cost_model_folder=None) -> None:
         self.device_names = device_names
-        if lat_cost_model_folder is not None: # use ana predictor
-            assert os.path.exists(lat_cost_model_folder), f"Folder {lat_cost_model_folder} does not exist."
-            self.cost_model = {}
-            # for each device, load the cost model
-            for device_name in device_names:
-                self.cost_model[device_name] = {}
-                self_attn_cost_model_name = f"{device_name}_{0}"
-                ffn_cost_model_name = f"{device_name}_{1}"
-                for file in os.listdir(lat_cost_model_folder):
-                    file_path = os.path.join(lat_cost_model_folder, file)
-                    if 'lat_model' in file and file.endswith('.pkl') and device_name in file:
-                        if self_attn_cost_model_name in file:
-                            with open(file_path, 'rb') as f:
-                                self.cost_model[device_name][0] = pickle.load(f)
-                        elif ffn_cost_model_name in file:
-                            with open(file_path, 'rb') as f:
-                                self.cost_model[device_name][1] = pickle.load(f)
-            # make sure that each device has two cost model
-            for device_name in device_names:
-                assert len(self.cost_model[device_name]) == 2, f"Cannot find cost model for {device_name}"
-
         self.has_hypers = False
         self.has_profiled = False
+        self.has_fit = False
         self.profiled_data = {}
+        self.regression_models = {}
 
     def device_in_cost_model(self, device_name):
         return device_name in self.device_names
@@ -138,9 +121,24 @@ class LatCostModel:
         # lat_avg
         lat_avg = profiled_data_device['lat_avg'].values[0]
         return lat_avg
+    
+    def fetch_lat(self, device_name, shard, b, i, h1, h2, bit):
+        profiled_data_device = self.profiled_data[device_name]
+        # columns: shard,h1,h2,bit,batch_size,input_seq_length,past_seq_length,lat_avg,mem_weight,mem_kv,mem_embedding,mem_all
+        # fetch data with hyper params
+        profiled_data_device = profiled_data_device[(profiled_data_device['shard'] == shard) &
+                                            (profiled_data_device['h1'] == h1) &
+                                            (profiled_data_device['h2'] == h2) &
+                                            (profiled_data_device['bit'] == str(bit)) &
+                                            (profiled_data_device['batch_size'] == b) &
+                                            (profiled_data_device['past_seq_length'] == i)]
+        if len(profiled_data_device) == 0:
+            return None
+        # lat_avg
+        lat_avg = profiled_data_device['lat_avg'].values[0]
+        return lat_avg
 
     def update_profiled_result(self, profiled_folder):
-        assert self.has_hypers, "Please register hyper params first. Profiling can only be done after hyper params are registered."
         # list file under the folder
         for file in os.listdir(profiled_folder):
             # end with .csv
@@ -170,22 +168,117 @@ class LatCostModel:
         if not self.has_profiled:
             self.has_profiled = True
     
+    def verbose_regression_names(self):
+        assert len(self.regression_models) > 0, "Please load regression models first."
+        for device_name in self.device_names:
+            print(f"Device {device_name} has {len(self.regression_models[device_name])} regression models.")
+            # print(f"Regression models are: {self.regression_models[device_name].keys()}")
+
+    def load_regression_cost_model(self, cost_model_store_path="./leanred_cost_model"):
+        assert len(self.profiled_data) > 0, "Please update profiled result first."
+        all_mse = []
+        for device_name in self.device_names:
+            self.regression_models[device_name] = {}
+            device_profile_data = self.profiled_data[device_name]
+            # generate a fitted result for each shard, each h1 h2, bit. leaving batch_size and past_seq_length as variables
+            # columns: shard,h1,h2,bit,batch_size,input_seq_length,past_seq_length,lat_avg,mem_weight,mem_kv,mem_embedding,mem_all
+            # for each shard, h1, h2, bit, we fit a model
+            shards = device_profile_data['shard'].unique()
+            h_pairs = device_profile_data[['h1', 'h2']].drop_duplicates()
+            bits = device_profile_data['bit'].unique()
+            for shard in shards:
+                for h1, h2 in h_pairs.values:
+                    for bit in bits:
+                        model_name = f"{device_name}_{shard}_{h1}_{h2}_{bit}.pkl"
+                        # load model if exists
+                        if os.path.exists(os.path.join(cost_model_store_path, model_name)):
+                            self.regression_models[device_name][model_name] = model = joblib.load(os.path.join(cost_model_store_path, model_name))
+                            # verify the model if has data
+                            profiled_data_device = device_profile_data[(device_profile_data['shard'] == shard) & 
+                                                                (device_profile_data['h1'] == h1) &
+                                                                (device_profile_data['h2'] == h2) &
+                                                                (device_profile_data['bit'] == str(bit))]
+
+                            X = profiled_data_device[['batch_size', 'past_seq_length']].values
+                            X = np.concatenate([X, np.ones((X.shape[0], 1))], axis=1)
+                            y = profiled_data_device['lat_avg'].values
+ 
+                            y_pred = model.predict(X)
+                            mse = mean_squared_error(y, y_pred)
+                            all_mse.append(mse)
+                            # print(f'MSE: {mse:.3f}')
+                            # print(f'Intercept: {model.intercept_}')
+                            # print(f'Coefficients: {model.coef_}')
+        print("Verified all regress models, maximum mse: ", max(all_mse))
+        self.has_fit = True
+
+    def fit_regression_cost_model(self, cost_model_store_path='./leanred_cost_model', store=True):
+        # mkfir
+        if not os.path.exists(cost_model_store_path):   
+            os.mkdir(cost_model_store_path)
+        # start fitting...
+        # according our usage, we only care about the past_length's impact on the latency
+        # when others are fixed.
+        assert len(self.profiled_data) > 0, "Please update profiled result first."
+        
+        for device_name in self.device_names:
+            device_profile_data = self.profiled_data[device_name]
+            # generate a fitted result for each shard, each h1 h2, bit. leaving batch_size and past_seq_length as variables
+            # columns: shard,h1,h2,bit,batch_size,input_seq_length,past_seq_length,lat_avg,mem_weight,mem_kv,mem_embedding,mem_all
+            # for each shard, h1, h2, bit, we fit a model
+            shards = device_profile_data['shard'].unique()
+            h_pairs = device_profile_data[['h1', 'h2']].drop_duplicates()
+            bits = device_profile_data['bit'].unique()
+            for shard in shards:
+                for h1, h2 in h_pairs.values:
+                    for bit in bits:
+                        model_name = f"{device_name}_{shard}_{h1}_{h2}_{bit}.pkl"
+                        print(model_name)
+                        # fetch data with hyper params
+                        profiled_data_device = device_profile_data[(device_profile_data['shard'] == shard) & 
+                                                                (device_profile_data['h1'] == h1) &
+                                                                (device_profile_data['h2'] == h2) &
+                                                                (device_profile_data['bit'] == str(bit))]
+                        # fit a model
+                        # columns: shard,h1,h2,bit,batch_size,input_seq_length,past_seq_length,lat_avg,mem_weight,mem_kv,mem_embedding,mem_all
+                        # X: batch_size, past_seq_length
+                        # y: lat_avg
+                        X = profiled_data_device[['batch_size', 'past_seq_length']].values
+                        X = np.concatenate([X, np.ones((X.shape[0], 1))], axis=1)
+                        y = profiled_data_device['lat_avg'].values
+                        model = LinearRegression().fit(X, y)
+                        # store the model
+                        if device_name not in self.regression_models:
+                            self.regression_models[device_name] = {}
+                        self.regression_models[device_name][model_name] = model
+                        # store the model
+                        y_pred = model.predict(X)
+                        mse = mean_squared_error(y, y_pred)
+                        print(f'MSE: {mse:.4f}')
+                        # print(y - y_pred)
+                        # print(f'Intercept: {model.intercept_}')
+                        # print(f'Coefficients: {model.coef_}')
+                        if store:
+                            joblib.dump(model, os.path.join(cost_model_store_path, f'{model_name}'))
+
+        self.has_fit = True
+
     def predict(self, device_name, shard, b, i, h1, h2, bit):
-        assert self.device_in_cost_model(device_name), f"Device {device_name} is not in the cost model."
-        if shard == 0:
-            model = self.cost_model[device_name][0]
-            weight_size, qkv_act_size, kv_concat_size, bmm_act_size, layer_norm_size, dequant_size = mops.SELF_ATTN_MOPS_PARAMS(b, h1, i, bit)
-            # predict
-            X = np.array([1, weight_size, qkv_act_size, kv_concat_size, bmm_act_size, layer_norm_size, dequant_size])
-            # X = sm.add_constant(X)
-            return model.predict(X)
-        else:
-            model = self.cost_model[device_name][1]
-            weight_size, act_size, layer_norm_size, dequant_size = mops.FFN_MOPS_PARAMS(b, h1, h2, bit)
-            # predict
-            X = np.array([1, weight_size, act_size, layer_norm_size, dequant_size])
-            # X = sm.add_constant(X)
-            return model.predict(X)
+        assert self.has_fit, "Cost model is not fitted."
+        assert device_name in self.regression_models, f"Cannot find regression model for {device_name}"
+        model_name = f"{device_name}_{shard}_{h1}_{h2}_{bit}.pkl"
+        if model_name not in self.regression_models[device_name]:
+            print(f"Cannot find regression model for {model_name}")
+            return None
+        model = self.regression_models[device_name][model_name]
+        X = np.array([[b, i, 1]])
+        return model.predict(X)[0]
+    
+    def predict_by_model_with_b_i_bit(self, device_name, shard, b, i, bit):
+        return self.predict(device_name, shard, b, i, self.h1, self.h2, bit)
+
+    def predict_by_profiled_with_b_i_bit(self, device_name, shard, b, i, bit):
+        return self.fetch_lat(device_name, shard, b, i, self.h1, self.h2, bit)
     
     def predict_with_hyper(self, device_name, shard, bit):
         assert self.has_hypers, "Hyper parameters are not registered."
