@@ -9,13 +9,12 @@ from transformers import LogitsProcessorList
 
 import lptorch 
 
-from qllm.models.OPT import OPTForCausalLMSeq
 from qllm.utils import (
     to_device_recursive
 )
 
 from qllm.models import create_empty_model
-
+from qllm.scheduler import DSScheduler
 
 CMD_STOP = 0
 CMD_SCHED = 1
@@ -44,9 +43,11 @@ request_input_ids = {}
 request_logit_processor = {}
 request_loop_counter = {}
 def handle_results(final_intermediate_result) -> None:
-    request_id = final_intermediate_result[-1]
-    request_loop_counter[request_id] += 1
+    request_id = final_intermediate_result[-2]
+    if isinstance(request_id, torch.Tensor):
+        request_id = request_id.item()
     results_counter.add(1)
+    # print(results_counter._value)
     # get original input id
     input_ids = request_input_ids[request_id]
     logits_processor = request_logit_processor[request_id]
@@ -57,20 +58,21 @@ def handle_results(final_intermediate_result) -> None:
     next_token_logits = outputs.logits[:, -1, :]
     next_tokens_scores = logits_processor(input_ids, next_token_logits)
     next_tokens = torch.argmax(next_tokens_scores, dim=-1)
-    new_input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
-    if request_loop_counter[request_id] < num_tokens_to_generate:
-        request_input_ids[request_id] = new_input_ids
-        request_token = model_pre_and_post.preprocess_one_token(new_input_ids, next_tokens, use_cache=True, request_id=request_id)
-        logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
-        master_stage_context.enqueue_tensor(to_device_recursive(request_token, 'cpu'))
+    flag, concat_tokens = ds_scheduler.pass_scheduler(request_id, next_tokens)
+    if flag:
+        # print(flag, concat_tokens.shape)
+        request_loop_counter[request_id] += 1
+        new_input_ids = torch.cat([input_ids, concat_tokens], dim=-1)
+        # new_input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
+        if request_loop_counter[request_id] < num_tokens_to_generate:
+            request_input_ids[request_id] = new_input_ids
+            request_token = model_pre_and_post.preprocess_one_token(new_input_ids, concat_tokens, use_cache=True, request_id=request_id)
+            logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
+            master_stage_context.enqueue_tensor(to_device_recursive(request_token, 'cpu'))
 
 
-# prepare test data
-def prepare_input(batched_ids, request_id):
-    batched_ids = to_device_recursive(dict(batched_ids), 'cuda:0')
+def set_input_ids_globals(request_id, p_input_ids):
     generation_config = model_pre_and_post.generation_config
-    request_token = model_pre_and_post.preprocess(**batched_ids, use_cache=True, request_id=request_id)
-    p_input_ids = batched_ids['input_ids']
     inputs_tensor, model_input_name, model_kwargs = model_pre_and_post._prepare_model_inputs(
         p_input_ids, generation_config.bos_token_id, {}
     )
@@ -89,9 +91,9 @@ def prepare_input(batched_ids, request_id):
     request_logit_processor[request_id] = logits_processor
     request_loop_counter[request_id] = 0
 
-    return to_device_recursive(request_token, 'cpu')
 
 from datetime import timedelta
+
 
 def init_tokenizer():
     if model_name == 'opt':
@@ -111,43 +113,58 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
             raise ValueError("sharding strategy is not set")
         else:
             loaded_llm_cpu._verify_shard_strategy(sharding_strategy)  
-    
-    
-    with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=60 * 1000)}, handle_cmd) \
+    with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=1800)}, handle_cmd) \
         as dist_ctx:
-        device_mesh = create_device_mesh(rank, local_rank, world_size)
-        # print("dist context created for: ", rank)
-        # print(device_mesh) 
 
         if rank == data_rank:
+            device = torch.device(f'cuda:{local_rank}')
+            # init tokenizer
             tokenizer = init_tokenizer()
             data_chunks = []
-            for i in range(request_numbers):
-                batched_ids = tokenizer.batch_encode_plus(fetch_prompts(bs_token, prompt_length), padding='max_length', max_length=prompt_length, return_tensors="pt")
-                request_token = prepare_input(batched_ids, request_id=i)
-                data_chunks.append(request_token)
+            sample_texts = fetch_prompts(bs_token, prompt_length)
+            sample_text_dict = ds_scheduler.split_list_of_prompts(sample_texts)
+            prefill_bs_indexes = ds_scheduler.create_ds_indexes()
+            for request_id, sample_text_list in sample_text_dict.items():
+                sample_text_dict[request_id] = to_device_recursive([dict(tokenizer.batch_encode_plus(text, padding='max_length', max_length=prompt_length, return_tensors="pt")) for text \
+                                in sample_text_list], device)
+            data_chunks = []
+            input_id_dict = {}
+            for request_id, prefill_bs_indexes in prefill_bs_indexes.items():
+                for idx, prefill_bs_index in enumerate(prefill_bs_indexes):
+                    current_sub_request_batch_ids = sample_text_dict[request_id][idx]
+                    if request_id not in input_id_dict:
+                        input_id_dict[request_id] = current_sub_request_batch_ids['input_ids']
+                    else:
+                        input_id_dict[request_id] = torch.cat([input_id_dict[request_id], current_sub_request_batch_ids['input_ids']], dim=0)
+                    # print(current_sub_request_batch_ids['input_ids'].shape)
+                    request_token = model_pre_and_post.preprocess(**current_sub_request_batch_ids, use_cache=True, request_id=request_id, batch_index=prefill_bs_index)
+                    request_token = to_device_recursive(request_token, 'cpu')
+                    data_chunks.append(request_token)
+            for chunk_idx, input_id in enumerate(input_id_dict.values()):
+                set_input_ids_globals(chunk_idx, input_id)
             # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
             batch_size = len(data_chunks)
-            print("Pipeline Data Loaded")
-            
+            print("Pipeline Data Loaded, with initial batch size: ", batch_size)
         
         # get stage
         if rank not in sharding_strategy:
             stage_id = None
         else:
-            # PS: change here when add TP.
             stage_ranks = sorted(list(sharding_strategy.keys()))
             stage_id = stage_ranks.index(rank)
             # shard model
             print("rank {} is in stage {}".format(rank, stage_id))
         
+
         # sharded module init
         shard_config = sharding_strategy[rank]
         module = loaded_llm_cpu
         module._shard_model_current(shard_config, f'cuda:{local_rank}')
         print(f"Stage {stage_id} module sharded")
-        for request_id in range(request_numbers):
-            module.init_kv_cache(bs_token, prompt_length, num_tokens_to_generate, request_id)
+        for chunk_id in range(chunk_size):
+            # init kv cache for each decoder bs
+            # the prefill stage will use the same cache created by decoder
+            module.init_kv_cache(decoder_bss[chunk_id], prompt_length, max_tokens_to_generate, chunk_id)
         print(f"Stage {stage_id} kv initialized")
         module.eval()
         module.on_device = f'cuda:{local_rank}'
@@ -168,11 +185,11 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                 # this only launch the tasks but not actually finish the tasks.
                 for data_chunk in data_chunks:
                     stage_ctx.enqueue_tensor(data_chunk)
-                results_counter.wait_gte(start_count + len(data_chunks) * num_tokens_to_generate)
+                results_counter.wait_gte(start_count + batch_size + chunk_size * (num_tokens_to_generate - 1))
                 tok_data = perf_counter()
                 latency = tok_data - tik_data
                 # throughput  = bs * N(token generated) / latency
-                throughput = batch_size / latency
+                throughput = bs_token / latency
                 token_throughput = throughput * num_tokens_to_generate
                 logger.info("Latency is %f, throughput is %f", latency, throughput)
                 logger.info('Token throughput is %f', token_throughput)
@@ -183,17 +200,17 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
         
     pass
 
-
 import argparse
 def parse_args():
     # add argparser for model name and model_size
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_size", type=str, default="350m", help="model size")
     parser.add_argument("--model_name", type=str, default="opt", help="model name")
-    parser.add_argument("--bs_token", type=int, default=4, help="batch size for token")
+    parser.add_argument("--bs_token", type=int, default=8, help="Global batch size for token")
     parser.add_argument("--prompt_length", type=int, default=512, help="prompt length")
+    parser.add_argument("--max_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
     parser.add_argument("--num_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
-    parser.add_argument("--request_numbers", type=int, default=4, help="number of requests")
+    parser.add_argument("--nccl", action='store_true', default=False, help="use nccl")
     parser.add_argument("--method", type=str, default="pipeedge", help="method of sched")
     parser.parse_args()
     args = parser.parse_args()
@@ -202,6 +219,7 @@ def parse_args():
 if __name__ == '__main__':
     # set env
     os.environ['SET_DECODERS_META'] = "1"
+    os.environ['PERF_MODE'] = "1"
     args = parse_args()
     # test case
     model_name = args.model_name
@@ -212,29 +230,68 @@ if __name__ == '__main__':
     caliber = lptorch.inner_caliber
     caliber.set_fake() 
     caliber.load_fake_calib_data(f'fake_calib_{model_name}_{model_size}.pkl')
-
-
+  
     method = args.method
-    loaded_llm_cpu.eval() # eval mode
-    
+    # pipeline_strategy_result_qpipe = f"{method}_{model_size}_Tesla_T4_2_Tesla_V100-SXM2-32GB_1_final_strategy.pkl"
+    # pipeline_strategy_result_qpipe = f'/opt/tiger/launch/qsync/QPipe/scripts/part_strategy/{pipeline_strategy_result_qpipe}'
+    # sharding_strategy = pickle.load(open(pipeline_strategy_result_qpipe, "rb"))
+
+
+    sharding_strategy = {
+        0: {},
+        1: {
+            0: {'shard': [0, 1], 'bits': [16, 16]},
+            1: {'shard': [0, 1], 'bits': [16, 16]},
+            2: {'shard': [0, 1], 'bits': [8, 16]},
+            3: {'shard': [0, 1], 'bits': [16, 16]},
+            4: {'shard': [0, 1], 'bits': [16, '8:tc-li']},
+            5: {'shard': [0, 1], 'bits': [16, 8]},
+            6: {'shard': [0, 1], 'bits': [16, 16]},
+            7: {'shard': [0, 1], 'bits': [16, 16]},
+            8: {'shard': [0], 'bits': [16]},
+        },
+        2: {
+            8: {'shard': [1], 'bits': [16]},
+            9: {'shard': [0,1], 'bits': ['8:tc-li', 8]},
+            10: {'shard': [0,1], 'bits': [8, 16]},
+            11: {'shard': [0,1], 'bits': [2, 16]},
+            # 350M
+            12: {'shard': [0,1], 'bits': [16, 16]},
+            13: {'shard': [0,1], 'bits': ['8:tc-li', 4]},
+            14: {'shard': [0,1], 'bits': [8, 16]},
+            15: {'shard': [0,1], 'bits': [16, 16]},
+            16: {'shard': [0,1], 'bits': [16, 8]},
+            17: {'shard': [0,1], 'bits': [16, 8]},
+        },
+        3:{
+            18: {'shard': [0,1], 'bits': [16, 16]},
+            19: {'shard': [0,1], 'bits': [16, 16]},
+            20: {'shard': [0,1], 'bits': [8, 16]},
+            21: {'shard': [0,1], 'bits': [4, 16]},
+            22: {'shard': [0,1], 'bits': [16, 16]}, 
+            23: {'shard': [0,1], 'bits': [16, 16]},
+        }
+    }
+
     # control the token generation
+    max_tokens_to_generate = args.max_tokens_to_generate
     num_tokens_to_generate = args.num_tokens_to_generate
     prompt_length = args.prompt_length
     bs_token = args.bs_token # how many sentence in a batch
-    request_numbers = args.request_numbers # how many requests
 
+    prefill_bs = 1
+    # decoder_bss = [2, 3, 3]
+    decoder_bss = [2, 2, 2, 2]
+    chunk_size = len(decoder_bss)
+    ds_scheduler = DSScheduler(prefill_bs, decoder_bss)
 
-    pipeline_strategy_result_qpipe = f"{method}_{model_size}_Tesla_T4_2_Tesla_V100-SXM2-32GB_1_final_strategy.pkl"
-    pipeline_strategy_result_qpipe = f'/opt/tiger/launch/qsync/QPipe/scripts/part_strategy/{pipeline_strategy_result_qpipe}'
-    sharding_strategy = pickle.load(open(pipeline_strategy_result_qpipe, "rb"))
+    infer_configs = (bs_token, prompt_length, num_tokens_to_generate, chunk_size)
     loaded_llm_cpu._verify_shard_strategy(sharding_strategy)
-
-    infer_configs = (bs_token, prompt_length, num_tokens_to_generate, request_numbers)
 
     # init env
     seed = 42
     init_random_seed(seed)
-    dist_cfg = init_env()
+    dist_cfg, hard_device_mesh = init_env()
     assert dist_cfg.world_size > 1, "world size should be larger than 1, else single device"
 
     if dist_cfg.rank == 0:
@@ -242,3 +299,10 @@ if __name__ == '__main__':
         model_pre_and_post = model_pre_and_post.cuda()
 
     run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
+
+
+
+
+
+
+
