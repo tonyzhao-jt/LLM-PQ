@@ -262,6 +262,7 @@ def enumerate_best_result():
     best_plan['obj'] = 9999999
 
     num_device_all = sum(device_numbers)
+    strat = partition_a_into_b_bins(global_bz, num_device_all)
     bz_decode_max = max(partition_a_into_b_bins(global_bz, num_device_all))
     candidate_prefill_bzs = [i for i in range(1, bz_decode_max)]
     # device order candidates
@@ -283,6 +284,7 @@ def enumerate_best_result():
                 best_plan['strategy'] = {
                     'prefill_bz': prefill_bz,
                     'bz_decode_max': bz_decode_max,
+                    'bz_decode_bss': strat,
                     'device_names': new_device_names,
                     'device_numbers': new_device_numbers,
                     'plan': res['plan']

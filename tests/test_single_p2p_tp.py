@@ -269,6 +269,7 @@ def parse_args():
 if __name__ == '__main__':
     # set env
     os.environ['SET_DECODERS_META'] = "1"
+    os.environ['PERF_MODE'] = "1"
     args = parse_args()
     # test case
     model_name = args.model_name
