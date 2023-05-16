@@ -11,6 +11,7 @@ from .gptq import GPTQ
 
 import numpy as np 
 import pickle
+from time import perf_counter
 
 class OPTClass(BaseLM):
     def __init__(self, args):
@@ -209,6 +210,9 @@ class OPTClass(BaseLM):
 
     @torch.no_grad()
     def opt_sequential(self, dataloader):
+        collected_information = {}
+        print('Starting ...')
+        profile_start_time = perf_counter()
 
         if self.args.profile:
             self.opt_ind_collection(dataloader)
@@ -328,7 +332,9 @@ class OPTClass(BaseLM):
             for name in subset:
                 print(i, name)
                 print('Quantizing ...')
-                gptq[name].fasterquant(percdamp=self.args.percdamp, groupsize=self.args.groupsize)
+                (err, Hessian) = gptq[name].fasterquant(percdamp=self.args.percdamp, groupsize=self.args.groupsize)
+                if not self.args.rand_bit and bit_assignment is None:
+                    collected_information[(i, name)] = (err, Hessian)
                 quantizers['model.decoder.layers.%d.%s' % (i, name)] = gptq[name].quantizer
                 gptq[name].free()
             for j in range(self.args.nsamples):
@@ -343,12 +349,30 @@ class OPTClass(BaseLM):
 
         model.config.use_cache = use_cache
 
+        model.config.use_cache = use_cache
+        profile_end_time = perf_counter()
+        duration = profile_end_time - profile_start_time
+        if not self.args.rand_bit and bit_assignment is None:
+            file_path = self.args.prof_file
+            model = self.args.model
+            dataset = self.args.dataset
+            model = model.replace('/', '_')
+            file_path = f'{model}_{dataset}_hess_stat_{self.args.wbits}.pkl'
+            profile_end_time = perf_counter()
+            duration = profile_end_time - profile_start_time
+            collected_information['duration'] = duration
+            print(f'Profiled in {duration:.2f} seconds.')
+            # store the collected information
+            with open(file_path, 'wb') as f: pickle.dump(collected_information, f)
+
         return quantizers
 
 
     @torch.no_grad()
     def opt_ind_collection(self, dataloader):
-        print('Starting ...')
+        print('Starting ... Profile')
+
+        profile_start_time = perf_counter()
 
         model = self.model
         dev = self.device
@@ -493,13 +517,17 @@ class OPTClass(BaseLM):
 
             inps, outs = outs, inps
 
+        file_path = self.args.prof_file
         model = self.args.model
         dataset = self.args.dataset
         model = model.replace('/', '_')
         file_path = f'{model}_{dataset}_stat.pkl'
+        profile_end_time = perf_counter()
+        duration = profile_end_time - profile_start_time
+        collected_information['duration'] = duration
+        print(f'Profiled in {duration:.2f} seconds.')
         # store the collected information
-        with open(file_path, 'wb') as f: 
-            pickle.dump(collected_information, f)
+        with open(file_path, 'wb') as f: pickle.dump(collected_information, f)
         return quantizers
 
 

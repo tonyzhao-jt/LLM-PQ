@@ -93,6 +93,8 @@ def parse_args():
     parser.add_argument('--profile', action="store_true")
     parser.add_argument('--prof-file', type=str, default="profile.pkl")
 
+    parser.add_argument('--profile-hessian', action="store_true")
+
 
     args = parser.parse_args()
     args.batch_size = 1  # BS=1 is used for zeroShot tasks!

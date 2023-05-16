@@ -12,6 +12,9 @@ from .gptq import GPTQ
 import numpy as np 
 import pickle
 
+
+from time import perf_counter
+
 class BLOOMClass(BaseLM):
     def __init__(self, args):
 
@@ -292,8 +295,9 @@ class BLOOMClass(BaseLM):
 
     @torch.no_grad()
     def bloom_sequential(self, dataloader):
+        collected_information = {}
         print('Starting ...')
-
+        profile_start_time = perf_counter()
         if self.args.profile:
             self.bloom_profile(dataloader)
             exit()
@@ -398,7 +402,10 @@ class BLOOMClass(BaseLM):
             for name in subset:
                 print(i, name)
                 print('Quantizing ...')
-                gptq[name].fasterquant(percdamp=self.args.percdamp, groupsize=self.args.groupsize)
+
+                (err, Hessian) = gptq[name].fasterquant(percdamp=self.args.percdamp, groupsize=self.args.groupsize)
+                if not self.args.rand_bit and bit_assignment is None:
+                    collected_information[(i, name)] = (err, Hessian)
             for j in range(self.args.nsamples):
                 outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask, alibi=alibi)[0]
 
@@ -409,12 +416,27 @@ class BLOOMClass(BaseLM):
             inps, outs = outs, inps
 
         model.config.use_cache = use_cache
+        profile_end_time = perf_counter()
+        duration = profile_end_time - profile_start_time
+        if not self.args.rand_bit and bit_assignment is None:
+            file_path = self.args.prof_file
+            model = self.args.model
+            dataset = self.args.dataset
+            model = model.replace('/', '_')
+            file_path = f'{model}_{dataset}_hess_stat_{self.args.wbits}.pkl'
+            profile_end_time = perf_counter()
+            duration = profile_end_time - profile_start_time
+            collected_information['duration'] = duration
+            print(f'Profiled in {duration:.2f} seconds.')
+            # store the collected information
+            with open(file_path, 'wb') as f: pickle.dump(collected_information, f)
 
 
     @torch.no_grad()
     def bloom_profile(self, dataloader):
-        print('Starting ...')
+        print('Starting ... Profile')
 
+        profile_start_time = perf_counter()
         model = self.model
         dev = self.device
 
@@ -547,6 +569,10 @@ class BLOOMClass(BaseLM):
         dataset = self.args.dataset
         model = model.replace('/', '_')
         file_path = f'{model}_{dataset}_stat.pkl'
+        profile_end_time = perf_counter()
+        duration = profile_end_time - profile_start_time
+        collected_information['duration'] = duration
+        print(f'Profiled in {duration:.2f} seconds.')
         # store the collected information
         with open(file_path, 'wb') as f: pickle.dump(collected_information, f)
 
