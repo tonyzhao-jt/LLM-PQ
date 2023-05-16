@@ -4,12 +4,13 @@ import numpy as np
 from qpipe.utils import (
     save_with_pickle,
 )
+
+from utils import simple_model_info_parser
+args = simple_model_info_parser()
+model_size = args.model_size
+model_name = args.model_name
+
 folder_path = "/workspace/qpipe/3rd_party/gptq/zeroShot"
-model_name = "opt"
-model_size = "1.3b"
-# model_name = "bloom"
-# model_size = '1b1'
-model_pretrained_name = "facebook/opt-125m"
 if model_name == 'bloom':
     model_pretrained_name = f"bigscience/bloom-{model_size}"
 if model_name == 'opt':

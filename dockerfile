@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
     git-lfs net-tools
 
 RUN pip install gurobipy pulp sacrebleu
-RUN pip install -U scikit-learn scipy matplotlib 
+RUN pip install -U scikit-learn scipy matplotlib statsmodels
 
 
 CMD echo "===========END========="

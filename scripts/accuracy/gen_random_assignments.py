@@ -5,14 +5,11 @@ from qpipe.utils import (
     save_with_pickle,
 )
 
-# keys = ['self_attention.query_key_value', 
-#         'self_attention.dense', 
-#          'mlp.dense_h_to_4h',
-#          'mlp.dense_4h_to_h']
-# model_size = '1.3b'
-# model_name = 'opt'
-model_size = '560m'
-model_name = 'bloom'
+from utils import simple_model_info_parser
+args = simple_model_info_parser()
+model_size = args.model_size
+model_name = args.model_name
+
 if model_name == 'opt':
     from qllm.models.OPT.opt import model_cards, get_available_models
 if model_name == 'bloom':
