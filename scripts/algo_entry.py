@@ -215,6 +215,7 @@ def main(args):
         args.uniform_bit = bit
         sol_uniform = uniform_main(args)
         if sol_uniform['plan'] != NOT_AVAILABLE:
+            print("Uniform solution found, use bit: ", bit)
             uniform_sols[bit] = sol_uniform
             break
 
@@ -223,8 +224,9 @@ def main(args):
         args.pe_bit = bit
         sol_pipeedge = pipeedge_ilp_main(args)
         if sol_pipeedge['plan'] != NOT_AVAILABLE:
+            print("PipeEdge solution found, use bit: ", bit)
             break
-        
+
     # solution packs
     sols = {}
     sols['adabits'] = sol_adabits
@@ -232,7 +234,7 @@ def main(args):
     sols['pipeedge'] = sol_pipeedge
     # sols['pipeedge_adaptive'] = sol_pipeedge_adaptive
     for bit, sol in uniform_sols.items():
-        sols[f'uniform_{bit}'] = sol
+        sols[f'uniform'] = sol
     for sol_name, sol in sols.items():
         print(f"start to run {sol_name}")
         if sol['plan'] == NOT_AVAILABLE:
@@ -244,13 +246,15 @@ def main(args):
                             args.use_profiler_prediction, comm_size=comm_size, mu_n=mu_n)
         
         log_result(result, sol_name)
-
+    
+    sols['mu_n'] = mu_n
+    sols['n'] = n
+    sols['gloabl_bz'] = global_bz
     # store the solution
     # with device_names and model_name and model_size
-    all_plans = {}
     file_name = f'sols_' + f'{model_name}_{model_size}' + '_' + device_info + '.pkl'
     folder = '/workspace/qpipe/scripts/part_strategy'
-    save_with_pickle(all_plans, file_name, folder)
+    save_with_pickle(sols, file_name, folder)
     logger.info(f'All plans saved to {file_name} in {folder}')
 
 if __name__ == '__main__':

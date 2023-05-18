@@ -89,7 +89,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
     
     # Solve the problem
     # prob.solve(pulp.apis.PULP_CBC_CMD())
-    solver = pulp.GUROBI(msg=True, threads=0)
+    solver = pulp.GUROBI(msg=False, threads=0)
     # solver = pulp.GUROBI()
     # solver = pulp.GUROBI(msg=True)
     status = prob.solve(solver)

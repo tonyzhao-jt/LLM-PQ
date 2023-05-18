@@ -4,7 +4,11 @@ def simple_model_info_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model-size', type=str, default='125m')
     parser.add_argument('--model-name', type=str, default='opt')
+    parser.add_argument('--device-info', type=str, default=None)
     args = parser.parse_args()
+    # available method
+    args.available_methods = ['adabits', 'adaqpipe', 'pipeedge', 'uniform']
+    args.sol_folder = '/workspace/qpipe/scripts/part_strategy'
     return args
 
 def model_config_and_decoder_layers(model_name, model_size):

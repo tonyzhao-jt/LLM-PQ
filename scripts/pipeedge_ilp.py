@@ -106,7 +106,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, comm):
     # prob.solve(pulp.apis.PULP_CBC_CMD())
     # solver = pulp.GUROBI(msg=True, threads=0, timeLimit=100, MIPGap=0.003)
     # solver = pulp.GUROBI()
-    solver = pulp.GUROBI(msg=True)
+    solver = pulp.GUROBI(msg=False)
     status = prob.solve(solver)
 
     if status == pulp.LpStatusOptimal:

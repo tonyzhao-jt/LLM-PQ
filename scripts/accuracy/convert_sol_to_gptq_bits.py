@@ -3,25 +3,28 @@
 # {'self_attention.query_key_value': Linear(in_features=1024, out_features=3072, bias=True), 'self_attention.dense': Linear(in_features=1024, out_features=1024, bias=True), 'mlp.dense_h_to_4h': Linear(in_features=1024, out_features=4096, bias=True), 'mlp.dense_4h_to_h': Linear(in_features=4096, out_features=1024, bias=True)}
 # load bit assignment
 import pickle
+from utils import simple_model_info_parser
 
 keys = ['self_attention.query_key_value', 
         'self_attention.dense', 
          'mlp.dense_h_to_4h',
          'mlp.dense_4h_to_h']
 
-available_methods = [
-    'pipeedge', 'qpipe', 'uniform_2', 'uniform_4', 'adabit'
-]
-model_size = '30b'
-device_info = 'Tesla_T4_2_Tesla_V100-SXM2-32GB_1'
 
+args = simple_model_info_parser()
+available_methods = args.available_methods
+model_name = args.model_name
+model_size = args.model_size
+device_info = args.device_info
+sol_folder = args.sol_folder
+sol_file_path = f'{sol_folder}/sols_{model_name}_{model_size}_{device_info}.pkl'
+with open(sol_file_path, 'rb') as f:
+    sols = pickle.load(f)
 for method in available_methods:
-    strategy_result_file_path = f'/workspace/qpipe/scripts/part_strategy/{method}_{model_size}_{device_info}_final_strategy.pkl'
-    with open(strategy_result_file_path, 'rb') as f:
-        strategy_result = pickle.load(f)
     # bit assignment
     # former two are for qkv and dense, latter two are for fc1 and fc2
     # first unpack the shard strategy from ranks
+    strategy_result = sols[method]['use_plan']
     pure_shard_strategy = {}
     for rank, val in strategy_result.items():
         for layer, layer_shard in val.items():
