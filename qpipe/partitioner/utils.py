@@ -38,46 +38,43 @@ def get_bitidx_layer_memory_map(estimator, available_bits, shards=[0,1]):
             s[(shard, idx)] = mem_require
     return s 
 
-def interpret_ilp_result_i_j_b(ilp_result, available_bits):
-    # handle result into pipeegde form
-    pipeline_partition_result_qpipe = {}
-    bit_assignment_result_qpipe = {}
-    L = len(list(ilp_result.keys()))
-    for layer, (device_rank, bit) in ilp_result.items():
-        if device_rank not in pipeline_partition_result_qpipe:
-            pipeline_partition_result_qpipe[device_rank] = []
-            bit_assignment_result_qpipe[device_rank] = []
-        pipeline_partition_result_qpipe[device_rank].append(layer)
-        bit_assignment_result_qpipe[device_rank].append(bit)
-
-    # reset the layer index
-    for device_rank, layers in pipeline_partition_result_qpipe.items():
-        pipeline_partition_result_qpipe[device_rank] = len(layers)
-    pipeline_partition_result_qpipe = sorted(pipeline_partition_result_qpipe.items())
-    pipeline_partition_result_qpipe = {k:v for (k,v) in pipeline_partition_result_qpipe}
-    start_idx = 0
-    for device_rank, layers in pipeline_partition_result_qpipe.items():
-        pipeline_partition_result_qpipe[device_rank] = [start_idx, start_idx + layers * 2]
-        start_idx += layers * 2
-
-    pipeline_partition_result_qpipe = {k: pipeline_partition_result_qpipe[k] for k in sorted(pipeline_partition_result_qpipe)}
-
-    available_bits = list(set(available_bits))
-    BITs = [
-        (i, j) for i in available_bits for j in available_bits
-    ]
-    # assign bits
-    new_bit_assignment_result_qpipe = {}
-    for device_rank, bit in bit_assignment_result_qpipe.items():
-        part_result = pipeline_partition_result_qpipe[device_rank]
-        bit_idx = 0
-        for i in range(part_result[0], part_result[1], 2):
-            attn_bit, ffn_bit = BITs[bit[bit_idx]]
-            new_bit_assignment_result_qpipe[i] = attn_bit
-            new_bit_assignment_result_qpipe[i+1] = ffn_bit
-            bit_idx += 1
-    bit_assignment_result_qpipe = new_bit_assignment_result_qpipe
+# layer device bit
+def interpret_ilp_result_i_j_b(ilp_result, BITs):
+    device_layer_dict = {}
+    layer_to_bit_map = {}
+    for layer, (device_rank, bit_idx) in ilp_result.items():
+        bit_pair = BITs[bit_idx]
+        if device_rank not in device_layer_dict:
+            device_layer_dict[device_rank] = [layer]
+            layer_to_bit_map[device_rank] = [bit_pair]
+        else:
+            device_layer_dict[device_rank].append(layer)
+            layer_to_bit_map[device_rank].append(bit_pair)
+    
+    partition_result = {}
+    start = 0
+    # sort device_layer_dict by device_rank
+    device_layer_dict = {k: device_layer_dict[k] for k in sorted(device_layer_dict)}
+    # sort the partition among layers.
+    for device_rank, layers in device_layer_dict.items():
+        partition_result[device_rank] = [start, start + len(layers)]
+        start += len(layers)
+    # generate bitwidth mapping
+    bit_assignment_result = {}
+    for device_rank, (layer_start, layer_end) in partition_result.items():
+        bit_pairs = layer_to_bit_map[device_rank]
+        bit_pair_idx = 0
+        for layer in range(layer_start, layer_end):
+            attn_layer = layer * 2
+            ffn_layer = layer * 2 + 1
+            bit_pair = bit_pairs[bit_pair_idx]
+            attn_bit, ffn_bit = bit_pair
+            # map
+            bit_assignment_result[attn_layer] = attn_bit
+            bit_assignment_result[ffn_layer] = ffn_bit
+            bit_pair_idx += 1
+    
     return {
-        'partition_result': pipeline_partition_result_qpipe,
-        'bit_assignment': bit_assignment_result_qpipe 
+        'partition_result': partition_result,
+        'bit_assignment': bit_assignment_result
     }

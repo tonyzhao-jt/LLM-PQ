@@ -155,6 +155,7 @@ def get_device_name():
 
 
 def get_device_mem_offline(device_name, unit='MB'):
+    # check through torch.cuda.get_device_properties(0).total_memory / 1024**2
     device_name = device_name.upper()
     mem_table = {
         "A100-SXM4-40GB": 39.44 * 1024, # not exactly = 40 * 1024
@@ -163,6 +164,7 @@ def get_device_mem_offline(device_name, unit='MB'):
         'TESLA_V100-SXM2-16GB': 14.76 * 1024,
         'NVIDIA_A100-SXM4-40GB': 39.44 * 1024,
         'A100-SXM-80GB': 79.35 * 1024,
+        'TESLA_P100-PCIE-12GB': 11.91 * 1024,
     }
     if device_name in mem_table:
         mem = mem_table[device_name]
@@ -187,3 +189,20 @@ def get_cuda_occupation_by_command():
     output = subprocess.check_output(f"nvidia-smi --query-gpu=memory.used --format=csv,nounits --id={gpu_index}", shell=True)
     memory_used = int(output.decode().strip().split("\n")[1])
     print(f"Memory used by GPU {gpu_index}: {memory_used} MB")
+
+def has_tc(device_name):
+    from lptorch.utils import query_cc
+    device_name = device_name.upper()
+    if query_cc(device_name) < 75:
+        return False
+    else:
+        return True
+
+
+def to_weight_int8_if_tc_not_available(device_name):
+    from lptorch.utils import query_cc
+    device_name = device_name.upper()
+    if query_cc(device_name) < 75:
+        return 8
+    else:
+        return '8:tc'

@@ -6,7 +6,7 @@ from qpipe.utils import (
     save_with_pickle,
 )
 
-from utils import simple_model_info_parser, model_config_and_decoder_layers
+from utils import simple_model_info_parser, model_config_and_decoder_layers, get_available_candidate_bits
 import copy 
 import os
 
@@ -33,7 +33,7 @@ def generate_indicator_hess(model_name, model_size, folder_path):
     # check the data
     config, num_layers = model_config_and_decoder_layers(model_name, model_size)
     L = num_layers
-    available_bits = [2, 3, 4, 8, 16] # regard 8-bit as same
+    available_bits = get_available_candidate_bits() # regard 8-bit as same
     available_bits = list(set(available_bits))
     BITs = [
         (i, j) for i in available_bits for j in available_bits
@@ -48,6 +48,10 @@ def generate_indicator_hess(model_name, model_size, folder_path):
     # final result should be a dict with respect to different layer and BITs
     def calculate_indicator(bit_pair, layer_idx, all_collected_data):
         atten_bit, ffn_bit = bit_pair
+        if atten_bit in ['8:tc', '8:tc-li']:
+            atten_bit = 8
+        if ffn_bit in ['8:tc', '8:tc-li']:
+            ffn_bit = 8
         if model_name == 'bloom':
             qkv_stat_name = 'self_attention.query_key_value'
             out_stat_name = 'self_attention.dense'

@@ -1,5 +1,5 @@
 from .distconfig import DistConfig
-from .device import create_device_mesh_nccl, set_device_map, get_neighbor_ranks, get_local_rank_by_device_mesh
+from .device import create_device_mesh, create_device_mesh_nccl, set_device_map, get_neighbor_ranks, get_local_rank_by_device_mesh
 
 import os 
 import torch
@@ -63,6 +63,18 @@ class DistRpcContext(DistContext):
                 fut = rpc.rpc_async(rank, remote_cmd_handler, args=(cmd, tensors))
                 futs.append(fut)
         torch.futures.wait_all(futs)
+
+def init_env_gloo():
+    ngpus = torch.cuda.device_count()
+    local_rank = int(os.environ["LOCAL_RANK"])
+    rank = int(os.environ["RANK"])
+    world_size = int(os.environ['WORLD_SIZE'])
+    group_rank = int(os.environ['GROUP_RANK'])
+    # neighbor ranks
+    torch.cuda.set_device(local_rank)
+    hard_device_mesh = create_device_mesh(rank, local_rank, world_size)
+    dist_cfg = DistConfig(local_rank, rank, group_rank, world_size, ngpus)
+    return dist_cfg, hard_device_mesh
 
 def init_env():
     ngpus = torch.cuda.device_count()

@@ -4,7 +4,11 @@ RATIO_AVOID_OOM = 0.95 # 95% of the memory is used to avoid OOM
 TIME_MULT_TIMES = 1
 SLO_RATE = 1.5 # times of fp16 inference time to be SLO.
 # global setup for available bits
-AVAILBLE_BITS=[2, 3, 4, 8, '8:tc-li', 16]
+# AVAILBLE_BITS=[2, 3, 4, 8, '8:tc-li', 16]
+AVAILABLE_BITS=[2, 3, 4, 8, '8:tc', 16]
+AVAILABLE_BITS_WO_INFO=[2, 3, 4, 8, 16]
+gamma = 0.5 # expected generated tokens
+theta = 0.1 # control the concern for accuracy
 
 # TODO: for the time beding, the pipeline group is implemented by dist_pipeline_group. Later we can move it here.
 # communication groups setups.

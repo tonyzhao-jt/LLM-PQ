@@ -209,6 +209,8 @@ class LatCostModel:
                             # print(f'MSE: {mse:.3f}')
                             # print(f'Intercept: {model.intercept_}')
                             # print(f'Coefficients: {model.coef_}')
+                        else:
+                            raise Exception(f"Cannot find regression model {model_name} for device {device_name}. pls run fit")
         print("Verified all regress models, maximum mse: ", max(all_mse))
         self.has_fit = True
 

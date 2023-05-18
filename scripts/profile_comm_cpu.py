@@ -2,7 +2,7 @@ from qpipe.profiler import profile_comm
 import torch.distributed as dist
 import pickle
 import os 
-from qpipe.rpc import init_env
+from qpipe.rpc import init_env_gloo
 def test_comm_speed():
     data_size_buffer, time_buffer = profile_comm.generate_cost_model_dataset(batch_size=4, hidden_space=4096, sample_num=10, warmup=3)
     rank = dist.get_rank()
@@ -12,7 +12,7 @@ def test_comm_speed():
     return data_size_buffer, time_buffer
 
 if __name__ == "__main__":
-    init_env()
+    init_env_gloo()
     rank = dist.get_rank()
     local_rank = os.environ['LOCAL_RANK']
     if local_rank == '0':

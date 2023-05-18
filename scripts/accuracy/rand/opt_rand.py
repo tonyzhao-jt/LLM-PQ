@@ -476,17 +476,24 @@ class OPTClass(BaseLM):
                 wmax = weight.max(dim=-1).values.detach().cpu().numpy()
                 wmin = weight.min(dim=-1).values.detach().cpu().numpy()
 
+                w_norm2 = torch.norm(weight).item()
+
                 inp_max = inp[0].max(dim=-1).values.detach().cpu().numpy()
                 inp_min = inp[0].min(dim=-1).values.detach().cpu().numpy()
+
+                inp_norm2 = torch.norm(inp[0]).item()
 
                 if module.layer_idx not in collected_information:
                     collected_information[module.layer_idx] = {}
                 if module.name not in collected_information:
-                    collected_information[module.layer_idx][module.name] = {'xmax': inp_max, 'xmin': inp_min, 'wmax': wmax, 'wmin': wmin}
+                    collected_information[module.layer_idx][module.name] = {'xmax': inp_max, 'xmin': inp_min, 'wmax': wmax, 'wmin': wmin, \
+                                                                            'w_norm2': w_norm2, 'x_norm2': inp_norm2}
                 else:
                     # running average the inp_max and inp_min
                     collected_information[module.layer_idx][module.name]['xmax'] += inp_max
                     collected_information[module.layer_idx][module.name]['xmin'] += inp_min
+                    collected_information[module.layer_idx][module.name]['x_norm2'] += inp_norm2
+
 
             handles = []
             for name in subset:
@@ -501,6 +508,7 @@ class OPTClass(BaseLM):
             for name in subset:
                 collected_information[i][name]['xmax'] /= self.args.nsamples
                 collected_information[i][name]['xmin'] /= self.args.nsamples
+                collected_information[i][name]['x_norm2'] /= self.args.nsamples
 
             # just don't do fast quant
             # for name in subset:

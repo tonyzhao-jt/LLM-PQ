@@ -55,6 +55,7 @@ def init_parameters_and_cost_models(config, device_names=[], cost_model_store_pa
 from .._globals import MEM_UNIT, RATIO_AVOID_OOM, CUDA_CONTEXT_MEM
 from ..utils import get_device_mem_offline
 def get_single_device_mem_constraints(device_name):
+    device_name = device_name.upper()
     device_mem = RATIO_AVOID_OOM * get_device_mem_offline(device_name, unit=MEM_UNIT) - CUDA_CONTEXT_MEM
     return device_mem
 
@@ -173,3 +174,26 @@ def get_slo(model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size, 
     if verbose:
         print("SLO_lat: ", SLO_lat, "lat: ", lat)
     return SLO_lat
+
+
+def force_zero_3d(lat, z, prob):
+    lat_shape = lat.shape
+    for i in range(lat_shape[0]):
+        for j in range(lat_shape[1]):
+            for b in range(lat_shape[2]):
+                if lat[i][j][b] > 999:
+                    prob += z[(i, j, b)] == 0
+
+def force_zero_2d(lat, z, prob):
+    lat_shape = lat.shape
+    for i in range(lat_shape[0]):
+        for j in range(lat_shape[1]):
+            if lat[i][j] > 999:
+                prob += z[(i, j)] == 0
+def force_zero(lat, z, prob):
+    lat_shape = lat.shape
+    if len(lat_shape) == 2:
+        force_zero_2d(lat, z, prob)
+    elif len(lat_shape) == 3:
+        force_zero_3d(lat, z, prob)
+    

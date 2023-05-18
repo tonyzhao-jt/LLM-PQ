@@ -1,4 +1,5 @@
 import argparse
+import qpipe
 def simple_model_info_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model-size', type=str, default='125m')
@@ -17,3 +18,6 @@ def model_config_and_decoder_layers(model_name, model_size):
         config = model_cards[model_size]
         num_layers = config.n_layer
     return config, num_layers
+
+def get_available_candidate_bits():
+    return qpipe._globals.AVAILBLE_BITS
