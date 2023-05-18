@@ -211,7 +211,7 @@ def parse_args():
     parser.add_argument("--max_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
     parser.add_argument("--num_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
     parser.add_argument("--nccl", action='store_true', default=False, help="use nccl")
-    parser.add_argument("--method", type=str, default="pipeedge", help="method of sched")
+    parser.add_argument("--method", type=str, default="adaqpipe", help="method of sched")
     parser.parse_args()
     args = parser.parse_args()
     return args
@@ -232,56 +232,24 @@ if __name__ == '__main__':
     caliber.load_fake_calib_data(f'fake_calib_{model_name}_{model_size}.pkl')
   
     method = args.method
-    # pipeline_strategy_result_qpipe = f"{method}_{model_size}_Tesla_T4_2_Tesla_V100-SXM2-32GB_1_final_strategy.pkl"
-    # pipeline_strategy_result_qpipe = f'/opt/tiger/launch/qsync/QPipe/scripts/part_strategy/{pipeline_strategy_result_qpipe}'
-    # sharding_strategy = pickle.load(open(pipeline_strategy_result_qpipe, "rb"))
-
-
-    sharding_strategy = {
-        0: {},
-        1: {
-            0: {'shard': [0, 1], 'bits': [16, 16]},
-            1: {'shard': [0, 1], 'bits': [16, 16]},
-            2: {'shard': [0, 1], 'bits': [8, 16]},
-            3: {'shard': [0, 1], 'bits': [16, 16]},
-            4: {'shard': [0, 1], 'bits': [16, '8:tc-li']},
-            5: {'shard': [0, 1], 'bits': [16, 8]},
-            6: {'shard': [0, 1], 'bits': [16, 16]},
-            7: {'shard': [0, 1], 'bits': [16, 16]},
-            8: {'shard': [0], 'bits': [16]},
-        },
-        2: {
-            8: {'shard': [1], 'bits': [16]},
-            9: {'shard': [0,1], 'bits': ['8:tc-li', 8]},
-            10: {'shard': [0,1], 'bits': [8, 16]},
-            11: {'shard': [0,1], 'bits': [2, 16]},
-            # 350M
-            12: {'shard': [0,1], 'bits': [16, 16]},
-            13: {'shard': [0,1], 'bits': ['8:tc-li', 4]},
-            14: {'shard': [0,1], 'bits': [8, 16]},
-            15: {'shard': [0,1], 'bits': [16, 16]},
-            16: {'shard': [0,1], 'bits': [16, 8]},
-            17: {'shard': [0,1], 'bits': [16, 8]},
-        },
-        3:{
-            18: {'shard': [0,1], 'bits': [16, 16]},
-            19: {'shard': [0,1], 'bits': [16, 16]},
-            20: {'shard': [0,1], 'bits': [8, 16]},
-            21: {'shard': [0,1], 'bits': [4, 16]},
-            22: {'shard': [0,1], 'bits': [16, 16]}, 
-            23: {'shard': [0,1], 'bits': [16, 16]},
-        }
-    }
+    sol_file = f"sols_opt_13b_Tesla_V100-SXM2-32GB_1.pkl"
+    strat_folder = '/workspace/qpipe/scripts/part_strategy'
+    sols_path = f'{strat_folder}/{sol_file}'
+    sols = pickle.load(open(sols_path, "rb"))
+    num_tokens_to_generate = sols['mu_n']
+    max_tokens_to_generate = sols['n']
+    bs_token = sols['gloabl_bz'] # how many sentence in a batch
+    assert args.method in sols, f"no {args.method} in {sols_path}"
+    # get sols info
+    sol = sols[args.method]
+    sharding_strategy = sol['use_plan']
+    prefill_bs = sol['prefill_bz']
+    decoder_bss = sol['bz_decode_bss']
 
     # control the token generation
     max_tokens_to_generate = args.max_tokens_to_generate
-    num_tokens_to_generate = args.num_tokens_to_generate
     prompt_length = args.prompt_length
-    bs_token = args.bs_token # how many sentence in a batch
 
-    prefill_bs = 1
-    # decoder_bss = [2, 3, 3]
-    decoder_bss = [2, 2, 2, 2]
     chunk_size = len(decoder_bss)
     ds_scheduler = DSScheduler(prefill_bs, decoder_bss)
 

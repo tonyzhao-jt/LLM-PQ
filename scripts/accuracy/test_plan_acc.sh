@@ -4,7 +4,7 @@ model_name="opt"
 model_prefix="facebook/opt-"
 model_size="13b"
 device_info="Tesla_P100-PCIE-12GB_2"
-available_methods=('adabits', 'adaqpipe', 'pipeedge', 'uniform')
+available_methods=('adabits' 'adaqpipe' 'pipeedge' 'uniform')
 folder_abs_path="/workspace/qpipe/scripts/accuracy/bit_for_gptq_test/"
 CUDA_VISIBLE_DEVICES=0
 # create the corresponding files

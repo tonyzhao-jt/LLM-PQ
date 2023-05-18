@@ -42,8 +42,12 @@ def init_parameters_and_cost_models(config, device_names=[], cost_model_store_pa
     model_mem_estimator = create_mem_estimator(b, s, n, config)
     comm_size = (b * 1 * h1 * 2) / 1024 / 1024 # MB
 
+    single_device = False
+    if len(device_names) == 1:
+        single_device = True
+        print("is single device: ", device_names)
     # cost models
-    comm_cost_model = CommCostModel(comm_cost_model_folder=comm_cost_model_folder)
+    comm_cost_model = CommCostModel(comm_cost_model_folder=comm_cost_model_folder, single_device=single_device)
     if len(device_names) == 0:
         lat_cost_model = None
     else:
