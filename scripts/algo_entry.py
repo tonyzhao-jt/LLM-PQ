@@ -7,7 +7,8 @@ from uniform import main as uniform_main
 # arg parser
 from utils import (
     common_argparser, ilp_env,
-    FP16_ENOUGH, NOT_AVAILABLE
+    FP16_ENOUGH, NOT_AVAILABLE,
+    get_final_strat_file_name
 )
 import qpipe
 from qpipe.partitioner.helper import (
@@ -30,7 +31,16 @@ from qpipe.cost_model import (
 
 import copy 
 time_mult_times = qpipe._globals.TIME_MULT_TIMES
-
+# for debug
+def check_minimum_bit_of_sols(sol):
+    bit_assignment = sol['plan']['bit_assignment']
+    minimum_bit = 16
+    for k, v in bit_assignment.items():
+        if type(v) is str:
+            v = 8
+        if v < minimum_bit:
+            minimum_bit = v
+    print("minimum_bit: ", minimum_bit)
 
 # first make sure the partition is within the memory budget
 def check_memory_budget_single_device(device_rank, device_name, layers_range, bit_assignment, model_mem_estimator, bs_pack):
@@ -191,7 +201,7 @@ def main(args):
     config = args.config
     comm_cost_model_dir = f'{args.comm_cost_model_dir}/{device_info}'
     cost_model_store_path = None
-    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, cost_model_store_path, \
+    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
                                                                                                      global_bz, micro_bz, s, n, \
                                                                                                   comm_cost_model_folder=comm_cost_model_dir)
     
@@ -247,13 +257,21 @@ def main(args):
         
         log_result(result, sol_name)
     
+
+    for sol_name, sol in sols.items():
+        print("Minimum bit of ", sol_name)
+        check_minimum_bit_of_sols(sol)
+
+    print(sols['adaqpipe']['D'])
     sols['mu_n'] = mu_n
     sols['n'] = n
     sols['gloabl_bz'] = global_bz
+
+        
     # store the solution
     # with device_names and model_name and model_size
-    file_name = f'sols_' + f'{model_name}_{model_size}' + '_' + device_info + '.pkl'
-    folder = '/workspace/qpipe/scripts/part_strategy'
+    file_name = get_final_strat_file_name(model_name, model_size, device_info)
+    folder = args.store_folder
     save_with_pickle(sols, file_name, folder)
     logger.info(f'All plans saved to {file_name} in {folder}')
 

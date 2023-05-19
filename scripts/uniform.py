@@ -125,7 +125,7 @@ def main(args):
     cost_model_store_path = None # initialize the cost model
 
 
-    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, cost_model_store_path, \
+    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
                                                                                                      global_bz, micro_bz, s, n, \
                                                                                                     comm_cost_model_folder=comm_cost_model_dir)
     # common parts above

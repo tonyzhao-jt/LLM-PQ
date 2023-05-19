@@ -16,6 +16,6 @@ do
     echo "run ${available_methods[i]} accuracy test"
     file_name="${available_methods[i]}_${model_size}_${device_info}_acc_test.pkl"
     file_abs_path="${folder_abs_path}${file_name}"
-    python3 main.py ${model_prefix}${model_size} c4 --wbits 4 --task piqa \
+    python3 main.py ${model_prefix}${model_size} c4 --wbits 4 --task piqa,arc_easy,lambada \
         --ada-file ${file_abs_path} 2>&1 | tee "${file_name}.txt"
 done

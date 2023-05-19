@@ -18,7 +18,8 @@ from qpipe.partitioner.helper import (
     get_single_device_mem_constraints,
     create_device_mesh_and_mem,
     get_device_info,
-    get_slo
+    get_slo,
+    decouple_result_group
 )
 
 from qpipe.utils import (
@@ -106,7 +107,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, comm):
     # prob.solve(pulp.apis.PULP_CBC_CMD())
     # solver = pulp.GUROBI(msg=True, threads=0, timeLimit=100, MIPGap=0.003)
     # solver = pulp.GUROBI()
-    solver = pulp.GUROBI(msg=False)
+    solver = pulp.GUROBI(msg=False, randomSeed=ilp_seed)
     status = prob.solve(solver)
 
     if status == pulp.LpStatusOptimal:
@@ -145,6 +146,8 @@ def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack, 
     global_bz, prefill_bz, bz_decode_max = bz_pack
     L = num_hidden_layers # in partition, regard as a whole
     N = len(D) # number of devices
+    assert L % group_size == 0, f'L should be divisible by group_size, but L={L}, group_size={group_size}'
+    group_L = L // group_size
 
     BITs = [(chosen_bit, chosen_bit)]
     '''
@@ -155,7 +158,7 @@ def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack, 
 
     # only one
     mem_bits_vector = get_mem_with_layer_bit_pair(BITs, model_mem_estimator)
-    M = np.tile(mem_bits_vector, (L, 1))
+    M = np.tile(mem_bits_vector, (group_L, 1)) * group_size
 
     # reduce the embedding size on device 0 for M_d
     post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
@@ -167,15 +170,15 @@ def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack, 
     M = np.ceil(M).astype(int) # ceil
 
     # latency
-    l = np.zeros((L, N, len(BITs)))
+    l = np.zeros((group_L, N, len(BITs)))
     lat_device_bits_matrix = get_latency_with_layer_device_bit_pair(D, BITs, lat_cost_model, bz_decode_max, mu_n)
-    for i in range(L):
-        l[i, :, :] = lat_device_bits_matrix
+    for i in range(group_L):
+        l[i, :, :] = lat_device_bits_matrix * group_size
     
     # comm
     comm = get_comm(D, comm_cost_model, comm_size)
 
-    return L, N, BITs, M_d, M, l, comm
+    return group_L, N, BITs, M_d, M, l, comm
 
 '''
     Initiailization
@@ -195,6 +198,8 @@ mu_n = None
 cost_model_store_path = '/workspace/qpipe/scripts/cost_model_store'
 comm_cost_model_dir = '/workspace/qpipe/scripts/comm_cost_model'
 all_available_pairs = []
+ilp_seed = 0
+group_size = 1
 def main(args):
     global global_bz, micro_bz, s, n
     global model_size, device_info
@@ -207,6 +212,17 @@ def main(args):
     global mu_n
     global cost_model_store_path, comm_cost_model_dir
     global all_available_pairs
+    global ilp_seed
+    global group_size
+    # global variables
+
+    omega_file = args.omega_file
+    ilp_seed = args.ilp_seed
+    group_size = args.group_size
+    ilp_tolerance = args.ilp_tolerance
+    if ilp_tolerance is not None:
+        pulp.LpSolverDefault.eps = ilp_tolerance
+
     # global variables
     global_bz = gen_config.global_bz
     micro_bz = gen_config.micro_bz
@@ -230,7 +246,7 @@ def main(args):
     comm_cost_model_dir = f'{args.comm_cost_model_dir}/{device_info}'
     cost_model_store_path = None # initialize the cost model
 
-    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, cost_model_store_path, \
+    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
                                                                                                      global_bz, micro_bz, s, n, \
                                                                                                     comm_cost_model_folder=comm_cost_model_dir)
 
@@ -251,12 +267,15 @@ def main(args):
     L, N, BITs, M_d, M, l, comm = prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack, comm_size)
     all_available_pairs = BITs
     plan, obj_value = solve_ilp_pulp(L, N, BITs, M, M_d, l, comm)
+
+    if plan != NOT_AVAILABLE:
+        plan = decouple_result_group(group_size, plan)
+        plan = interpret_ilp_result_i_j_b(plan, BITs)
+
     res = {
         'plan': plan,
         'obj': obj_value
     }
-    if res['plan'] != NOT_AVAILABLE:
-        res['plan'] = interpret_ilp_result_i_j_b(res['plan'], BITs)
     best_plan = {
         'prefill_bz': bz_decode,
         'bz_decode_max': bz_decode,

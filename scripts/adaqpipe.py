@@ -19,7 +19,8 @@ from qpipe.partitioner.helper import (
     create_device_mesh_and_mem,
     get_device_info,
     get_slo,
-    force_zero
+    force_zero,
+    decouple_result_group
 )
 
 from qpipe.utils import (
@@ -89,7 +90,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
     
     # Solve the problem
     # prob.solve(pulp.apis.PULP_CBC_CMD())
-    solver = pulp.GUROBI(msg=False, threads=0)
+    solver = pulp.GUROBI(randomSeed=ilp_seed)
     # solver = pulp.GUROBI()
     # solver = pulp.GUROBI(msg=True)
     status = prob.solve(solver)
@@ -158,6 +159,8 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
 
     L = num_hidden_layers # in partition, regard as a whole
     N = len(current_D) # number of devices
+    assert L % group_size == 0, f'L should be divisible by group_size, but L={L}, group_size={group_size}'
+    group_L = L // group_size
 
     BITs = get_available_bits_pair(available_bits)
     '''
@@ -173,7 +176,7 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
     #     M[i, :] = mem_bits_vector
     
     mem_bits_vector = get_mem_with_layer_bit_pair(BITs, model_mem_estimator)
-    M = np.tile(mem_bits_vector, (L, 1))
+    M = np.tile(mem_bits_vector, (group_L, 1)) * group_size
 
     # reduce the embedding size on device 0 for M_d
     post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
@@ -185,20 +188,25 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
 
     # latency table for prefill and decode
     # latency
-    l_prefill = np.zeros((L, N, len(BITs)))
-    l_decode = np.zeros((L, N, len(BITs)))
+    l_prefill = np.zeros((group_L, N, len(BITs)))
+    l_decode = np.zeros((group_L, N, len(BITs))) 
 
-    for i in range(L):
-        l_prefill[i, :, :] = get_latency_with_layer_device_bit_pair(current_D, BITs, lat_cost_model, prefill_bz, s)
-        l_decode[i, :, :] = get_latency_with_layer_device_bit_pair(current_D, BITs, lat_cost_model, bz_decode_max, mu_n)
+    for i in range(group_L):
+        l_prefill[i, :, :] = get_latency_with_layer_device_bit_pair(current_D, BITs, lat_cost_model, prefill_bz, s) * group_size
+        l_decode[i, :, :] = get_latency_with_layer_device_bit_pair(current_D, BITs, lat_cost_model, bz_decode_max, mu_n) * group_size
     
     # omega
-    omega = assign_omega_uniform(L, BITs)
+    omega = assign_omega_uniform(group_L, BITs)
     if omega_file is not None:
         # open and load with pickle
         with open(omega_file, 'rb') as f:
             omega_loaded = pickle.load(f)
         # check whether the shape is matched, as raise error
+        if omega_loaded.shape[0] != group_L and omega_loaded.shape[0] == L:
+            new_omega_loaded = np.zeros((group_L, omega_loaded.shape[1]))
+            for i in range(group_L):
+                new_omega_loaded[i] = np.mean(omega_loaded[i*group_size:(i+1)*group_size], axis=0)
+            omega_loaded = new_omega_loaded
         if omega_loaded.shape != omega.shape:
             raise ValueError('omega shape mismatched')
         omega = omega_loaded
@@ -207,7 +215,7 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
     comm_prefill = get_comm(current_D, comm_cost_model, comm_size * s)
     comm_decode = get_comm(current_D, comm_cost_model, comm_size)
 
-    return L, N, BITs, M_d, M, (l_prefill, l_decode), omega, (comm_prefill, comm_decode)
+    return group_L, N, BITs, M_d, M, (l_prefill, l_decode), omega, (comm_prefill, comm_decode)
 
 # algo 2
 import itertools
@@ -247,6 +255,7 @@ def solve_ilp_for_best(T, current_D, comm_size, cost_model_pack, bz_pack):
     # result, obj_value, device_used = solve_ilp_pulp_with_price(L, N, BITs, M, M_d, l, omega, comm, price, theta, gamma)
     # check_performance(lat[0], result)
     if result != NOT_AVAILABLE:
+        result = decouple_result_group(group_size, result)
         result = interpret_ilp_result_i_j_b(result, BITs)
     ilp_res = {}
     ilp_res['obj'] = obj_value
@@ -258,7 +267,7 @@ def solve_ilp_for_best(T, current_D, comm_size, cost_model_pack, bz_pack):
 # enumerata all hybrid micro-batch combinations
 # micro-batch candidates
 def enumerate_best_result():
-    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, cost_model_store_path, \
+    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
                                                                                                      global_bz, micro_bz, s, n, \
                                                                                                   comm_cost_model_folder=comm_cost_model_dir)
     lat_cost_model.update_profiled_result(lat_profile_result_path)
@@ -327,6 +336,8 @@ cost_model_store_path = '/workspace/qpipe/scripts/cost_model_store'
 comm_cost_model_dir = '/workspace/qpipe/scripts/comm_cost_model'
 lat_profile_result_path = '/workspace/qpipe/scripts/lat_profiled_result'
 omega_file = None
+ilp_seed = 0
+group_size = 1
 def main(args):
     global global_bz, micro_bz, s, n
     global model_size, device_info
@@ -340,7 +351,16 @@ def main(args):
     global cost_model_store_path, comm_cost_model_dir
     global lat_profile_result_path
     global omega_file
+    global ilp_seed
+    global group_size
     # global variables
+
+    omega_file = args.omega_file
+    ilp_seed = args.ilp_seed
+    group_size = args.group_size
+    ilp_tolerance = args.ilp_tolerance
+    if ilp_tolerance is not None:
+        pulp.LpSolverDefault.eps = ilp_tolerance
 
     global_bz = gen_config.global_bz
     micro_bz = gen_config.micro_bz

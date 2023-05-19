@@ -22,7 +22,7 @@ def create_mem_estimator(b, s, n, config):
     return model_mem_estimator
 
 # helper, init parameters and cost models
-def init_parameters_and_cost_models(config, device_names=[], cost_model_store_path=None, \
+def init_parameters_and_cost_models(config, device_names=[], device_numbers=[], cost_model_store_path=None, \
                                      global_bz=16, micro_bz=4, prompt_length=512, num_token_to_generate=100, \
                                     comm_cost_model_folder='/workspace/qpipe/scripts/comm_cost_model/'):
     # target model configuration
@@ -43,9 +43,9 @@ def init_parameters_and_cost_models(config, device_names=[], cost_model_store_pa
     comm_size = (b * 1 * h1 * 2) / 1024 / 1024 # MB
 
     single_device = False
-    if len(device_names) == 1:
+    if len(device_names) == 1 and len(device_numbers) == 1 and device_numbers[0] == 1:
         single_device = True
-        print("is single device: ", device_names)
+        print("is single device: ", device_names, device_numbers)
     # cost models
     comm_cost_model = CommCostModel(comm_cost_model_folder=comm_cost_model_folder, single_device=single_device)
     if len(device_names) == 0:
@@ -200,4 +200,13 @@ def force_zero(lat, z, prob):
         force_zero_2d(lat, z, prob)
     elif len(lat_shape) == 3:
         force_zero_3d(lat, z, prob)
-    
+
+
+def decouple_result_group(group_size, plan):
+    # result: {i: (j, b)}, layer i place on device j withb
+    # when i is a group, i is the first layer in the group
+    new_plan = {}
+    for i, (j, b) in plan.items():
+        for k in range(group_size):
+            new_plan[i * group_size+k] = (j, b) # set bit like that
+    return new_plan

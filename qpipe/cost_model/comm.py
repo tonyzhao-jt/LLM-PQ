@@ -37,6 +37,7 @@ class CommCostModel:
             key = f"{end_rank}_{start_rank}"
         if key not in self.cost_model:
             raise ValueError(f"Cannot find cost model for {key}")
+            
         model = self.cost_model[key]
         poly = np.poly1d(model)
         cost = poly(data_size)

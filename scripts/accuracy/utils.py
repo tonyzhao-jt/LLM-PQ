@@ -24,4 +24,4 @@ def model_config_and_decoder_layers(model_name, model_size):
     return config, num_layers
 
 def get_available_candidate_bits():
-    return qpipe._globals.AVAILBLE_BITS
+    return qpipe._globals.AVAILABLE_BITS

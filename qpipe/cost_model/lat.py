@@ -270,7 +270,7 @@ class LatCostModel:
         assert device_name in self.regression_models, f"Cannot find regression model for {device_name}"
         model_name = f"{device_name}_{shard}_{h1}_{h2}_{bit}.pkl"
         if model_name not in self.regression_models[device_name]:
-            print(f"Cannot find regression model for {model_name}")
+            # print(f"Cannot find regression model for {model_name}")
             return None
         model = self.regression_models[device_name][model_name]
         X = np.array([[b, i, 1]])

@@ -5,12 +5,6 @@
 import pickle
 from utils import simple_model_info_parser
 
-keys = ['self_attention.query_key_value', 
-        'self_attention.dense', 
-         'mlp.dense_h_to_4h',
-         'mlp.dense_4h_to_h']
-
-
 args = simple_model_info_parser()
 available_methods = args.available_methods
 model_name = args.model_name
