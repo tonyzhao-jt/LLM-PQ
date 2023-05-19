@@ -14,7 +14,7 @@ import qpipe
 from qpipe.partitioner.helper import (
     get_device_info,
 )
-from qpipe.utils import save_with_pickle
+from qpipe.utils import save_with_pickle, has_tc
 import logging
 logger = logging.getLogger(__name__)
 
@@ -88,6 +88,7 @@ def log_result(result, name):
 # convert to the result can be used by adaqpipe
 def convert_to_adaqpipe_result2partitions(res):
     pipeline_partition_result, bit_assignment_result = res['plan']['partition_result'], res['plan']['bit_assignment']
+    D = res['D']
     # result is something like
     '''
         sharding_strategy = {
@@ -111,6 +112,14 @@ def convert_to_adaqpipe_result2partitions(res):
             ffn_idx = layer * 2 + 1
             atten_bit = bit_assignment_result[atten_idx]
             ffn_bit = bit_assignment_result[ffn_idx]
+            # check if the bit can be replace with tc:8
+            D_name = D[device_rank]
+            if atten_bit == 8:
+                if has_tc(D_name):
+                    atten_bit = '8:tc'
+            if ffn_bit == 8:
+                if has_tc(D_name):
+                    ffn_bit = '8:tc'
             sharding_strategy[device_rank][layer] = {
                 'shard': [0, 1], 'bits': [atten_bit, ffn_bit]
             }
@@ -215,9 +224,12 @@ def main(args):
     sol_adabits = adaptive_bits_main(args)
     sol_adaqpipe = adaqpipe_main(args)
     # sol_pipeedge_adaptive = pipeedge_adaptive_main(args)
-    no_info_bits = copy.deepcopy(qpipe._globals.AVAILABLE_BITS_WO_INFO) 
     # sort by bit number, decsending
+    no_info_bits = copy.deepcopy(qpipe._globals.AVAILABLE_BITS_WO_INFO) 
     no_info_bits.sort(reverse=True)
+    if args.adabits_tc:
+        no_info_bits = copy.deepcopy(qpipe._globals.AVAILABLE_BITS)[::-1]
+    
 
     # find first solution that is valid
     uniform_sols = {}
@@ -267,7 +279,6 @@ def main(args):
     sols['n'] = n
     sols['gloabl_bz'] = global_bz
 
-    import pdb; pdb.set_trace()
     # store the solution
     # with device_names and model_name and model_size
     file_name = get_final_strat_file_name(model_name, model_size, device_info)

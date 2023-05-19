@@ -238,6 +238,9 @@ def main(args):
     theta = qpipe._globals.theta # control the concern for accuracy
     mu_n = int(gamma * n)
     available_bits = qpipe._globals.AVAILABLE_BITS_WO_INFO # we now can do hardware-aware quantization with 8:tc and 8:tc-li
+    if args.adabits_tc:
+        print("Use AdaBits-TC")
+        available_bits = qpipe._globals.AVAILABLE_BITS
     D, max_device_mem = create_device_mesh_and_mem(device_names, device_numbers)
     # max_device_mem can be used to check whether OOM or not
     use_profiler_prediction = args.use_profiler_prediction # use regression model to predict or load predictor

@@ -166,7 +166,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
     module.eval()
     module.on_device = f'cuda:{local_rank}'
 
-    with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=1800)}, handle_cmd) \
+    with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=3000)}, handle_cmd) \
         as dist_ctx:
         dist.barrier() # wait all device sharded finished.
 

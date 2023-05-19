@@ -9,14 +9,14 @@ python3 algo_entry.py --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --theta 0.001  --adabits_tc --fit
+ --theta 0.001 --fit --adabits_tc
 
 # for 30b
 # python3 algo_entry.py --model_size ${model_size} \
 #  --device_names "${device_names[@]}" \
 #  --device_numbers "${device_numbers[@]}" \
 #  --omega_file $OMEGA_FILE --ilp_seed 120 \
-#  --theta 0.0001 --adabits_tc
+#  --theta 0.0001 
 
 # for 66b
 # python3 algo_entry.py --model_size ${model_size} \
