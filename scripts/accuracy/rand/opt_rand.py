@@ -334,7 +334,7 @@ class OPTClass(BaseLM):
                 print('Quantizing ...')
                 (err, Hessian) = gptq[name].fasterquant(percdamp=self.args.percdamp, groupsize=self.args.groupsize)
                 if not self.args.rand_bit and bit_assignment is None:
-                    collected_information[(i, name)] = (err, Hessian)
+                    collected_information[(i, name)] = (err.detach().cpu().numpy(), Hessian.detach().cpu().numpy())
                 quantizers['model.decoder.layers.%d.%s' % (i, name)] = gptq[name].quantizer
                 gptq[name].free()
             for j in range(self.args.nsamples):

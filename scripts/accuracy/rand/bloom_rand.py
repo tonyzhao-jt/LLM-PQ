@@ -405,7 +405,7 @@ class BLOOMClass(BaseLM):
 
                 (err, Hessian) = gptq[name].fasterquant(percdamp=self.args.percdamp, groupsize=self.args.groupsize)
                 if not self.args.rand_bit and bit_assignment is None:
-                    collected_information[(i, name)] = (err, Hessian)
+                    collected_information[(i, name)] = (err.detach().cpu().numpy(), Hessian.detach().cpu().numpy())
             for j in range(self.args.nsamples):
                 outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask, alibi=alibi)[0]
 
@@ -525,13 +525,13 @@ class BLOOMClass(BaseLM):
 
             def collect_in_w_scale(module, inp, out):
                 weight = module.weight.data
-                wmax = weight.max(dim=-1).values.detach().cpu().numpy()
-                wmin = weight.min(dim=-1).values.detach().cpu().numpy()
-                w_norm2 = torch.norm(weight).item()
+                wmax = weight.float().max(dim=-1).values.detach().cpu().numpy()
+                wmin = weight.float().min(dim=-1).values.detach().cpu().numpy()
+                w_norm2 = torch.norm(weight.float()).item()
 
-                inp_max = inp[0].max(dim=-1).values.detach().cpu().numpy()
-                inp_min = inp[0].min(dim=-1).values.detach().cpu().numpy()
-                inp_norm2 = torch.norm(inp[0]).item()
+                inp_max = inp[0].float().max(dim=-1).values.detach().cpu().numpy()
+                inp_min = inp[0].float().min(dim=-1).values.detach().cpu().numpy()
+                inp_norm2 = torch.norm(inp[0].float()).item()
 
                 if module.layer_idx not in collected_information:
                     collected_information[module.layer_idx] = {}

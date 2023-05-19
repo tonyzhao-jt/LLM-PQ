@@ -113,61 +113,61 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
             raise ValueError("sharding strategy is not set")
         else:
             loaded_llm_cpu._verify_shard_strategy(sharding_strategy)  
+
+    if rank == data_rank:
+        device = torch.device(f'cuda:{local_rank}')
+        # init tokenizer
+        tokenizer = init_tokenizer()
+        data_chunks = []
+        sample_texts = fetch_prompts(bs_token, prompt_length)
+        sample_text_dict = ds_scheduler.split_list_of_prompts(sample_texts)
+        prefill_bs_indexes = ds_scheduler.create_ds_indexes()
+        for request_id, sample_text_list in sample_text_dict.items():
+            sample_text_dict[request_id] = to_device_recursive([dict(tokenizer.batch_encode_plus(text, padding='max_length', max_length=prompt_length, return_tensors="pt")) for text \
+                            in sample_text_list], device)
+        data_chunks = []
+        input_id_dict = {}
+        for request_id, prefill_bs_indexes in prefill_bs_indexes.items():
+            for idx, prefill_bs_index in enumerate(prefill_bs_indexes):
+                current_sub_request_batch_ids = sample_text_dict[request_id][idx]
+                if request_id not in input_id_dict:
+                    input_id_dict[request_id] = current_sub_request_batch_ids['input_ids']
+                else:
+                    input_id_dict[request_id] = torch.cat([input_id_dict[request_id], current_sub_request_batch_ids['input_ids']], dim=0)
+                # print(current_sub_request_batch_ids['input_ids'].shape)
+                request_token = model_pre_and_post.preprocess(**current_sub_request_batch_ids, use_cache=True, request_id=request_id, batch_index=prefill_bs_index)
+                request_token = to_device_recursive(request_token, 'cpu')
+                data_chunks.append(request_token)
+        for chunk_idx, input_id in enumerate(input_id_dict.values()):
+            set_input_ids_globals(chunk_idx, input_id)
+        # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
+        batch_size = len(data_chunks)
+        print("Pipeline Data Loaded, with initial batch size: ", batch_size)
+    
+    # get stage
+    if rank not in sharding_strategy:
+        stage_id = None
+    else:
+        stage_ranks = sorted(list(sharding_strategy.keys()))
+        stage_id = stage_ranks.index(rank)
+        # shard model
+        print("rank {} is in stage {}".format(rank, stage_id))
+    
+    # sharded module init
+    shard_config = sharding_strategy[rank]
+    module = loaded_llm_cpu
+    module._shard_model_current(shard_config, f'cuda:{local_rank}')
+    print(f"Stage {stage_id} module sharded")
+    for chunk_id in range(chunk_size):
+        # init kv cache for each decoder bs
+        # the prefill stage will use the same cache created by decoder
+        module.init_kv_cache(decoder_bss[chunk_id], prompt_length, max_tokens_to_generate, chunk_id)
+    print(f"Stage {stage_id} kv initialized")
+    module.eval()
+    module.on_device = f'cuda:{local_rank}'
+
     with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=1800)}, handle_cmd) \
         as dist_ctx:
-
-        if rank == data_rank:
-            device = torch.device(f'cuda:{local_rank}')
-            # init tokenizer
-            tokenizer = init_tokenizer()
-            data_chunks = []
-            sample_texts = fetch_prompts(bs_token, prompt_length)
-            sample_text_dict = ds_scheduler.split_list_of_prompts(sample_texts)
-            prefill_bs_indexes = ds_scheduler.create_ds_indexes()
-            for request_id, sample_text_list in sample_text_dict.items():
-                sample_text_dict[request_id] = to_device_recursive([dict(tokenizer.batch_encode_plus(text, padding='max_length', max_length=prompt_length, return_tensors="pt")) for text \
-                                in sample_text_list], device)
-            data_chunks = []
-            input_id_dict = {}
-            for request_id, prefill_bs_indexes in prefill_bs_indexes.items():
-                for idx, prefill_bs_index in enumerate(prefill_bs_indexes):
-                    current_sub_request_batch_ids = sample_text_dict[request_id][idx]
-                    if request_id not in input_id_dict:
-                        input_id_dict[request_id] = current_sub_request_batch_ids['input_ids']
-                    else:
-                        input_id_dict[request_id] = torch.cat([input_id_dict[request_id], current_sub_request_batch_ids['input_ids']], dim=0)
-                    # print(current_sub_request_batch_ids['input_ids'].shape)
-                    request_token = model_pre_and_post.preprocess(**current_sub_request_batch_ids, use_cache=True, request_id=request_id, batch_index=prefill_bs_index)
-                    request_token = to_device_recursive(request_token, 'cpu')
-                    data_chunks.append(request_token)
-            for chunk_idx, input_id in enumerate(input_id_dict.values()):
-                set_input_ids_globals(chunk_idx, input_id)
-            # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
-            batch_size = len(data_chunks)
-            print("Pipeline Data Loaded, with initial batch size: ", batch_size)
-        
-        # get stage
-        if rank not in sharding_strategy:
-            stage_id = None
-        else:
-            stage_ranks = sorted(list(sharding_strategy.keys()))
-            stage_id = stage_ranks.index(rank)
-            # shard model
-            print("rank {} is in stage {}".format(rank, stage_id))
-        
-
-        # sharded module init
-        shard_config = sharding_strategy[rank]
-        module = loaded_llm_cpu
-        module._shard_model_current(shard_config, f'cuda:{local_rank}')
-        print(f"Stage {stage_id} module sharded")
-        for chunk_id in range(chunk_size):
-            # init kv cache for each decoder bs
-            # the prefill stage will use the same cache created by decoder
-            module.init_kv_cache(decoder_bss[chunk_id], prompt_length, max_tokens_to_generate, chunk_id)
-        print(f"Stage {stage_id} kv initialized")
-        module.eval()
-        module.on_device = f'cuda:{local_rank}'
         dist.barrier() # wait all device sharded finished.
 
         with dist_p2p_pipeline_stage_factory(stage_ranks, data_rank, rank, stage_id, module,
@@ -260,7 +260,7 @@ if __name__ == '__main__':
     seed = 42
     init_random_seed(seed)
     dist_cfg, hard_device_mesh = init_env()
-    assert dist_cfg.world_size > 1, "world size should be larger than 1, else single device"
+    # assert dist_cfg.world_size > 1, "world size should be larger than 1, else single device"
 
     if dist_cfg.rank == 0:
         model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()

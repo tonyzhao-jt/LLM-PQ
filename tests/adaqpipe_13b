@@ -1,15 +1,3 @@
-WARNING:torch.distributed.run:
-*****************************************
-Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
-*****************************************
-
-===================================BUG REPORT===================================
-Welcome to bitsandbytes. For bug reports, please run
-
-python -m bitsandbytes
-
- and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
-================================================================================
 
 ===================================BUG REPORT===================================
 Welcome to bitsandbytes. For bug reports, please run
@@ -19,11 +7,11 @@ python -m bitsandbytes
  and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
 ================================================================================
 bin /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117_nocublaslt.so
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/usr/local/nvidia/lib'), PosixPath('/usr/local/nvidia/lib64')}
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/usr/local/nvidia/lib64'), PosixPath('/usr/local/nvidia/lib')}
   warn(msg)
 /opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: /usr/local/nvidia/lib:/usr/local/nvidia/lib64 did not contain ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] as expected! Searching further paths...
   warn(msg)
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_t9uqvsmm/none_0oigv7c_/attempt_0/1/error.json')}
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_yi__0vok/none_6khk_arw/attempt_0/0/error.json')}
   warn(msg)
 CUDA_SETUP: WARNING! libcudart.so not found in any environmental path. Searching in backup paths...
 /opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: Found duplicate ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] files: {PosixPath('/usr/local/cuda/lib64/libcudart.so'), PosixPath('/usr/local/cuda/lib64/libcudart.so.11.0')}.. We'll flip a coin and try one of these, in order to fail forward.
@@ -36,21 +24,90 @@ CUDA SETUP: Detected CUDA version 117
 /opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: Compute capability < 7.5 detected! Only slow 8-bit matmul is supported for your GPU!
   warn(msg)
 CUDA SETUP: Loading binary /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117_nocublaslt.so...
-bin /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117_nocublaslt.so
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/usr/local/nvidia/lib'), PosixPath('/usr/local/nvidia/lib64')}
-  warn(msg)
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: /usr/local/nvidia/lib:/usr/local/nvidia/lib64 did not contain ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] as expected! Searching further paths...
-  warn(msg)
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_t9uqvsmm/none_0oigv7c_/attempt_0/0/error.json')}
-  warn(msg)
-CUDA_SETUP: WARNING! libcudart.so not found in any environmental path. Searching in backup paths...
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: Found duplicate ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] files: {PosixPath('/usr/local/cuda/lib64/libcudart.so'), PosixPath('/usr/local/cuda/lib64/libcudart.so.11.0')}.. We'll flip a coin and try one of these, in order to fail forward.
-Either way, this might cause trouble in the future:
-If you get `CUDA error: invalid device function` errors, the above might be the cause and the solution is to make sure only one ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] in the paths that we search based on your env.
-  warn(msg)
-CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so
-CUDA SETUP: Highest compute capability among GPUs detected: 7.0
-CUDA SETUP: Detected CUDA version 117
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: Compute capability < 7.5 detected! Only slow 8-bit matmul is supported for your GPU!
-  warn(msg)
-CUDA SETUP: Loading binary /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117_nocublaslt.so...
+Pipeline Data Loaded, with initial batch size:  16
+rank 0 is in stage 0
+create layer: 0|create layer: 1|create layer: 2|create layer: 3|create layer: 4|create layer: 5|create layer: 6|create layer: 7|create layer: 8|create layer: 9|create layer: 10|create layer: 11|create layer: 12|create layer: 13|create layer: 14|create layer: 15|create layer: 16|create layer: 17|create layer: 18|create layer: 19|create layer: 20|create layer: 21|create layer: 22|create layer: 23|create layer: 24|create layer: 25|create layer: 26|create layer: 27|create layer: 28|create layer: 29|create layer: 30|create layer: 31|create layer: 32|create layer: 33|create layer: 34|create layer: 35|create layer: 36|create layer: 37|create layer: 38|create layer: 39|Stage 0 module sharded
+Stage 0 kv initialized
+rank_src: None, rank_dst: None, rank: 0, results_cb: <function handle_results at 0x7f60e977bd90>
+2023-05-19 14:09:38,438 - INFO - start pipe data
+2023-05-19 14:10:26,814 - INFO - Request id 0 done for token 1
+2023-05-19 14:10:27,011 - INFO - Request id 0 done for token 2
+2023-05-19 14:10:27,206 - INFO - Request id 0 done for token 3
+2023-05-19 14:10:27,400 - INFO - Request id 0 done for token 4
+2023-05-19 14:10:27,594 - INFO - Request id 0 done for token 5
+2023-05-19 14:10:27,789 - INFO - Request id 0 done for token 6
+2023-05-19 14:10:27,983 - INFO - Request id 0 done for token 7
+2023-05-19 14:10:28,177 - INFO - Request id 0 done for token 8
+2023-05-19 14:10:28,370 - INFO - Request id 0 done for token 9
+2023-05-19 14:10:28,567 - INFO - Request id 0 done for token 10
+2023-05-19 14:10:28,763 - INFO - Request id 0 done for token 11
+2023-05-19 14:10:28,957 - INFO - Request id 0 done for token 12
+2023-05-19 14:10:29,154 - INFO - Request id 0 done for token 13
+2023-05-19 14:10:29,349 - INFO - Request id 0 done for token 14
+2023-05-19 14:10:29,545 - INFO - Request id 0 done for token 15
+2023-05-19 14:10:29,739 - INFO - Request id 0 done for token 16
+2023-05-19 14:10:29,933 - INFO - Request id 0 done for token 17
+2023-05-19 14:10:30,130 - INFO - Request id 0 done for token 18
+2023-05-19 14:10:30,326 - INFO - Request id 0 done for token 19
+2023-05-19 14:10:30,521 - INFO - Request id 0 done for token 20
+2023-05-19 14:10:30,717 - INFO - Request id 0 done for token 21
+2023-05-19 14:10:30,913 - INFO - Request id 0 done for token 22
+2023-05-19 14:10:31,109 - INFO - Request id 0 done for token 23
+2023-05-19 14:10:31,304 - INFO - Request id 0 done for token 24
+2023-05-19 14:10:31,499 - INFO - Request id 0 done for token 25
+2023-05-19 14:10:31,696 - INFO - Request id 0 done for token 26
+2023-05-19 14:10:31,893 - INFO - Request id 0 done for token 27
+2023-05-19 14:10:32,090 - INFO - Request id 0 done for token 28
+2023-05-19 14:10:32,287 - INFO - Request id 0 done for token 29
+2023-05-19 14:10:32,484 - INFO - Request id 0 done for token 30
+2023-05-19 14:10:32,681 - INFO - Request id 0 done for token 31
+2023-05-19 14:10:32,878 - INFO - Request id 0 done for token 32
+2023-05-19 14:10:33,073 - INFO - Request id 0 done for token 33
+2023-05-19 14:10:33,272 - INFO - Request id 0 done for token 34
+2023-05-19 14:10:33,469 - INFO - Request id 0 done for token 35
+2023-05-19 14:10:33,666 - INFO - Request id 0 done for token 36
+2023-05-19 14:10:33,864 - INFO - Request id 0 done for token 37
+2023-05-19 14:10:34,061 - INFO - Request id 0 done for token 38
+2023-05-19 14:10:34,261 - INFO - Request id 0 done for token 39
+2023-05-19 14:10:34,459 - INFO - Request id 0 done for token 40
+2023-05-19 14:10:34,655 - INFO - Request id 0 done for token 41
+2023-05-19 14:10:34,853 - INFO - Request id 0 done for token 42
+2023-05-19 14:10:35,052 - INFO - Request id 0 done for token 43
+2023-05-19 14:10:35,250 - INFO - Request id 0 done for token 44
+2023-05-19 14:10:35,449 - INFO - Request id 0 done for token 45
+2023-05-19 14:10:35,648 - INFO - Request id 0 done for token 46
+2023-05-19 14:10:35,847 - INFO - Request id 0 done for token 47
+2023-05-19 14:10:36,045 - INFO - Request id 0 done for token 48
+2023-05-19 14:10:36,242 - INFO - Request id 0 done for token 49
+2023-05-19 14:10:36,441 - INFO - Request id 0 done for token 50
+2023-05-19 14:10:36,641 - INFO - Request id 0 done for token 51
+2023-05-19 14:10:36,841 - INFO - Request id 0 done for token 52
+2023-05-19 14:10:37,040 - INFO - Request id 0 done for token 53
+2023-05-19 14:10:37,239 - INFO - Request id 0 done for token 54
+2023-05-19 14:10:37,439 - INFO - Request id 0 done for token 55
+2023-05-19 14:10:37,638 - INFO - Request id 0 done for token 56
+2023-05-19 14:10:37,836 - INFO - Request id 0 done for token 57
+2023-05-19 14:10:38,035 - INFO - Request id 0 done for token 58
+2023-05-19 14:10:38,238 - INFO - Request id 0 done for token 59
+2023-05-19 14:10:38,437 - INFO - Request id 0 done for token 60
+2023-05-19 14:10:38,638 - INFO - Request id 0 done for token 61
+2023-05-19 14:10:38,837 - INFO - Request id 0 done for token 62
+2023-05-19 14:10:39,038 - INFO - Request id 0 done for token 63
+2023-05-19 14:10:39,238 - INFO - Request id 0 done for token 64
+2023-05-19 14:10:39,438 - INFO - Request id 0 done for token 65
+2023-05-19 14:10:39,639 - INFO - Request id 0 done for token 66
+2023-05-19 14:10:39,842 - INFO - Request id 0 done for token 67
+2023-05-19 14:10:40,042 - INFO - Request id 0 done for token 68
+2023-05-19 14:10:40,244 - INFO - Request id 0 done for token 69
+2023-05-19 14:10:40,445 - INFO - Request id 0 done for token 70
+2023-05-19 14:10:40,647 - INFO - Request id 0 done for token 71
+2023-05-19 14:10:40,847 - INFO - Request id 0 done for token 72
+2023-05-19 14:10:41,047 - INFO - Request id 0 done for token 73
+2023-05-19 14:10:41,248 - INFO - Request id 0 done for token 74
+2023-05-19 14:10:41,451 - INFO - Request id 0 done for token 75
+2023-05-19 14:10:41,652 - INFO - Request id 0 done for token 76
+2023-05-19 14:10:41,856 - INFO - Request id 0 done for token 77
+2023-05-19 14:10:42,058 - INFO - Request id 0 done for token 78
+2023-05-19 14:10:42,261 - INFO - Request id 0 done for token 79
+2023-05-19 14:10:42,461 - INFO - Latency is 64.023106, throughput is 0.249910
+2023-05-19 14:10:42,461 - INFO - Token throughput is 19.992782
