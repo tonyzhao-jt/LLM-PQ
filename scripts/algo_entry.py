@@ -267,7 +267,7 @@ def main(args):
     sols['n'] = n
     sols['gloabl_bz'] = global_bz
 
-        
+    import pdb; pdb.set_trace()
     # store the solution
     # with device_names and model_name and model_size
     file_name = get_final_strat_file_name(model_name, model_size, device_info)

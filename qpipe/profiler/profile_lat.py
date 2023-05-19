@@ -53,20 +53,25 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
         #     torch_dtype = torch.int8
 
         hidden_states = fake_input.to(torch.float16)
-        if input_bit == 8:
-            hidden_states = 127 * hidden_states
-            hidden_states = hidden_states.to(torch.int8)
+        # if input_bit == 8:
+        #     hidden_states = 127 * hidden_states
+        #     hidden_states = hidden_states.to(torch.int8)
         
         hidden_states = hidden_states.cuda()
         decoder_layer = decoder_layer.cuda()
         if 0 in shard_strategy['shard']:
             # init kv cache 
             request_id = 1
-            decoder_layer.self_attention.init_kv_cache(batch_size, past_seq_length, input_seq_length, request_id, \
-                                                        torch_dtype=torch_dtype, init_with_xavier=True)
-            decoder_layer.self_attention.profile = True # set profile to make the kv didn't increase 
-            decoder_layer.self_attention.kv_status[request_id][0] = input_seq_length
-            # decoder_layer.self_attention.profile = False # set increase
+            if hasattr(decoder_layer, 'self_attention'):
+                attention_mod = decoder_layer.self_attention
+                
+            else:
+                attention_mod = decoder_layer.self_attn
+            
+            attention_mod.init_kv_cache(batch_size, past_seq_length, input_seq_length, request_id, \
+                                        torch_dtype=torch_dtype, init_with_xavier=True)
+            attention_mod.profile = True # set profile to make the kv didn't increase
+            attention_mod.kv_status[request_id][0] = input_seq_length
 
         # Warmup
         for i in range(warmup):
@@ -90,7 +95,7 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
         # calculate weight memory, kv memory and embedding memory
         mem_weight = get_size_cuda(decoder_layer, unit=mem_unit)
         if 0 in shard_strategy['shard']:
-            mem_kv = get_iter_variable_size(decoder_layer.self_attention.kv_cache, unit=mem_unit) * 2
+            mem_kv = get_iter_variable_size(attention_mod.kv_cache, unit=mem_unit) * 2
         else:
             mem_kv = 0
         mem_embedding = get_size_cuda(hidden_states, unit=mem_unit)
