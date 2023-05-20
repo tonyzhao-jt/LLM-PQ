@@ -8,6 +8,9 @@ from ..utils import get_size_cuda, get_iter_variable_size
 import copy
 import numpy as np
 
+from qllm.models import return_config_name
+from qllm.models.BLOOM.utils import build_alibi_tensor, _prepare_attn_mask
+
 def remove_outliers(latencies, threshold=3):
     """Remove outlier latencies using the Z-score method."""
     latencies = np.array(latencies)
@@ -28,14 +31,31 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
     # fake input = b * 1 * hidden_size
     fake_input = torch.randn(batch_size, input_seq_length, h1)
 
-    # caliber run
-    caliber = lptorch.inner_caliber
-    caliber.set_model(decoder_layer)
-    caliber.register_forward_hooks()
-    # get calib result
-    with torch.no_grad():
-        decoder_layer(fake_input)
-    caliber.remove_forward_hooks()
+    model_name = return_config_name(config)
+
+    # # caliber run
+    if model_name == 'opt':
+        caliber = lptorch.inner_caliber
+        caliber.set_model(decoder_layer)
+        caliber.register_forward_hooks()
+
+        # get calib result
+        with torch.no_grad():
+            decoder_layer(fake_input)
+        caliber.remove_forward_hooks()
+    
+    # print(config_name, config)
+
+    if model_name == 'bloom':
+        #atten_mask: (batch_size, max_seq_len) 
+        num_heads = config.num_attention_heads
+        attention_mask = torch.ones((batch_size, input_seq_length))
+        alibi = build_alibi_tensor(attention_mask, num_heads, dtype=torch.float32)
+        causal_mask = _prepare_attn_mask(
+            attention_mask,
+            input_shape=(batch_size, input_seq_length),
+            past_key_values_length=0,
+        )
  
     # shard and verify the kernel
     decoder_layer = decoder_layer.to(torch.float16)  # need to first convert weight to fp16
@@ -43,7 +63,11 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
         decoder_layer.shard(shard_strategy)
     except:
         availability_result = [False]
-    availability_result = decoder_layer.verify_kernel()
+    
+    if model_name.lower() != 'bloom':
+        availability_result = decoder_layer.verify_kernel()
+    else:
+        availability_result = [True]
 
     if False not in availability_result:
         torch_dtype = torch.float16
@@ -73,20 +97,39 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
             attention_mod.profile = True # set profile to make the kv didn't increase
             attention_mod.kv_status[request_id][0] = input_seq_length
 
-        # Warmup
-        for i in range(warmup):
-            decoder_layer(hidden_states)
-            torch.cuda.synchronize()
+        if model_name.lower() == 'opt':
+            # Warmup
+            for i in range(warmup):
+                decoder_layer(hidden_states)
+                torch.cuda.synchronize()
 
-        # Measure latency
-        latencies = []
-        for i in range(repeat):
-            torch.cuda.synchronize()
-            start = perf_counter()
-            decoder_layer(hidden_states)
-            torch.cuda.synchronize()
-            end = perf_counter()
-            latencies.append(end - start)
+            # Measure latency
+            latencies = []
+            for i in range(repeat):
+                torch.cuda.synchronize()
+                start = perf_counter()
+                decoder_layer(hidden_states)
+                torch.cuda.synchronize()
+                end = perf_counter()
+                latencies.append(end - start)
+        else:
+            causal_mask = causal_mask.cuda().bool()
+            alibi = alibi.cuda().to(torch_dtype)
+            # Warmup
+            for i in range(warmup):
+                decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
+                torch.cuda.synchronize()
+
+            # Measure latency
+            latencies = []
+            for i in range(repeat):
+                torch.cuda.synchronize()
+                start = perf_counter()
+                decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
+                torch.cuda.synchronize()
+                end = perf_counter()
+                latencies.append(end - start)
+            
 
         # Remove outliers and calculate average latency
         latencies_without_outliers = remove_outliers(latencies)
@@ -103,7 +146,8 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
         inf = 99999
         lat_avg = inf # not implementable
         mem_weight, mem_kv, mem_embedding = 0, 0, 0
-    caliber.clear_calib_data()
+    if model_name == 'opt':
+        caliber.clear_calib_data()
     layer_name = 'self_attn' if shard == 0 else 'ffn'
     if verbose:
         print(f"decoder_layer {layer_name} (bit={bit}): {lat_avg}")

@@ -11,10 +11,10 @@ for batch_size in 16 8 4 2 1
 do
     for past_seq_length in 128 512
     do
-        for model_size in 13b 30b 66b
+        for model_size in 176b
         do
             python3 profile_lat.py --batch-size $batch_size --past-seq-length $past_seq_length \
-             --generated-seq-length 500 --step 100 --repeat 20 --model-size $model_size
+             --generated-seq-length 500 --step 100 --repeat 20 --model-name bloom --model-size $model_size
         done
     done
 done

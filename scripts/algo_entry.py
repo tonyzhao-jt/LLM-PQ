@@ -174,7 +174,7 @@ def run_simu(sol, lat_cost_model, comm_cost_model, use_profiler_prediction, comm
                                                     cost_model_pack, bz_decode_max, 1, use_profiler_prediction, comm_size)
     # latency equals
     e2e_lat = math.ceil(global_bz / prefill_bz + 1) * prefill_result + \
-          math.ceil(global_bz / bz_decode_max + 1) * decode_result * mu_n
+          math.ceil(global_bz / bz_decode_max + 1) * decode_result * (mu_n-1)
     # remove maps
     if maps is not None:
         comm_cost_model.clear_device_rank_map() 
@@ -225,10 +225,10 @@ def main(args):
     sol_adaqpipe = adaqpipe_main(args)
     # sol_pipeedge_adaptive = pipeedge_adaptive_main(args)
     # sort by bit number, decsending
-    no_info_bits = copy.deepcopy(qpipe._globals.AVAILABLE_BITS_WO_INFO) 
-    no_info_bits.sort(reverse=True)
-    if args.adabits_tc:
-        no_info_bits = copy.deepcopy(qpipe._globals.AVAILABLE_BITS)[::-1]
+    no_info_bits = copy.deepcopy(qpipe._globals.AVAILABLE_BITS_WO_INFO)[::-1]
+    # no_info_bits.sort(reverse=True)
+    # if args.adabits_tc:
+    #     no_info_bits = copy.deepcopy(qpipe._globals.AVAILABLE_BITS)[::-1]
     
 
     # find first solution that is valid
@@ -274,6 +274,7 @@ def main(args):
         print("Minimum bit of ", sol_name)
         check_minimum_bit_of_sols(sol)
 
+    import pdb; pdb.set_trace()
     print(sols['adaqpipe']['D'])
     sols['mu_n'] = mu_n
     sols['n'] = n
