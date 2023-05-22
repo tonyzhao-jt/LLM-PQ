@@ -34,16 +34,12 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
     model_name = return_config_name(config)
 
     # # caliber run
-    if model_name == 'opt':
-        caliber = lptorch.inner_caliber
-        caliber.set_model(decoder_layer)
-        caliber.register_forward_hooks()
+    caliber = lptorch.inner_caliber
+    caliber.set_model(decoder_layer)
+    caliber.register_forward_hooks()
 
-        # get calib result
-        with torch.no_grad():
-            decoder_layer(fake_input)
-        caliber.remove_forward_hooks()
     
+
     # print(config_name, config)
 
     if model_name == 'bloom':
@@ -56,11 +52,20 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
             input_shape=(batch_size, input_seq_length),
             past_key_values_length=0,
         )
+    
+    # get calib result
+    with torch.no_grad():
+        if model_name == 'bloom':
+            decoder_layer(fake_input, attention_mask=causal_mask, alibi=alibi)
+        else:
+            decoder_layer(fake_input)
+    caliber.remove_forward_hooks()
  
     # shard and verify the kernel
     decoder_layer = decoder_layer.to(torch.float16)  # need to first convert weight to fp16
     try:
         decoder_layer.shard(shard_strategy)
+        # print(decoder_layer)
     except:
         availability_result = [False]
     
@@ -147,8 +152,7 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
         inf = 99999
         lat_avg = inf # not implementable
         mem_weight, mem_kv, mem_embedding = 0, 0, 0
-    if model_name == 'opt':
-        caliber.clear_calib_data()
+    caliber.clear_calib_data()
     layer_name = 'self_attn' if shard == 0 else 'ffn'
     if verbose:
         print(f"decoder_layer {layer_name} (bit={bit}): {lat_avg}")
