@@ -95,7 +95,8 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
             attention_mod.init_kv_cache(batch_size, past_seq_length, input_seq_length, request_id, \
                                         torch_dtype=torch_dtype, init_with_xavier=True)
             attention_mod.profile = True # set profile to make the kv didn't increase
-            attention_mod.kv_status[request_id][0] = input_seq_length
+            if input_seq_length == 1:
+                attention_mod.kv_status[request_id][0] = input_seq_length
 
         if model_name.lower() == 'opt':
             # Warmup
