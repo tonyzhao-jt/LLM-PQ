@@ -92,7 +92,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
                         result[i] = (j, b)
                         # print(M[i][b])
                         mem_all += M[i][b]
-                        
+
         return result, pulp.value(prob.objective) 
     else:
         print("Not Feasible for adabits")
@@ -116,10 +116,14 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits, bz_pack, model_mem_est
     # reduce the embedding size on device 0
     post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
     temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size_with_bz(prefill_bz, bz_decode_max, unit='MB')[0] 
+    temp_later_decode = model_mem_estimator.calculate_temp_tensor_size_next_i(unit='MB')[0]
     M_d[0] -= post_pre_mem
-    M_d -= time_mult_times * temp_tensor_mem # torch may not release the tensor immediately, modify the 2 to ensure won't oom
+    M_d[0] -= time_mult_times * temp_tensor_mem # torch may not release the tensor immediately, modify the 2 to ensure won't oom
+    if len(M_d) > 1:
+        M_d[1:] -= temp_later_decode * time_mult_times
     M_d = np.floor(M_d).astype(int) # floor
     M = np.ceil(M).astype(int) # ceil
+
     # omega
     omega = assign_omega_uniform(group_L, BITs)
     if omega_file is not None:

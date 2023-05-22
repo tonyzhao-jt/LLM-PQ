@@ -130,12 +130,14 @@ def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack, 
     mem_bits_vector = get_mem_with_layer_bit_pair(BITs, model_mem_estimator)
     M = np.tile(mem_bits_vector, (group_L, 1)) * group_size
 
-    # reduce the embedding size on device 0 for M_d
+    # reduce the embedding size on device 0
     post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
     temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size_with_bz(prefill_bz, bz_decode_max, unit='MB')[0] 
-    temp_emb_mem = model_mem_estimator.calculate_temp_embedding_tensor_size(unit='MB')[0]
+    temp_later_decode = model_mem_estimator.calculate_temp_tensor_size_next_i(unit='MB')[0]
     M_d[0] -= post_pre_mem
-    M_d -= time_mult_times * temp_tensor_mem # torch may not release the tensor immediately, modify the 2 to ensure won't oom
+    M_d[0] -= time_mult_times * temp_tensor_mem # torch may not release the tensor immediately, modify the 2 to ensure won't oom
+    if len(M_d) > 1:
+        M_d[1:] -= temp_later_decode * time_mult_times
     M_d = np.floor(M_d).astype(int) # floor
     M = np.ceil(M).astype(int) # ceil
 

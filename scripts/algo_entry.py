@@ -53,12 +53,16 @@ def check_memory_budget_single_device(device_rank, device_name, layers_range, bi
         sum([estimate_single_layer_mem(model_mem_estimator, 1, bit_assignment[k * 2 + 1]) for k in range(i, j)])
     device_mem = get_single_device_mem_constraints(device_name)
     temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size_with_bz(prefill_bz, bz_decode_max, unit='MB')[0] 
-    device_mem -= (time_mult_times * temp_tensor_mem)
+    temp_later_decode = model_mem_estimator.calculate_temp_tensor_size_next_i(unit='MB')[0]
+
     if device_rank == 0:
         post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
         device_mem = device_mem - post_pre_mem 
+        device_mem -= (time_mult_times * temp_tensor_mem)
+    else:
+        device_mem -= (time_mult_times * temp_later_decode)
 
-    print(i_to_j_mem, device_mem)
+    
     if i_to_j_mem > device_mem:
         print(f"memory budget exceeded for device {device_rank}, {i_to_j_mem} > {device_mem}")
         return False
@@ -265,7 +269,6 @@ def main(args):
         
         log_result(result, sol_name)
     
-
     for sol_name, sol in sols.items():
         print("Minimum bit of ", sol_name)
         check_minimum_bit_of_sols(sol)
@@ -275,6 +278,7 @@ def main(args):
     sols['n'] = n
     sols['gloabl_bz'] = global_bz
 
+    import pdb; pdb.set_trace()
     # store the solution
     # with device_names and model_name and model_size
     file_name = get_final_strat_file_name(model_name, model_size, device_info)
