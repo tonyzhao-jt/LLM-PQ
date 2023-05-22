@@ -35,7 +35,7 @@ do
     done
 done
 
-
+echo "run 176b"
 # for model 176b
 for batch_size in 16 8 4 2 1
 do

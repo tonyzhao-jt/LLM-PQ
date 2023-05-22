@@ -220,17 +220,13 @@ def main(args):
     comm_cost_model_dir = f'{args.comm_cost_model_dir}/{device_info}'
     cost_model_store_path = None # initialize the cost model
 
-    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
-                                                                                                     global_bz, micro_bz, s, n, \
-                                                                                                    comm_cost_model_folder=comm_cost_model_dir)
+    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = args.init_pack
 
     all_device_nums = sum(device_numbers)
     bz_decode = get_default_decode_bz(global_bz, all_device_nums)
     chosen_bit = args.pe_bit
     assert chosen_bit in available_bits, f'chosen bit {chosen_bit} not in available bits {available_bits}'
-    lat_cost_model.update_profiled_result(args.lat_profile_dir)
-    if not use_profiler_prediction:
-        lat_cost_model.load_regression_cost_model()
+
     num_hidden_layers = len(T) // 2
     num_device_all = len(D)
     bz_decode_max = get_default_decode_bz(global_bz, num_device_all)

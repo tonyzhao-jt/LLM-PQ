@@ -2,7 +2,7 @@ import pickle
 import torch
 import numpy as np
 from qpipe.utils import (
-    save_with_pickle,
+    save_with_pickle, get_available_bits_pair
 )
 
 from utils import simple_model_info_parser, model_config_and_decoder_layers, get_available_candidate_bits
@@ -36,10 +36,7 @@ def generate_indicator(model_name, model_size, folder_path, fast=True):
     # the indicator is calculated by
     # we only consider the attention and the ffn
     available_bits = get_available_candidate_bits() # regard 8-bit as same
-    available_bits = list(set(available_bits))
-    BITs = [
-        (i, j) for i in available_bits for j in available_bits
-    ]
+    BITs = get_available_bits_pair(available_bits)
 
     # get indicator for each layer
     # final result should be a dict with respect to different layer and BITs

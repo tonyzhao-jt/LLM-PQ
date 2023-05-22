@@ -82,6 +82,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
         # Print the optimal objective value
         # store the optimal solution
         result = {}
+        mem_all = 0
         # print z variable result
         for i in range(L):
             for j in range(N):
@@ -89,6 +90,9 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
                     if z[(i, j, b)].varValue > 0:
                         # print("z[{}, {}, {}] = {}".format(i, j, b, z[(i, j, b)].varValue))
                         result[i] = (j, b)
+                        # print(M[i][b])
+                        mem_all += M[i][b]
+                        
         return result, pulp.value(prob.objective) 
     else:
         print("Not Feasible for adabits")
@@ -123,15 +127,14 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits, bz_pack, model_mem_est
         with open(omega_file, 'rb') as f:
             omega_loaded = pickle.load(f)
         # check whether the shape is matched, as raise error
-        all_BITs = get_available_bits_pair(qpipe._globals.AVAILABLE_BITS)
-        BITs_idx = [all_BITs.index(bit_pair) for bit_pair in BITs]
-        omega_loaded = omega_loaded[:, BITs_idx]
-        if omega_loaded.shape[0] != group_L and omega_loaded.shape[0] == L:
-            new_omega_loaded = np.zeros((group_L, omega_loaded.shape[1]))
-            for i in range(group_L):
-                new_omega_loaded[i] = np.mean(omega_loaded[i*group_size:(i+1)*group_size], axis=0)
-            omega_loaded = new_omega_loaded
-            
+        # all_BITs = get_available_bits_pair(qpipe._globals.AVAILABLE_BITS)
+        # BITs_idx = [all_BITs.index(bit_pair) for bit_pair in BITs]
+        # omega_loaded = omega_loaded[:, BITs_idx]
+        # if omega_loaded.shape[0] != group_L and omega_loaded.shape[0] == L:
+        #     new_omega_loaded = np.zeros((group_L, omega_loaded.shape[1]))
+        #     for i in range(group_L):
+        #         new_omega_loaded[i] = np.mean(omega_loaded[i*group_size:(i+1)*group_size], axis=0)
+        #     omega_loaded = new_omega_loaded
         if omega_loaded.shape != omega.shape:
             print(omega_loaded.shape, omega.shape)
             raise ValueError('omega shape mismatched')
@@ -219,9 +222,16 @@ def main(args):
     comm_cost_model_dir = f'{args.comm_cost_model_dir}/{device_info}'
     cost_model_store_path = None # initialize the cost model
 
-    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
-                                                                                                     global_bz, micro_bz, s, n, \
+    if args.init_pack:
+        model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = args.init_pack 
+    if args.debug:
+        model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
+                                                                                                        global_bz, micro_bz, s, n, \
                                                                                                     comm_cost_model_folder=comm_cost_model_dir)
+        lat_cost_model.update_profiled_result(args.lat_profile_dir)
+        if not use_profiler_prediction:
+            lat_cost_model.load_regression_cost_model()
+
     # common parts above
     # assign bits
     bit_map = {}
@@ -260,7 +270,7 @@ def main(args):
     if plan != NOT_AVAILABLE:
         res['plan'] = interpret_ilp_result_i_j_b(res['plan'], BITs)
     best_plan = {
-        'prefill_bz': bz_decode_max,
+        'prefill_bz': prefill_bz,
         'bz_decode_max': bz_decode_max,
         'bz_decode_bss': strat,
         'device_names': device_names,
@@ -279,5 +289,6 @@ def main(args):
 if __name__ == '__main__':
     ilp_env()
     args = common_argparser()
+    args.debug = True
     best_plan = main(args)
     print(best_plan)

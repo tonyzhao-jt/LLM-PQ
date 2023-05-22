@@ -39,7 +39,8 @@ args = common_argparser()
 unit = qpipe._globals.MEM_UNIT
 time_mult_times = qpipe._globals.TIME_MULT_TIMES
 
-def generate_uniform_partition(model_mem_estimator, T, max_device_mem, num_devices, num_hidden_layers, D, bit=8):
+def generate_uniform_partition(model_mem_estimator, T, max_device_mem, num_devices, num_hidden_layers, D, bz_pack, bit=8):
+    (global_bz, prefill_bz, bz_decode_max)= bz_pack 
     bit_assignment = {}
     assign_uniform_bit(T, bit, bit_assignment)
     mem_required = estimate_all_layer_mem(model_mem_estimator, T, bit_assignment)
@@ -49,11 +50,15 @@ def generate_uniform_partition(model_mem_estimator, T, max_device_mem, num_devic
         return NOT_AVAILABLE
     # perform uniform partition.
     each_device_mem_availability = [get_single_device_mem_constraints(device_name) for d_rank, device_name in D.items()]
+    post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
+    temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size_with_bz(prefill_bz, bz_decode_max, unit='MB')[0] 
+    temp_emb_mem = model_mem_estimator.calculate_temp_embedding_tensor_size(unit='MB')[0]
+    each_device_mem_availability[0] -= (post_pre_mem + temp_tensor_mem)
     # layer partitioned memory
     each_device_mem = mem_required // num_devices
     if each_device_mem > min(each_device_mem_availability):
         print("The model is too large to fit in the device mesh")
-        print("each_device_mem: ", each_device_mem, "min(each_device_mem_availability): ", min(each_device_mem_availability))
+        print("min(each_device_mem_availability): ", min(each_device_mem_availability), "Uniform requries mem: ", each_device_mem)
         return NOT_AVAILABLE
     # create the partition
     # partition T accoding to layer numbers
@@ -124,23 +129,28 @@ def main(args):
     comm_cost_model_dir = f'{args.comm_cost_model_dir}/{device_info}'
     cost_model_store_path = None # initialize the cost model
 
-
-    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
-                                                                                                     global_bz, micro_bz, s, n, \
+    if args.init_pack:
+        model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = args.init_pack 
+    if args.debug:
+        model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
+                                                                                                        global_bz, micro_bz, s, n, \
                                                                                                     comm_cost_model_folder=comm_cost_model_dir)
-    # common parts above
+        lat_cost_model.update_profiled_result(args.lat_profile_dir)
+        if not use_profiler_prediction:
+            lat_cost_model.load_regression_cost_model()
 
     num_hidden_layers = len(T) // 2
     num_devices = len(D)
 
-    lat_cost_model.update_profiled_result(args.lat_profile_dir)
-    if not use_profiler_prediction:
-        lat_cost_model.load_regression_cost_model()
+    bz_decode_max = get_default_decode_bz(global_bz, num_devices)
+    strat = partition_a_into_b_bins(global_bz, num_devices)
+    prefill_bz = bz_decode_max
+    bz_pack = (global_bz, prefill_bz, bz_decode_max)
 
     available_bits = qpipe._globals.AVAILABLE_BITS_WO_INFO # wo info
     bit = args.uniform_bit
     result = generate_uniform_partition(model_mem_estimator, T, max_device_mem, num_devices, num_hidden_layers, D,\
-                                          bit)
+                                          bz_pack, bit)
     res = {}
     if result == NOT_AVAILABLE:
         res['plan'] = NOT_AVAILABLE
@@ -176,5 +186,6 @@ def main(args):
 if __name__ == '__main__':
     ilp_env()
     args = common_argparser()
+    args.debug = True
     res = main(args)
     print(res)

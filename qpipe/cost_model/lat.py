@@ -123,6 +123,7 @@ class LatCostModel:
         lat_avg = profiled_data_device['lat_avg'].values[0]
         return lat_avg
     
+    # pure profiler
     # fatch prefill result
     # s is the prompt length
     def fetch_prefill(self, s, shard, device_name, bit):
@@ -147,7 +148,7 @@ class LatCostModel:
         i = self.i
         return self.fetch_decode(i, shard, device_name, bit)
     
-
+    # following are pure analytical model
     def update_profiled_result(self, profiled_folder):
         # list file under the folder
         for file in os.listdir(profiled_folder):
@@ -196,31 +197,35 @@ class LatCostModel:
             shards = device_profile_data['shard'].unique()
             h_pairs = device_profile_data[['h1', 'h2']].drop_duplicates()
             bits = device_profile_data['bit'].unique()
+            input_seq_lengths = device_profile_data['input_seq_length'].unique()
             for shard in shards:
                 for h1, h2 in h_pairs.values:
                     for bit in bits:
-                        model_name = f"{device_name}_{shard}_{h1}_{h2}_{bit}.pkl"
-                        # load model if exists
-                        if os.path.exists(os.path.join(cost_model_store_path, model_name)):
-                            self.regression_models[device_name][model_name] = model = joblib.load(os.path.join(cost_model_store_path, model_name))
-                            # verify the model if has data
-                            profiled_data_device = device_profile_data[(device_profile_data['shard'] == shard) & 
-                                                                (device_profile_data['h1'] == h1) &
-                                                                (device_profile_data['h2'] == h2) &
-                                                                (device_profile_data['bit'] == str(bit))]
+                        for input_seq_length in input_seq_lengths:
+                            model_name = f"{device_name}_{shard}_{h1}_{h2}_{input_seq_length}_{bit}.pkl"
+                            # load model if exists
+                            if os.path.exists(os.path.join(cost_model_store_path, model_name)):
+                                self.regression_models[device_name][model_name] = model = joblib.load(os.path.join(cost_model_store_path, model_name))
+                                # verify the model if has data
+                                profiled_data_device = device_profile_data[(device_profile_data['shard'] == shard) & 
+                                                                    (device_profile_data['h1'] == h1) &
+                                                                    (device_profile_data['h2'] == h2) &
+                                                                    (device_profile_data['input_seq_length'] == input_seq_length) &
+                                                                    (device_profile_data['bit'] == str(bit))]
 
-                            X = profiled_data_device[['batch_size', 'input_seq_length', 'past_seq_length']].values
-                            X = np.concatenate([X, np.ones((X.shape[0], 1))], axis=1)
-                            y = profiled_data_device['lat_avg'].values
- 
-                            y_pred = model.predict(X)
-                            mse = mean_squared_error(y, y_pred)
-                            all_mse.append(mse)
-                            # print(f'MSE: {mse:.3f}')
-                            # print(f'Intercept: {model.intercept_}')
-                            # print(f'Coefficients: {model.coef_}')
-                        else:
-                            raise Exception(f"Cannot find regression model {model_name} for device {device_name}. pls run fit")
+                                X = profiled_data_device[['batch_size', 'past_seq_length']].values
+                                X = np.concatenate([X, np.ones((X.shape[0], 1))], axis=1)
+                                y = profiled_data_device['lat_avg'].values
+    
+                                y_pred = model.predict(X)
+                                mse = mean_squared_error(y, y_pred)
+                                all_mse.append(mse)
+                                # print(f'MSE: {mse:.3f}')
+                                # print(f'Intercept: {model.intercept_}')
+                                # print(f'Coefficients: {model.coef_}')
+                            else:
+                                print(f"Cannot find regression model {model_name} for device {device_name}. pls run fit")
+                                # raise Exception(f"Cannot find regression model {model_name} for device {device_name}. pls run fit")
         print("Verified all regress models, maximum mse: ", max(all_mse))
         self.has_fit = True
 
@@ -240,45 +245,51 @@ class LatCostModel:
             # for each shard, h1, h2, bit, we fit a model
             shards = device_profile_data['shard'].unique()
             h_pairs = device_profile_data[['h1', 'h2']].drop_duplicates()
+            input_seq_lengths = device_profile_data['input_seq_length'].unique() # important, =1 then decode, >1 then prefill
             bits = device_profile_data['bit'].unique()
             for shard in shards:
                 for h1, h2 in h_pairs.values:
                     for bit in bits:
-                        model_name = f"{device_name}_{shard}_{h1}_{h2}_{bit}.pkl"
-                        print(model_name)
-                        # fetch data with hyper params
-                        profiled_data_device = device_profile_data[(device_profile_data['shard'] == shard) & 
-                                                                (device_profile_data['h1'] == h1) &
-                                                                (device_profile_data['h2'] == h2) &
-                                                                (device_profile_data['bit'] == str(bit))]
-                        # fit a model
-                        # columns: shard,h1,h2,bit,batch_size,input_seq_length,past_seq_length,lat_avg,mem_weight,mem_kv,mem_embedding,mem_all
-                        # X: batch_size, past_seq_length
-                        # y: lat_avg
-                        X = profiled_data_device[['batch_size', 'input_seq_length', 'past_seq_length']].values
-                        X = np.concatenate([X, np.ones((X.shape[0], 1))], axis=1)
-                        y = profiled_data_device['lat_avg'].values
-                        model = LinearRegression().fit(X, y)
-                        # store the model
-                        if device_name not in self.regression_models:
-                            self.regression_models[device_name] = {}
-                        self.regression_models[device_name][model_name] = model
-                        # store the model
-                        y_pred = model.predict(X)
-                        mse = mean_squared_error(y, y_pred)
-                        print(f'MSE: {mse:.4f}')
-                        # print(y - y_pred)
-                        # print(f'Intercept: {model.intercept_}')
-                        # print(f'Coefficients: {model.coef_}')
-                        if store:
-                            joblib.dump(model, os.path.join(cost_model_store_path, f'{model_name}'))
+                        for input_seq_length in input_seq_lengths:
+                            model_name = f"{device_name}_{shard}_{h1}_{h2}_{input_seq_length}_{bit}.pkl"
+                            print(model_name)
+                            # fetch data with hyper params
+                            profiled_data_device = device_profile_data[(device_profile_data['shard'] == shard) & 
+                                                                    (device_profile_data['h1'] == h1) &
+                                                                    (device_profile_data['h2'] == h2) &
+                                                                    (device_profile_data['input_seq_length'] == input_seq_length) &
+                                                                    (device_profile_data['bit'] == str(bit))]
+                            if len(profiled_data_device) == 0:
+                                print(f"Cannot find profiled data for {model_name}, skip")
+                                continue
+                            # fit a model
+                            # columns: shard,h1,h2,bit,batch_size,input_seq_length,past_seq_length,lat_avg,mem_weight,mem_kv,mem_embedding,mem_all
+                            # X: batch_size, past_seq_length
+                            # y: lat_avg
+                            X = profiled_data_device[['batch_size', 'past_seq_length']].values
+                            X = np.concatenate([X, np.ones((X.shape[0], 1))], axis=1)
+                            y = profiled_data_device['lat_avg'].values
+                            model = LinearRegression().fit(X, y)
+                            # store the model
+                            if device_name not in self.regression_models:
+                                self.regression_models[device_name] = {}
+                            self.regression_models[device_name][model_name] = model
+                            # store the model
+                            y_pred = model.predict(X)
+                            mse = mean_squared_error(y, y_pred)
+                            print(f'MSE: {mse:.4f}')
+                            # print(y - y_pred)
+                            # print(f'Intercept: {model.intercept_}')
+                            # print(f'Coefficients: {model.coef_}')
+                            if store:
+                                joblib.dump(model, os.path.join(cost_model_store_path, f'{model_name}'))
 
         self.has_fit = True
 
     def predict(self, device_name, shard, b, s, i, h1, h2, bit):
         assert self.has_fit, "Cost model is not fitted."
         assert device_name in self.regression_models, f"Cannot find regression model for {device_name}"
-        model_name = f"{device_name}_{shard}_{h1}_{h2}_{bit}.pkl"
+        model_name = f"{device_name}_{shard}_{h1}_{h2}_{s}_{bit}.pkl"
         if model_name not in self.regression_models[device_name]:
             # print(f"Cannot find regression model for {model_name}")
             return None
@@ -300,3 +311,6 @@ class LatCostModel:
     def predict_with_profiled(self, device_name, shard, bit):
         assert self.has_profiled, "Profiled data is not registered."
         return self.fetch_lat_with_hyper(shard, device_name, bit)
+
+
+    

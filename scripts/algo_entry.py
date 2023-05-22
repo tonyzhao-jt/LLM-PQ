@@ -49,15 +49,16 @@ def check_memory_budget_single_device(device_rank, device_name, layers_range, bi
     i, j = layers_range
     prefill_bz, bz_decode_max = bs_pack
     # k % 2 means shard
-    i_to_j_mem = sum(estimate_single_layer_mem(model_mem_estimator, (k % 2), bit_assignment[k]) for k in range(i, j))
+    i_to_j_mem = sum([estimate_single_layer_mem(model_mem_estimator, 0, bit_assignment[k * 2]) for k in range(i, j)]) + \
+        sum([estimate_single_layer_mem(model_mem_estimator, 1, bit_assignment[k * 2 + 1]) for k in range(i, j)])
     device_mem = get_single_device_mem_constraints(device_name)
-    post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
     temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size_with_bz(prefill_bz, bz_decode_max, unit='MB')[0] 
-    device_mem -= (time_mult_times * temp_tensor_mem )
+    device_mem -= (time_mult_times * temp_tensor_mem)
     if device_rank == 0:
         post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
         device_mem = device_mem - post_pre_mem 
 
+    print(i_to_j_mem, device_mem)
     if i_to_j_mem > device_mem:
         print(f"memory budget exceeded for device {device_rank}, {i_to_j_mem} > {device_mem}")
         return False
@@ -141,7 +142,8 @@ def calculate_max_stage_lat(D, use_plan, \
         for layer_idx, layer_spec in shard_strategy.items():
             shard = layer_spec['shard']
             bit = layer_spec['bits']
-            stage_lat += lat_prediction(D_name, layer_idx, shard, bit, b, s, i, use_profiler_prediction)
+            atten_bit, ffn_bit = bit
+            stage_lat += lat_prediction(lat_cost_model, D_name, b, s, i, atten_bit, ffn_bit, use_profiler_prediction=use_profiler_prediction)
         # next stage
         next_stage = (device_rank + 1) % len(D)
         t_comm = comm_cost_model.predict_comm_time(device_rank, next_stage, comm_size * i)
@@ -186,11 +188,7 @@ def main(args):
     device_info = get_device_info(device_names, device_numbers)
     args.device_info = device_info # use to store device info
     
-    gen_config.global_bz = args.global_bz
-    gen_config.s = args.s
-    gen_config.n = args.n
-    qpipe._globals.gamma = args.gamma
-    qpipe._globals.theta = args.theta
+
 
     # run simulation
     global_bz = gen_config.global_bz
@@ -210,6 +208,7 @@ def main(args):
                                                                                                      global_bz, micro_bz, s, n, \
                                                                                                   comm_cost_model_folder=comm_cost_model_dir)
     
+    args.init_pack = (model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size)
     lat_cost_model.update_profiled_result(args.lat_profile_dir)
     if args.fit:
         lat_cost_model.fit_regression_cost_model()
@@ -221,7 +220,7 @@ def main(args):
     sol_adaqpipe = adaqpipe_main(args)
     # sol_pipeedge_adaptive = pipeedge_adaptive_main(args)
     # sort by bit number, decsending
-    no_info_bits = copy.deepcopy(qpipe._globals.AVAILABLE_BITS_WO_INFO)[::-1]
+    no_info_bits = copy.deepcopy(qpipe._globals.AVAILABLE_BITS)[::-1]
     # no_info_bits.sort(reverse=True)
     # if args.adabits_tc:
     #     no_info_bits = copy.deepcopy(qpipe._globals.AVAILABLE_BITS)[::-1]
@@ -246,7 +245,6 @@ def main(args):
         if sol_pipeedge['plan'] != NOT_AVAILABLE:
             print("PipeEdge solution found, use bit: ", bit)
             break
-
     # solution packs
     sols = {}
     sols['adabits'] = sol_adabits
@@ -272,7 +270,6 @@ def main(args):
         print("Minimum bit of ", sol_name)
         check_minimum_bit_of_sols(sol)
 
-    import pdb; pdb.set_trace()
     print(sols['adaqpipe']['D'])
     sols['mu_n'] = mu_n
     sols['n'] = n

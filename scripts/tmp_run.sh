@@ -10,6 +10,6 @@ python pipeedge_adaptive.py  --model_size "66b" --device_names Tesla_T4 Tesla_V1
 
 
 
-python adaqpipe.py --model_size "66b" \
+python uniform.py --model_size "66b" \
  --device_names Tesla_T4 Tesla_V100-SXM2-32GB --device_numbers 4 2 \
  --group_size 4

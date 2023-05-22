@@ -134,19 +134,11 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
     '''
         Constraint related
     '''
-    # device memory
-    M_d = np.array([get_single_device_mem_constraints(device_name) for d_rank, device_name in current_D.items()]) 
-    # construct bit memory matrix
-    # M = np.zeros((L, len(BITs)))
-    # bit_pairs = BITs
-    # mem_bits_vector = get_mem_with_layer_bit_pair(bit_pairs)
-    # for i in range(L):
-    #     M[i, :] = mem_bits_vector
-    
+    M_d = np.array([get_single_device_mem_constraints(device_name) for d_rank, device_name in D.items()]) 
     mem_bits_vector = get_mem_with_layer_bit_pair(BITs, model_mem_estimator)
-    M = np.tile(mem_bits_vector, (group_L, 1)) * group_size
+    M = np.tile(mem_bits_vector, (group_L, 1)) * group_size # repeat the mem_bits_vector for group_L times
 
-    # reduce the embedding size on device 0 for M_d
+    # reduce the embedding size on device 0
     post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
     temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size_with_bz(prefill_bz, bz_decode_max, unit='MB')[0] 
     M_d[0] -= post_pre_mem
@@ -172,12 +164,17 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
         with open(omega_file, 'rb') as f:
             omega_loaded = pickle.load(f)
         # check whether the shape is matched, as raise error
-        if omega_loaded.shape[0] != group_L and omega_loaded.shape[0] == L:
-            new_omega_loaded = np.zeros((group_L, omega_loaded.shape[1]))
-            for i in range(group_L):
-                new_omega_loaded[i] = np.mean(omega_loaded[i*group_size:(i+1)*group_size], axis=0)
-            omega_loaded = new_omega_loaded
+        # all_BITs = get_available_bits_pair(qpipe._globals.AVAILABLE_BITS)
+        # BITs_idx = [all_BITs.index(bit_pair) for bit_pair in BITs]
+        # omega_loaded = omega_loaded[:, BITs_idx]
+        # if omega_loaded.shape[0] != group_L and omega_loaded.shape[0] == L:
+        #     new_omega_loaded = np.zeros((group_L, omega_loaded.shape[1]))
+        #     for i in range(group_L):
+        #         new_omega_loaded[i] = np.mean(omega_loaded[i*group_size:(i+1)*group_size], axis=0)
+        #     omega_loaded = new_omega_loaded
+        
         if omega_loaded.shape != omega.shape:
+            print(omega_loaded.shape, omega.shape)
             raise ValueError('omega shape mismatched')
         omega = omega_loaded
 
@@ -236,14 +233,8 @@ def solve_ilp_for_best(T, current_D, comm_size, cost_model_pack, bz_pack):
 # enumerate all devices combinations
 # enumerata all hybrid micro-batch combinations
 # micro-batch candidates
-def enumerate_best_result():
-    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
-                                                                                                     global_bz, micro_bz, s, n, \
-                                                                                                  comm_cost_model_folder=comm_cost_model_dir)
-    lat_cost_model.update_profiled_result(lat_profile_result_path)
-    if not use_profiler_prediction:
-        lat_cost_model.load_regression_cost_model()
-
+def enumerate_best_result(args):
+    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = args.init_pack 
     cost_model_pack = (model_mem_estimator, comm_cost_model, lat_cost_model)
     best_plan = {}
     best_plan['obj'] = 9999999
@@ -355,7 +346,7 @@ def main(args):
     cost_model_store_path = None # initialize the cost model
 
     lat_profile_result_path = args.lat_profile_dir
-    return enumerate_best_result()
+    return enumerate_best_result(args)
 
 if __name__ == '__main__':
     ilp_env()

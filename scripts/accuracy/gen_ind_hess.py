@@ -3,7 +3,7 @@ import pickle
 import torch
 import numpy as np
 from qpipe.utils import (
-    save_with_pickle,
+    save_with_pickle, get_available_bits_pair
 )
 
 from utils import simple_model_info_parser, model_config_and_decoder_layers, get_available_candidate_bits
@@ -34,10 +34,7 @@ def generate_indicator_hess(model_name, model_size, folder_path):
     config, num_layers = model_config_and_decoder_layers(model_name, model_size)
     L = num_layers
     available_bits = get_available_candidate_bits() # regard 8-bit as same
-    available_bits = list(set(available_bits))
-    BITs = [
-        (i, j) for i in available_bits for j in available_bits
-    ]
+    BITs = get_available_bits_pair(available_bits)
 
     dur_sum = 0
     for bit, data in all_collected_data.items():

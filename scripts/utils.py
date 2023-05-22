@@ -3,6 +3,8 @@ from qllm.models import create_model_config
 from qpipe.partitioner.helper import (
     get_device_info,
 )
+from qpipe.partitioner import gen_config
+import qpipe
 def verbose_device_info(device_names, device_numbers, device_info):
     print(f"device_names {device_names}")
     print(f"device_numbers {device_numbers}")
@@ -29,6 +31,7 @@ def common_argparser():
     parser.add_argument('--pe_bit', type=int, default=8)
     parser.add_argument('--uniform_bit', type=int, default=8)
     parser.add_argument('--adabits_tc', action='store_true', help='use adabit-tc') # case when all device support tc
+    parser.add_argument('--init_pack', default=None)
     # experiment setup control
     parser.add_argument('--s', type=int, default=512) # prompt legnth
     parser.add_argument('--n', type=int, default=100) # max_tokens
@@ -50,6 +53,12 @@ def common_argparser():
     config = create_model_config(model_name, model_size)
     args.config = config
 
+    # set configs
+    gen_config.global_bz = args.global_bz
+    gen_config.s = args.s
+    gen_config.n = args.n
+    qpipe._globals.gamma = args.gamma
+    qpipe._globals.theta = args.theta
 
     # checks
     device_names = args.device_names # ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']
