@@ -31,7 +31,8 @@ from qpipe.partitioner.helper import (
     create_device_mesh_and_mem,
     get_device_info,
     force_zero,
-    decouple_result_group
+    decouple_result_group,
+    lat_prediction
 )
 from utils import (
     common_argparser, ilp_env,
@@ -46,8 +47,6 @@ import numpy as np
 # setup ilp configs
 import pulp
 import gurobipy as gp
-ilp_env()
-args = common_argparser()
 
 unit = qpipe._globals.MEM_UNIT
 time_mult_times = qpipe._globals.TIME_MULT_TIMES
@@ -74,11 +73,12 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
         prob += pulp.lpSum([z[(i, j, b)] * M[i][b] for i in range(L) for b in range(B)]) <= M_d[j]
     
     # Solve the problem
-    status = prob.solve(pulp.GUROBI(randomSeed=ilp_seed))
+    status = prob.solve(pulp.GUROBI(msg=False))
     # prob.solve(pulp.GUROBI())
     # prob.solve()
     # Print the solution status
     if status == pulp.LpStatusOptimal:
+        print("Adabits result found")
         # Print the optimal objective value
         # store the optimal solution
         result = {}
@@ -91,6 +91,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
                         result[i] = (j, b)
         return result, pulp.value(prob.objective) 
     else:
+        print("Not Feasible for adabits")
         return NOT_AVAILABLE, 1e10
 
 

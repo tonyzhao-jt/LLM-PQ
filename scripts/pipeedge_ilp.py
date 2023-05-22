@@ -19,7 +19,8 @@ from qpipe.partitioner.helper import (
     create_device_mesh_and_mem,
     get_device_info,
     get_slo,
-    decouple_result_group
+    decouple_result_group,
+    get_latency_with_layer_device_bit_pair
 )
 
 from qpipe.utils import (
@@ -43,43 +44,13 @@ import numpy as np
 # setup ilp configs
 import pulp
 import gurobipy as gp
-ilp_env()
-args = common_argparser()
 
 unit = qpipe._globals.MEM_UNIT
 time_mult_times = qpipe._globals.TIME_MULT_TIMES
 slo_rate = qpipe._globals.SLO_RATE
 
 
-def get_latency_with_layer_device_bit_pair(current_D, bit_pairs, lat_cost_model, b, i):
-    device_names = list(current_D.values())
-    dtypes = set(device_names)
-    device_bit_res = {}
 
-    for device_name in dtypes:
-        for idx, bit_pair in enumerate(bit_pairs):
-            attn_bit, ffn_bit = bit_pair
-            device_bit_res[(device_name, bit_pair)] = 0
-            if not use_profiler_prediction:
-                attn_lat = lat_cost_model.predict_by_model_with_b_i_bit(device_name, 0, b, i, attn_bit)
-                ffn_lat = lat_cost_model.predict_by_model_with_b_i_bit(device_name, 1, b, i, ffn_bit)
-            else:
-                attn_lat = lat_cost_model.predict_by_profiled_with_b_i_bit(device_name, 0, b, i, attn_bit)
-                ffn_lat = lat_cost_model.predict_by_profiled_with_b_i_bit(device_name, 1, b, i, ffn_bit)
-            if attn_lat is None: # bit is not available
-                attn_lat = 9999 # a large number
-                # print(device_name, 0, attn_bit)
-            if ffn_lat is None:
-                ffn_lat = 9999
-                # print(device_name, 1, ffn_bit)
-            lat = attn_lat + ffn_lat
-            device_bit_res[(device_name, bit_pair)] = lat
-    # create latency matrix
-    lat_device_bits_matrix = np.zeros((len(current_D), len(bit_pairs)))
-    for i, device_name in enumerate(device_names):
-        for j, bit_pair in enumerate(bit_pairs):
-            lat_device_bits_matrix[i, j] = device_bit_res[(device_name, bit_pair)]
-    return lat_device_bits_matrix
 
 
 def solve_ilp_pulp(L, N, BITs, M, M_d, l, comm):
@@ -112,9 +83,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, comm):
 
     if status == pulp.LpStatusOptimal:
         # Print the solution status
-        print("Status:", pulp.LpStatus[prob.status])
-        # Print the optimal objective value
-        print("Optimal value of the objective function:", pulp.value(prob.objective))
+        print("Pipedge Result found")
         # store the optimal solution
         result = {}
         bit_pair = BITs[0]
@@ -127,6 +96,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, comm):
                     # print("layer {} is assigned to device {} with bit {}".format(i, j, bit_pair))
         return result, pulp.value(prob.objective)
     else:
+        print("Pipedge Result not feasible")
         return NOT_AVAILABLE, 1e10
 
     
@@ -171,7 +141,8 @@ def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack, 
 
     # latency
     l = np.zeros((group_L, N, len(BITs)))
-    lat_device_bits_matrix = get_latency_with_layer_device_bit_pair(D, BITs, lat_cost_model, bz_decode_max, mu_n)
+    lat_device_bits_matrix = get_latency_with_layer_device_bit_pair(D, BITs, lat_cost_model, bz_decode_max, 1, s + int(mu_n / 2), \
+                                                                    use_profiler_prediction=use_profiler_prediction)
     for i in range(group_L):
         l[i, :, :] = lat_device_bits_matrix * group_size
     

@@ -52,7 +52,7 @@ def init_parameters_and_cost_models(config, device_names=[], device_numbers=[], 
         lat_cost_model = None
     else:
         lat_cost_model = LatCostModel(device_names, lat_cost_model_folder=cost_model_store_path)
-        lat_cost_model.register_hyper_params(micro_b, s+n, h1, h2)
+        lat_cost_model.register_hyper_params(micro_b, s, s+n, h1, h2)
     return model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size
 
 
@@ -210,3 +210,42 @@ def decouple_result_group(group_size, plan):
         for k in range(group_size):
             new_plan[i * group_size+k] = (j, b) # set bit like that
     return new_plan
+
+
+
+
+# produce latency prediction
+def lat_prediction(lat_cost_model, D_name, b, s, i, atten_bit, ffn_bit, use_profiler_prediction=True):
+    stage_lat = 0
+    if not use_profiler_prediction:
+        atten_lat = lat_cost_model.predict_by_model_with_b_s_i_bit(D_name, 0, b, s, i, atten_bit)
+        ffn_lat = lat_cost_model.predict_by_model_with_b_s_i_bit(D_name, 1, b, s, i, ffn_bit)
+    else:
+        atten_lat = lat_cost_model.predict_by_profiled_with_b_s_i_bit(D_name, 0, b, s, i, atten_bit)
+        ffn_lat = lat_cost_model.predict_by_profiled_with_b_s_i_bit(D_name, 1, b, s, i, ffn_bit)
+    
+    if atten_lat is None:
+        atten_lat = 9999
+    if ffn_lat is None:
+        ffn_lat = 9999
+    stage_lat += atten_lat + ffn_lat
+    return stage_lat
+
+import numpy as np 
+def get_latency_with_layer_device_bit_pair(current_D, bit_pairs, lat_cost_model, b, s, i, use_profiler_prediction=True):
+    device_names = list(current_D.values())
+    dtypes = set(device_names)
+    device_bit_res = {}
+
+    for device_name in dtypes:
+        for idx, bit_pair in enumerate(bit_pairs):
+            attn_bit, ffn_bit = bit_pair
+            device_bit_res[(device_name, bit_pair)] = 0
+            lat = lat_prediction(lat_cost_model, device_name, b, s, i, attn_bit, ffn_bit, use_profiler_prediction)
+            device_bit_res[(device_name, bit_pair)] = lat
+    # create latency matrix
+    lat_device_bits_matrix = np.zeros((len(current_D), len(bit_pairs)))
+    for i, device_name in enumerate(device_names):
+        for j, bit_pair in enumerate(bit_pairs):
+            lat_device_bits_matrix[i, j] = device_bit_res[(device_name, bit_pair)]
+    return lat_device_bits_matrix

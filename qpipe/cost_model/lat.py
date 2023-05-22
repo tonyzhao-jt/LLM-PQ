@@ -88,8 +88,9 @@ class LatCostModel:
     def device_in_cost_model(self, device_name):
         return device_name in self.device_names
     
-    def register_hyper_params(self, b, i, h1, h2):
+    def register_hyper_params(self, b, s, i, h1, h2):
         self.b = b
+        self.s = s # prompt length
         self.i = i
         self.h1 = h1
         self.h2 = h2
@@ -104,25 +105,8 @@ class LatCostModel:
     def change_bs(self, b):
         assert self.has_hypers, "Hyper params not registered."
         self.b = b
-
     
-    def fetch_lat_with_hyper(self, shard, device_name, bit):
-        profiled_data_device = self.profiled_data[device_name]
-        # columns: shard,h1,h2,bit,batch_size,input_seq_length,past_seq_length,lat_avg,mem_weight,mem_kv,mem_embedding,mem_all
-        # fetch data with hyper params
-        profiled_data_device = profiled_data_device[(profiled_data_device['shard'] == shard) & 
-                                            (profiled_data_device['h1'] == self.h1) &
-                                            (profiled_data_device['h2'] == self.h2) &
-                                            (profiled_data_device['bit'] == str(bit)) &
-                                            (profiled_data_device['batch_size'] == self.b) &
-                                            (profiled_data_device['past_seq_length'] == self.i)]
-        if len(profiled_data_device) == 0:
-            return None
-        # lat_avg
-        lat_avg = profiled_data_device['lat_avg'].values[0]
-        return lat_avg
-    
-    def fetch_lat(self, device_name, shard, b, i, h1, h2, bit):
+    def fetch_lat(self, device_name, shard, b, s, i, h1, h2, bit):
         profiled_data_device = self.profiled_data[device_name]
         # columns: shard,h1,h2,bit,batch_size,input_seq_length,past_seq_length,lat_avg,mem_weight,mem_kv,mem_embedding,mem_all
         # fetch data with hyper params
@@ -131,12 +115,38 @@ class LatCostModel:
                                             (profiled_data_device['h2'] == h2) &
                                             (profiled_data_device['bit'] == str(bit)) &
                                             (profiled_data_device['batch_size'] == b) &
+                                            (profiled_data_device['input_seq_length'] == s) &
                                             (profiled_data_device['past_seq_length'] == i)]
         if len(profiled_data_device) == 0:
             return None
         # lat_avg
         lat_avg = profiled_data_device['lat_avg'].values[0]
         return lat_avg
+    
+    # fatch prefill result
+    # s is the prompt length
+    def fetch_prefill(self, s, shard, device_name, bit):
+        # input_seq = s
+        # past_seq = 0
+        i = 0
+        return self.fetch_lat(device_name, shard, self.b, s, i, self.h1, self.h2, bit)
+    
+    def fetch_prefill_use_hyper_s(self, shard, device_name, bit):
+        s = self.s 
+        return self.fetch_prefill(s, shard, device_name, bit)
+
+    # fetch decoding result
+    # i is the past sequence length
+    def fetch_decode(self, i, shard, device_name, bit):
+        # input_seq = s
+        # past_seq = s
+        s = 1 # one token
+        return self.fetch_lat(device_name, shard, self.b, s, i, self.h1, self.h2, bit)
+    
+    def fetch_decode_use_hyper_i(self, shard, device_name, bit):
+        i = self.i
+        return self.fetch_decode(i, shard, device_name, bit)
+    
 
     def update_profiled_result(self, profiled_folder):
         # list file under the folder
@@ -199,7 +209,7 @@ class LatCostModel:
                                                                 (device_profile_data['h2'] == h2) &
                                                                 (device_profile_data['bit'] == str(bit))]
 
-                            X = profiled_data_device[['batch_size', 'past_seq_length']].values
+                            X = profiled_data_device[['batch_size', 'input_seq_length', 'past_seq_length']].values
                             X = np.concatenate([X, np.ones((X.shape[0], 1))], axis=1)
                             y = profiled_data_device['lat_avg'].values
  
@@ -245,7 +255,7 @@ class LatCostModel:
                         # columns: shard,h1,h2,bit,batch_size,input_seq_length,past_seq_length,lat_avg,mem_weight,mem_kv,mem_embedding,mem_all
                         # X: batch_size, past_seq_length
                         # y: lat_avg
-                        X = profiled_data_device[['batch_size', 'past_seq_length']].values
+                        X = profiled_data_device[['batch_size', 'input_seq_length', 'past_seq_length']].values
                         X = np.concatenate([X, np.ones((X.shape[0], 1))], axis=1)
                         y = profiled_data_device['lat_avg'].values
                         model = LinearRegression().fit(X, y)
@@ -265,7 +275,7 @@ class LatCostModel:
 
         self.has_fit = True
 
-    def predict(self, device_name, shard, b, i, h1, h2, bit):
+    def predict(self, device_name, shard, b, s, i, h1, h2, bit):
         assert self.has_fit, "Cost model is not fitted."
         assert device_name in self.regression_models, f"Cannot find regression model for {device_name}"
         model_name = f"{device_name}_{shard}_{h1}_{h2}_{bit}.pkl"
@@ -276,12 +286,13 @@ class LatCostModel:
         X = np.array([[b, i, 1]])
         return model.predict(X)[0]
     
-    def predict_by_model_with_b_i_bit(self, device_name, shard, b, i, bit):
-        return self.predict(device_name, shard, b, i, self.h1, self.h2, bit)
+    def predict_by_model_with_b_s_i_bit(self, device_name, shard, b, s, i, bit):
+        return self.predict(device_name, shard, b, s, i, self.h1, self.h2, bit)
 
-    def predict_by_profiled_with_b_i_bit(self, device_name, shard, b, i, bit):
-        return self.fetch_lat(device_name, shard, b, i, self.h1, self.h2, bit)
+    def predict_by_profiled_with_b_s_i_bit(self, device_name, shard, b, s, i, bit):
+        return self.fetch_lat(device_name, shard, b, s, i, self.h1, self.h2, bit)
     
+    # only use hyper to predict.
     def predict_with_hyper(self, device_name, shard, bit):
         assert self.has_hypers, "Hyper parameters are not registered."
         return self.predict(device_name, shard, self.b, self.i, self.h1, self.h2, bit)

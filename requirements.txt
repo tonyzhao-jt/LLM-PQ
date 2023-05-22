@@ -5,4 +5,10 @@ datasets
 accelerate
 pulp
 gurobipy
+pulp
+sacrebleu
+scikit-learn 
+scipy 
+matplotlib 
+statsmodels
 # transformers

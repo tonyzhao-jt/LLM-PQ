@@ -22,7 +22,9 @@ from qpipe.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
     create_device_mesh_and_mem,
-    get_device_info
+    get_device_info,
+    lat_prediction,
+    get_latency_with_layer_device_bit_pair
 )
 from qpipe.partitioner import gen_config
 from qpipe.cost_model import (
@@ -113,13 +115,14 @@ def convert_to_adaqpipe_result2partitions(res):
             atten_bit = bit_assignment_result[atten_idx]
             ffn_bit = bit_assignment_result[ffn_idx]
             # check if the bit can be replace with tc:8
-            D_name = D[device_rank]
-            if atten_bit == 8:
-                if has_tc(D_name):
-                    atten_bit = '8:tc'
-            if ffn_bit == 8:
-                if has_tc(D_name):
-                    ffn_bit = '8:tc'
+            # TODO: abandon for the moment.
+            # D_name = D[device_rank]
+            # if atten_bit == 8:
+            #     if has_tc(D_name):
+            #         atten_bit = '8:tc'
+            # if ffn_bit == 8:
+            #     if has_tc(D_name):
+            #         ffn_bit = '8:tc'
             sharding_strategy[device_rank][layer] = {
                 'shard': [0, 1], 'bits': [atten_bit, ffn_bit]
             }
@@ -128,7 +131,7 @@ def convert_to_adaqpipe_result2partitions(res):
 
 
 def calculate_max_stage_lat(D, use_plan, \
-                                       cost_model_pack, b, i=1, use_profiler_prediction=False, comm_size=0):
+                                       cost_model_pack, b, s=1, i=1, use_profiler_prediction=False, comm_size=0):
     lat_cost_model, comm_cost_model = cost_model_pack
 
     minmax_lat = 0
@@ -138,14 +141,7 @@ def calculate_max_stage_lat(D, use_plan, \
         for layer_idx, layer_spec in shard_strategy.items():
             shard = layer_spec['shard']
             bit = layer_spec['bits']
-            atten_bit, ffn_bit = bit
-            if not use_profiler_prediction:
-                stage_lat += lat_cost_model.predict_by_model_with_b_i_bit(D_name, 0, b, i, atten_bit)
-                stage_lat += lat_cost_model.predict_by_model_with_b_i_bit(D_name, 1, b, i, ffn_bit)
-            else:
-                lat = lat_cost_model.predict_by_profiled_with_b_i_bit(D_name, 0, atten_bit, i, bit)
-                lat += lat_cost_model.predict_by_profiled_with_b_i_bit(D_name, 1, ffn_bit, i, bit)
-                stage_lat += lat
+            stage_lat += lat_prediction(D_name, layer_idx, shard, bit, b, s, i, use_profiler_prediction)
         # next stage
         next_stage = (device_rank + 1) % len(D)
         t_comm = comm_cost_model.predict_comm_time(device_rank, next_stage, comm_size * i)
@@ -169,9 +165,9 @@ def run_simu(sol, lat_cost_model, comm_cost_model, use_profiler_prediction, comm
     n = gen_config.n
     # average throughput should equals to 
     prefill_result = calculate_max_stage_lat(D, use_plan, \
-                                                    cost_model_pack, prefill_bz, s, use_profiler_prediction, comm_size)
+                                                    cost_model_pack, prefill_bz, s, 0, use_profiler_prediction, comm_size)
     decode_result = calculate_max_stage_lat(D, use_plan, \
-                                                    cost_model_pack, bz_decode_max, 1, use_profiler_prediction, comm_size)
+                                                    cost_model_pack, bz_decode_max, 1, s + int(mu_n / 2), use_profiler_prediction, comm_size)
     # latency equals
     e2e_lat = math.ceil(global_bz / prefill_bz + 1) * prefill_result + \
           math.ceil(global_bz / bz_decode_max + 1) * decode_result * (mu_n-1)
@@ -234,6 +230,7 @@ def main(args):
     # find first solution that is valid
     uniform_sols = {}
     for bit in no_info_bits:
+        print("Try uniform bit: ", bit)
         args.uniform_bit = bit
         sol_uniform = uniform_main(args)
         if sol_uniform['plan'] != NOT_AVAILABLE:
@@ -243,6 +240,7 @@ def main(args):
 
     # same to pipeedge
     for bit in no_info_bits:
+        print("Try pipeedge bit: ", bit)
         args.pe_bit = bit
         sol_pipeedge = pipeedge_ilp_main(args)
         if sol_pipeedge['plan'] != NOT_AVAILABLE:

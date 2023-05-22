@@ -20,7 +20,8 @@ from qpipe.partitioner.helper import (
     get_device_info,
     get_slo,
     force_zero,
-    decouple_result_group
+    decouple_result_group,
+    get_latency_with_layer_device_bit_pair
 )
 
 from qpipe.utils import (
@@ -90,16 +91,14 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
     
     # Solve the problem
     # prob.solve(pulp.apis.PULP_CBC_CMD())
-    solver = pulp.GUROBI(randomSeed=ilp_seed)
+    solver = pulp.GUROBI(msg=False)
     # solver = pulp.GUROBI()
     # solver = pulp.GUROBI(msg=True)
     status = prob.solve(solver)
 
     if status == pulp.LpStatusOptimal:
         # Print the solution status
-        print("Status:", pulp.LpStatus[prob.status])
-        # Print the optimal objective value
-        print("Optimal value of the objective function:", pulp.value(prob.objective))
+        print("Adaqpipe Result Found")
         # store the optimal solution
         result = {}
         # print z variable result
@@ -113,37 +112,6 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
         return result, pulp.value(prob.objective)
     else:
         return NOT_AVAILABLE, 1e10
-
-
-def get_latency_with_layer_device_bit_pair(current_D, bit_pairs, lat_cost_model, b, i):
-    device_names = list(current_D.values())
-    dtypes = set(device_names)
-    device_bit_res = {}
-
-    for device_name in dtypes:
-        for idx, bit_pair in enumerate(bit_pairs):
-            attn_bit, ffn_bit = bit_pair
-            device_bit_res[(device_name, bit_pair)] = 0
-            if not use_profiler_prediction:
-                attn_lat = lat_cost_model.predict_by_model_with_b_i_bit(device_name, 0, b, i, attn_bit)
-                ffn_lat = lat_cost_model.predict_by_model_with_b_i_bit(device_name, 1, b, i, ffn_bit)
-            else:
-                attn_lat = lat_cost_model.predict_by_profiled_with_b_i_bit(device_name, 0, b, i, attn_bit)
-                ffn_lat = lat_cost_model.predict_by_profiled_with_b_i_bit(device_name, 1, b, i, ffn_bit)
-            if attn_lat is None: # bit is not available
-                attn_lat = 9999 # a large number
-                # print(device_name, 0, attn_bit)
-            if ffn_lat is None:
-                ffn_lat = 9999
-                # print(device_name, 1, ffn_bit)
-            lat = attn_lat + ffn_lat
-            device_bit_res[(device_name, bit_pair)] = lat
-    # create latency matrix
-    lat_device_bits_matrix = np.zeros((len(current_D), len(bit_pairs)))
-    for i, device_name in enumerate(device_names):
-        for j, bit_pair in enumerate(bit_pairs):
-            lat_device_bits_matrix[i, j] = device_bit_res[(device_name, bit_pair)]
-    return lat_device_bits_matrix
 
 def get_comm(current_D, comm_cost_model, comm_size):
     device_length = len(current_D)
@@ -192,8 +160,10 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
     l_decode = np.zeros((group_L, N, len(BITs))) 
 
     for i in range(group_L):
-        l_prefill[i, :, :] = get_latency_with_layer_device_bit_pair(current_D, BITs, lat_cost_model, prefill_bz, s) * group_size
-        l_decode[i, :, :] = get_latency_with_layer_device_bit_pair(current_D, BITs, lat_cost_model, bz_decode_max, mu_n) * group_size
+        l_prefill[i, :, :] = get_latency_with_layer_device_bit_pair(current_D, BITs, lat_cost_model, prefill_bz, s, 0, \
+                                                                     use_profiler_prediction=use_profiler_prediction) * group_size
+        l_decode[i, :, :] = get_latency_with_layer_device_bit_pair(current_D, BITs, lat_cost_model, bz_decode_max, 1, s + int(mu_n / 2), \
+                                                                   use_profiler_prediction=use_profiler_prediction) * group_size
     
     # omega
     omega = assign_omega_uniform(group_L, BITs)
