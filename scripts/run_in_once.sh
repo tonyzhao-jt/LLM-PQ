@@ -1,7 +1,13 @@
-# case 1
+# case 3
+# model_size=30b
+# device_names=("Tesla_T4" "Tesla_V100-SXM2-32GB") 
+# device_numbers=(3 1)  # define device numbers as a list of integers
+# OMEGA_FILE=/workspace/qpipe/scripts/accuracy/generated_ind/gen_opt_30b_ind.pkl
+
+# case 4
 model_size=30b
-device_names=("Tesla_T4" "Tesla_V100-SXM2-32GB") 
-device_numbers=(3 1)  # define device numbers as a list of integers
+device_names=("Tesla_P100-PCIE-12GB" "Tesla_V100-SXM2-32GB") 
+device_numbers=(2 1)  # define device numbers as a list of integers
 OMEGA_FILE=/workspace/qpipe/scripts/accuracy/generated_ind/gen_opt_30b_ind.pkl
 
 python3 algo_entry.py --model_size ${model_size} \

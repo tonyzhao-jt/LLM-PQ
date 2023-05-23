@@ -62,6 +62,12 @@ device_names=("Tesla_P100-PCIE-12GB" "Tesla_V100-SXM2-32GB")
 device_numbers=(2 1)  # define device numbers as a list of integers
 OMEGA_FILE=/workspace/qpipe/scripts/accuracy/generated_ind/gen_opt_30b_ind.pkl
 
+python3 algo_entry.py --model_size ${model_size} \
+ --device_names "${device_names[@]}" \
+ --device_numbers "${device_numbers[@]}" \
+ --omega_file $OMEGA_FILE --ilp_seed 120 \
+ --theta 0.01 --fit --global_bz 32 --debug --group 4 --ilp_time_limit 60
+
 # backup 4-1
 # model_size=30b
 # device_names=("Tesla_V100-SXM2-32GB" "NVIDIA_A100-SXM4-40GB") 
@@ -80,17 +86,30 @@ device_names=("Tesla_V100-SXM2-32GB" "NVIDIA_A100-SXM4-40GB")
 device_numbers=(2 2)  # define device numbers as a list of integers
 OMEGA_FILE=/workspace/qpipe/scripts/accuracy/generated_ind/gen_opt_66b_ind.pkl
 
+python3 algo_entry.py --model_size ${model_size} \
+ --device_names "${device_names[@]}" \
+ --device_numbers "${device_numbers[@]}" \
+ --omega_file $OMEGA_FILE --ilp_seed 120 \
+ --theta 0.01 --global_bz 32 --group 8 --ilp_time_limit 60
+
 # case 7
 model_size=176b
 device_names=("Tesla_V100-SXM2-32GB" "NVIDIA_A100-SXM4-40GB") 
 device_numbers=(4 4)  # define device numbers as a list of integers
-OMEGA_FILE=/workspace/qpipe/scripts/accuracy/generated_ind/gen_opt_176b_ind.pkl
+OMEGA_FILE=/workspace/qpipe/scripts/accuracy/generated_ind/gen_bloom_176b_ind.pkl
+
+python3 algo_entry.py --model_size ${model_size} \
+ --device_names "${device_names[@]}" \
+ --device_numbers "${device_numbers[@]}" \
+ --model_name bloom \
+ --omega_file $OMEGA_FILE --ilp_seed 120 \
+ --theta 0.01 --global_bz 32 --group 7 --ilp_time_limit 60
 
 # case 8
 model_size=176b
 device_names=("Tesla_V100-SXM2-32GB NVIDIA_A100-SXM4-80GB") 
 device_numbers=(4 2)  # define device numbers as a list of integers
-OMEGA_FILE=/workspace/qpipe/scripts/accuracy/generated_ind/gen_opt_176b_ind.pkl
+OMEGA_FILE=/workspace/qpipe/scripts/accuracy/generated_ind/gen_bloom_176b_ind.pkl
 
 # uniform cases
 # case9

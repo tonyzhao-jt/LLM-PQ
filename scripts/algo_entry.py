@@ -83,6 +83,7 @@ def check_memory_budget(res, model_mem_estimator, name='qpipe'):
                                            model_mem_estimator, bs_pack)
         if not flag:
             print("memory budget exceeded, return False", name)
+            import pdb; pdb.set_trace()
             return False
     print("all passed")
     return True

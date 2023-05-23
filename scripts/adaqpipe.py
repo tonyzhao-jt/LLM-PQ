@@ -140,7 +140,7 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
     '''
         Constraint related
     '''
-    M_d = np.array([get_single_device_mem_constraints(device_name) for d_rank, device_name in D.items()]) 
+    M_d = np.array([get_single_device_mem_constraints(device_name) for d_rank, device_name in current_D.items()]) 
     mem_bits_vector = get_mem_with_layer_bit_pair(BITs, model_mem_estimator)
     M = np.tile(mem_bits_vector, (group_L, 1)) * group_size # repeat the mem_bits_vector for group_L times
 
