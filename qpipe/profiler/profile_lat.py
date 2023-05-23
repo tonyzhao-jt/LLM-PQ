@@ -160,6 +160,7 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
     
     # del all the instances
     del decoder_layer
+    del attention_mod
     del fake_input
     if False not in availability_result:
         del hidden_states

@@ -73,7 +73,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
         prob += pulp.lpSum([z[(i, j, b)] * M[i][b] for i in range(L) for b in range(B)]) <= M_d[j]
     
     # Solve the problem
-    status = prob.solve(pulp.GUROBI(msg=False))
+    status = prob.solve(pulp.GUROBI(msg=verbose_ilp, timeLimit=ilp_time_limit))
     # prob.solve(pulp.GUROBI())
     # prob.solve()
     # Print the solution status
@@ -134,11 +134,11 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits, bz_pack, model_mem_est
         # all_BITs = get_available_bits_pair(qpipe._globals.AVAILABLE_BITS)
         # BITs_idx = [all_BITs.index(bit_pair) for bit_pair in BITs]
         # omega_loaded = omega_loaded[:, BITs_idx]
-        # if omega_loaded.shape[0] != group_L and omega_loaded.shape[0] == L:
-        #     new_omega_loaded = np.zeros((group_L, omega_loaded.shape[1]))
-        #     for i in range(group_L):
-        #         new_omega_loaded[i] = np.mean(omega_loaded[i*group_size:(i+1)*group_size], axis=0)
-        #     omega_loaded = new_omega_loaded
+        if omega_loaded.shape[0] != group_L and omega_loaded.shape[0] == L:
+            new_omega_loaded = np.zeros((group_L, omega_loaded.shape[1]))
+            for i in range(group_L):
+                new_omega_loaded[i] = np.mean(omega_loaded[i*group_size:(i+1)*group_size], axis=0)
+            omega_loaded = new_omega_loaded
         if omega_loaded.shape != omega.shape:
             print(omega_loaded.shape, omega.shape)
             raise ValueError('omega shape mismatched')
@@ -176,8 +176,10 @@ mu_n = None
 cost_model_store_path = '/workspace/qpipe/scripts/cost_model_store'
 comm_cost_model_dir = '/workspace/qpipe/scripts/comm_cost_model'
 omega_file = None
-ilp_seed = 0
 group_size = 1
+ilp_seed = 0
+ilp_time_limit = 20
+verbose_ilp = False
 def main(args):
     global global_bz, micro_bz, s, n
     global model_size, device_info
@@ -192,12 +194,16 @@ def main(args):
     global omega_file
     global ilp_seed
     global group_size
+    global ilp_time_limit
+    global verbose_ilp
     # global variables
 
     omega_file = args.omega_file
     ilp_seed = args.ilp_seed
     group_size = args.group_size
     ilp_tolerance = args.ilp_tolerance
+    ilp_time_limit = args.ilp_time_limit
+    verbose_ilp = args.debug
     if ilp_tolerance is not None:
         pulp.LpSolverDefault.eps = ilp_tolerance
     

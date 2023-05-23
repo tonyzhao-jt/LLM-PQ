@@ -9,7 +9,7 @@ export CUDA_VISIBLE_DEVICES=0 # use last one
 
 
 # prefill
-for batch_size in 16 8 4 2 1
+for batch_size in 32 16 8 4 2 1
 do
     for prompt_length in 128 512
     do
@@ -23,7 +23,7 @@ done
 
 
 # decode
-for batch_size in 16 8 4 2 1
+for batch_size in 32 16 8 4 2 1
 do
     for past_seq_length in 128 512
     do

@@ -1,4 +1,5 @@
 from qllm.utils import ModelMemEstimator
+from qllm.models import return_h1_h2
 from ..cost_model import CommCostModel, LatCostModel
 
 from transformers import (
@@ -26,8 +27,9 @@ def init_parameters_and_cost_models(config, device_names=[], device_numbers=[], 
                                      global_bz=16, micro_bz=4, prompt_length=512, num_token_to_generate=100, \
                                     comm_cost_model_folder='/workspace/qpipe/scripts/comm_cost_model/'):
     # target model configuration
-    h1 = config.hidden_size
-    h2 = config.ffn_dim
+    # h1 = config.hidden_size
+    # h2 = config.ffn_dim
+    h1, h2 = return_h1_h2(config)
     num_hidden_layers = config.num_hidden_layers # decoder layer numbers
 
     b = global_bz
@@ -52,7 +54,7 @@ def init_parameters_and_cost_models(config, device_names=[], device_numbers=[], 
         lat_cost_model = None
     else:
         lat_cost_model = LatCostModel(device_names, lat_cost_model_folder=cost_model_store_path)
-        lat_cost_model.register_hyper_params(micro_b, s, s+n, h1, h2)
+        lat_cost_model.register_hyper_params(micro_b, s, n, h1, h2)
     return model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size
 
 
@@ -228,7 +230,7 @@ def lat_prediction(lat_cost_model, D_name, b, s, i, atten_bit, ffn_bit, use_prof
         atten_lat = 9999
     if ffn_lat is None:
         ffn_lat = 9999
-    stage_lat += atten_lat + ffn_lat
+    stage_lat = (atten_lat + ffn_lat)
     return stage_lat
 
 import numpy as np 

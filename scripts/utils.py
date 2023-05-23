@@ -27,6 +27,7 @@ def common_argparser():
     parser.add_argument('--ilp_seed', type=int, default=42)
     parser.add_argument('--group_size', type=int, default=1) # when search space is too large, need to group
     parser.add_argument('--ilp_tolerance', type=float, default=None)
+    parser.add_argument('--ilp_time_limit', type=int, default=20)
     # algo control
     parser.add_argument('--pe_bit', type=int, default=8)
     parser.add_argument('--uniform_bit', type=int, default=8)

@@ -66,7 +66,9 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
     T_sum = pulp.LpVariable("T_sum", lowBound=0, cat=pulp.LpContinuous)
 
     # Define the objective function
-    prob += T_sum + theta * pulp.lpSum([omega[i][b] * y[(i, b)] for i in range(L) for b in range(B)])
+    prob += (math.ceil(global_bz / prefill_bz) + 1) * T_prefill + \
+          (math.ceil(global_bz / bz_decode_max) + 1) * T_decode * (mu_n - 1) \
+          + theta * pulp.lpSum([omega[i][b] * y[(i, b)] for i in range(L) for b in range(B)])
 
     force_zero(l_prefill, z, prob)
     # Define the constraints
@@ -86,19 +88,19 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
         prob += T_decode >= T_decode_j[j]
 
 
-    T_sum = (math.ceil(global_bz / prefill_bz) + 1) * T_prefill + \
-          (math.ceil(global_bz / bz_decode_max) + 1) * T_decode * (mu_n - 1)
-    
     # Solve the problem
     # prob.solve(pulp.apis.PULP_CBC_CMD())
-    solver = pulp.GUROBI()
+    if ilp_tolerance is not None:
+        solver = pulp.GUROBI(msg=verbose_ilp, timeLimit=ilp_time_limit, MIPGap=ilp_tolerance)
+    else:
+        solver = pulp.GUROBI(msg=verbose_ilp, timeLimit=ilp_time_limit)
     # solver = pulp.GUROBI()
     # solver = pulp.GUROBI(msg=True)
     status = prob.solve(solver)
 
     if status == pulp.LpStatusOptimal:
         # Print the solution status
-        print("Adaqpipe Result Found")
+        # print("Adaqpipe Result Found")
         # store the optimal solution
         result = {}
         # print z variable result
@@ -108,7 +110,11 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
                     if z[(i, j, b)].varValue > 0:
                         # print("z[{}, {}, {}] = {}".format(i, j, b, z[(i, j, b)].varValue))
                         result[i] = (j, b)
-        
+        # print latency T_sum
+        T_sum = (math.ceil(global_bz / prefill_bz) + 1) * pulp.value(T_prefill) + \
+          (math.ceil(global_bz / bz_decode_max) + 1) * pulp.value(T_decode) * (mu_n - 1)
+        print("T_sum = {}".format(T_sum))
+        print("Objective = {}".format(pulp.value(prob.objective)))
         return result, pulp.value(prob.objective)
     else:
         return NOT_AVAILABLE, 1e10
@@ -170,11 +176,11 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
         # all_BITs = get_available_bits_pair(qpipe._globals.AVAILABLE_BITS)
         # BITs_idx = [all_BITs.index(bit_pair) for bit_pair in BITs]
         # omega_loaded = omega_loaded[:, BITs_idx]
-        # if omega_loaded.shape[0] != group_L and omega_loaded.shape[0] == L:
-        #     new_omega_loaded = np.zeros((group_L, omega_loaded.shape[1]))
-        #     for i in range(group_L):
-        #         new_omega_loaded[i] = np.mean(omega_loaded[i*group_size:(i+1)*group_size], axis=0)
-        #     omega_loaded = new_omega_loaded
+        if omega_loaded.shape[0] != group_L and omega_loaded.shape[0] == L:
+            new_omega_loaded = np.zeros((group_L, omega_loaded.shape[1]))
+            for i in range(group_L):
+                new_omega_loaded[i] = np.mean(omega_loaded[i*group_size:(i+1)*group_size], axis=0)
+            omega_loaded = new_omega_loaded
         
         if omega_loaded.shape != omega.shape:
             print(omega_loaded.shape, omega.shape)
@@ -218,6 +224,7 @@ def check_performance(lat, result):
     
 # Algo1
 def solve_ilp_for_best(T, current_D, comm_size, cost_model_pack, bz_pack):
+    print("Try", bz_pack)
     num_hidden_layers = len(T) // 2
     SLO_lat = None
     L, N, BITs, M_d, M, lat, omega, comm = prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pack, bz_pack, comm_size)
@@ -236,6 +243,13 @@ def solve_ilp_for_best(T, current_D, comm_size, cost_model_pack, bz_pack):
 # enumerate all devices combinations
 # enumerata all hybrid micro-batch combinations
 # micro-batch candidates
+def get_factors(x):
+    factors = []
+    for i in range(1, x + 1):
+        if x % i == 0:
+            factors.append(i)
+    return factors
+
 def enumerate_best_result(args):
     model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = args.init_pack 
     cost_model_pack = (model_mem_estimator, comm_cost_model, lat_cost_model)
@@ -245,7 +259,8 @@ def enumerate_best_result(args):
     num_device_all = sum(device_numbers)
     strat = partition_a_into_b_bins(global_bz, num_device_all)
     bz_decode_max = get_default_decode_bz(global_bz, num_device_all)
-    candidate_prefill_bzs = [i for i in range(1, bz_decode_max)]
+    # candidate_prefill_bzs = [i for i in range(1, bz_decode_max + 1)]
+    candidate_prefill_bzs = get_factors(bz_decode_max)
     # device order candidates
     device_name_with_its_number = list(zip(device_names, device_numbers))
     permutations = itertools.permutations(device_name_with_its_number)
@@ -261,6 +276,7 @@ def enumerate_best_result(args):
             bz_pack = (global_bz, prefill_bz, bz_decode_max)
             res = solve_ilp_for_best(T, current_D, comm_size, cost_model_pack, bz_pack)
             if res['obj'] < best_plan['obj']:
+                print("Better Plan Generated")
                 best_plan = {
                     'prefill_bz': prefill_bz,
                     'bz_decode_max': bz_decode_max,
@@ -300,8 +316,11 @@ cost_model_store_path = '/workspace/qpipe/scripts/cost_model_store'
 comm_cost_model_dir = '/workspace/qpipe/scripts/comm_cost_model'
 lat_profile_result_path = '/workspace/qpipe/scripts/lat_profiled_result'
 omega_file = None
-ilp_seed = 0
 group_size = 1
+ilp_seed = 0
+ilp_time_limit = 20
+ilp_tolerance = None
+verbose_ilp = False
 def main(args):
     global global_bz, micro_bz, s, n
     global model_size, device_info
@@ -315,14 +334,17 @@ def main(args):
     global cost_model_store_path, comm_cost_model_dir
     global lat_profile_result_path
     global omega_file
-    global ilp_seed
     global group_size
+    global ilp_seed, ilp_time_limit, ilp_tolerance, verbose_ilp
     # global variables
 
     omega_file = args.omega_file
     ilp_seed = args.ilp_seed
     group_size = args.group_size
     ilp_tolerance = args.ilp_tolerance
+    ilp_time_limit = args.ilp_time_limit
+    ilp_tolerance = args.ilp_tolerance
+    verbose_ilp = args.debug
     if ilp_tolerance is not None:
         pulp.LpSolverDefault.eps = ilp_tolerance
 

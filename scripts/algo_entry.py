@@ -174,9 +174,14 @@ def run_simu(sol, lat_cost_model, comm_cost_model, use_profiler_prediction, comm
                                                     cost_model_pack, prefill_bz, s, 0, use_profiler_prediction, comm_size)
     decode_result = calculate_max_stage_lat(D, use_plan, \
                                                     cost_model_pack, bz_decode_max, 1, s + int(mu_n / 2), use_profiler_prediction, comm_size)
+    prefill_time = math.ceil(global_bz / prefill_bz + 1) * prefill_result
+    decode_time = math.ceil(global_bz / bz_decode_max + 1) * (mu_n-1) * decode_result
     # latency equals
-    e2e_lat = math.ceil(global_bz / prefill_bz + 1) * prefill_result + \
-          math.ceil(global_bz / bz_decode_max + 1) * decode_result * (mu_n-1)
+    e2e_lat = prefill_time + decode_time
+    # print(math.ceil(global_bz / prefill_bz + 1), math.ceil(global_bz / bz_decode_max + 1))
+    # print(prefill_result, decode_result)
+    print("prefill_bz", prefill_bz, "bz_decode_max", bz_decode_max)
+    # print(prefill_time, decode_time, e2e_lat)
     # remove maps
     if maps is not None:
         comm_cost_model.clear_device_rank_map() 
@@ -278,7 +283,6 @@ def main(args):
     sols['n'] = n
     sols['gloabl_bz'] = global_bz
 
-    import pdb; pdb.set_trace()
     # store the solution
     # with device_names and model_name and model_size
     file_name = get_final_strat_file_name(model_name, model_size, device_info)

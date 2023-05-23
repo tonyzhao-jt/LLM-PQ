@@ -78,7 +78,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, comm):
     # prob.solve(pulp.apis.PULP_CBC_CMD())
     # solver = pulp.GUROBI(msg=True, threads=0, timeLimit=100, MIPGap=0.003)
     # solver = pulp.GUROBI()
-    solver = pulp.GUROBI(msg=False, randomSeed=ilp_seed)
+    solver = pulp.GUROBI(msg=verbose_ilp, timeLimit=ilp_time_limit)
     status = prob.solve(solver)
 
     if status == pulp.LpStatusOptimal:
@@ -171,8 +171,10 @@ mu_n = None
 cost_model_store_path = '/workspace/qpipe/scripts/cost_model_store'
 comm_cost_model_dir = '/workspace/qpipe/scripts/comm_cost_model'
 all_available_pairs = []
-ilp_seed = 0
 group_size = 1
+ilp_seed = 0
+ilp_time_limit = 20
+verbose_ilp = False
 def main(args):
     global global_bz, micro_bz, s, n
     global model_size, device_info
@@ -187,12 +189,16 @@ def main(args):
     global all_available_pairs
     global ilp_seed
     global group_size
+    global ilp_time_limit
+    global verbose_ilp
     # global variables
 
     omega_file = args.omega_file
     ilp_seed = args.ilp_seed
     group_size = args.group_size
     ilp_tolerance = args.ilp_tolerance
+    ilp_time_limit = args.ilp_time_limit
+    verbose_ilp = args.debug
     if ilp_tolerance is not None:
         pulp.LpSolverDefault.eps = ilp_tolerance
 
