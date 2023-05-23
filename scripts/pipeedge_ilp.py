@@ -111,7 +111,7 @@ def get_comm(D, comm_cost_model, comm_size):
     return comm
 
 
-def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack, comm_size):
+def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack):
     model_mem_estimator, comm_cost_model, lat_cost_model = cost_model_pack
     global_bz, prefill_bz, bz_decode_max = bz_pack
     L = num_hidden_layers # in partition, regard as a whole
@@ -149,7 +149,8 @@ def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack, 
         l[i, :, :] = lat_device_bits_matrix * group_size
     
     # comm
-    comm = get_comm(D, comm_cost_model, comm_size)
+    comm_decode = (model_mem_estimator.h1 * bz_decode_max * 1)  * 2 / 1024 / 1024
+    comm = get_comm(D, comm_cost_model, comm_decode) * comm_multiplier
 
     return group_L, N, BITs, M_d, M, l, comm
 
@@ -175,6 +176,7 @@ group_size = 1
 ilp_seed = 0
 ilp_time_limit = 20
 verbose_ilp = False
+comm_multiplier = 1
 def main(args):
     global global_bz, micro_bz, s, n
     global model_size, device_info
@@ -191,6 +193,7 @@ def main(args):
     global group_size
     global ilp_time_limit
     global verbose_ilp
+    global comm_multiplier
     # global variables
 
     omega_file = args.omega_file
@@ -201,6 +204,7 @@ def main(args):
     verbose_ilp = args.debug
     if ilp_tolerance is not None:
         pulp.LpSolverDefault.eps = ilp_tolerance
+    comm_multiplier = args.comm_multiplier
 
     # global variables
     global_bz = gen_config.global_bz
@@ -228,7 +232,7 @@ def main(args):
     comm_cost_model_dir = f'{args.comm_cost_model_dir}/{device_info}'
     cost_model_store_path = None # initialize the cost model
 
-    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = args.init_pack
+    model_mem_estimator, comm_cost_model, lat_cost_model, T = args.init_pack
 
     all_device_nums = sum(device_numbers)
     bz_decode = get_default_decode_bz(global_bz, all_device_nums)
@@ -242,7 +246,7 @@ def main(args):
     prefill_bz = bz_decode_max
     bz_pack = (global_bz, prefill_bz, bz_decode_max)
     cost_model_pack = (model_mem_estimator, comm_cost_model, lat_cost_model)
-    L, N, BITs, M_d, M, l, comm = prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack, comm_size)
+    L, N, BITs, M_d, M, l, comm = prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack)
     all_available_pairs = BITs
     plan, obj_value = solve_ilp_pulp(L, N, BITs, M, M_d, l, comm)
 

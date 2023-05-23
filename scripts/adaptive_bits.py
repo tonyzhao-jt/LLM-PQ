@@ -180,6 +180,7 @@ group_size = 1
 ilp_seed = 0
 ilp_time_limit = 20
 verbose_ilp = False
+comm_multiplier = 1
 def main(args):
     global global_bz, micro_bz, s, n
     global model_size, device_info
@@ -196,6 +197,7 @@ def main(args):
     global group_size
     global ilp_time_limit
     global verbose_ilp
+    global comm_multiplier
     # global variables
 
     omega_file = args.omega_file
@@ -206,6 +208,7 @@ def main(args):
     verbose_ilp = args.debug
     if ilp_tolerance is not None:
         pulp.LpSolverDefault.eps = ilp_tolerance
+    comm_multiplier = args.comm_multiplier
     
     global_bz = gen_config.global_bz
     micro_bz = gen_config.micro_bz
@@ -233,9 +236,9 @@ def main(args):
     cost_model_store_path = None # initialize the cost model
 
     if args.init_pack:
-        model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = args.init_pack 
+        model_mem_estimator, comm_cost_model, lat_cost_model, T = args.init_pack 
     if args.debug:
-        model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
+        model_mem_estimator, comm_cost_model, lat_cost_model, T = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
                                                                                                         global_bz, micro_bz, s, n, \
                                                                                                     comm_cost_model_folder=comm_cost_model_dir)
         lat_cost_model.update_profiled_result(args.lat_profile_dir)

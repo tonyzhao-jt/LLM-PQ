@@ -13,7 +13,10 @@ def build_dummy(batch_size: int, hidden_space: int, sample_num: int) -> Tuple[to
     send_dummy: Dict[int,List[Tensor]] = {}
     recv_dummy: Dict[int,List[Tensor]] = {}
     for i in range(dist.get_world_size()):
-        data = [torch.rand(batch_size, 1, hidden_space + 1024 * i) for i in range(sample_num)]
+        for j in range(batch_size):
+            data = [torch.rand(j, 512, hidden_space + 1024 * i) for i in range(sample_num)] \
+                + [torch.rand(j, 128, hidden_space + 1024 * i) for i in range(sample_num)] \
+                + [torch.rand(j, 1, hidden_space + 1024 * i) for i in range(sample_num)]
         send_dummy[i] = data
         recv_dummy[i] = [torch.zeros_like(data[i]) for i in range(sample_num)]
     return send_dummy, recv_dummy

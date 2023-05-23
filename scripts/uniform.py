@@ -130,9 +130,9 @@ def main(args):
     cost_model_store_path = None # initialize the cost model
 
     if args.init_pack:
-        model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = args.init_pack 
+        model_mem_estimator, comm_cost_model, lat_cost_model, T = args.init_pack 
     if args.debug:
-        model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
+        model_mem_estimator, comm_cost_model, lat_cost_model, T = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
                                                                                                         global_bz, micro_bz, s, n, \
                                                                                                     comm_cost_model_folder=comm_cost_model_dir)
         lat_cost_model.update_profiled_result(args.lat_profile_dir)

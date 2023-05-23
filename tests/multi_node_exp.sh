@@ -1,4 +1,4 @@
-available_methods=('adabits' 'adaqpipe' 'pipeedge' 'uniform')
+available_methods=('adabits' 'pipeedge' 'uniform')
 rank=0
 model_size="13b"
 for i in "${!available_methods[@]}"

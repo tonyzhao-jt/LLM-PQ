@@ -15,3 +15,4 @@ sol = sols[test_method]
 D = sol['D']
 print(D)
 print(device_info)
+print(sol)

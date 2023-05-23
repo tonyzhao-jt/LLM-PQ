@@ -66,8 +66,9 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
     T_sum = pulp.LpVariable("T_sum", lowBound=0, cat=pulp.LpContinuous)
 
     # Define the objective function
-    prob += (math.ceil(global_bz / prefill_bz) + 1) * T_prefill + \
-          (math.ceil(global_bz / bz_decode_max) + 1) * T_decode * (mu_n - 1) \
+    prefill_scalar = 1 if prefill_bz == global_bz else math.ceil(global_bz / prefill_bz + 1) # if equal, no waiting slot.
+    prob += prefill_scalar * T_prefill + \
+          (math.ceil(global_bz / bz_decode_max)) * T_decode * (mu_n - 1) \
           + theta * pulp.lpSum([omega[i][b] * y[(i, b)] for i in range(L) for b in range(B)])
 
     force_zero(l_prefill, z, prob)
@@ -127,7 +128,7 @@ def get_comm(current_D, comm_cost_model, comm_size):
     return comm
 
 
-def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pack, bz_pack, comm_size):
+def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pack, bz_pack):
     model_mem_estimator, comm_cost_model, lat_cost_model = cost_model_pack
     global_bz, prefill_bz, bz_decode_max = bz_pack
 
@@ -188,8 +189,14 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
         omega = omega_loaded
 
     # comm
-    comm_prefill = get_comm(current_D, comm_cost_model, comm_size * s)
-    comm_decode = get_comm(current_D, comm_cost_model, comm_size)
+    comm_prefill = (model_mem_estimator.h1 * prefill_bz * s) * 2 / 1024 / 1024
+    comm_prefill = get_comm(current_D, comm_cost_model, comm_prefill) * comm_multiplier
+
+    comm_decode = (model_mem_estimator.h1 * bz_decode_max * 1) * 2 / 1024 / 1024
+    comm_decode = get_comm(current_D, comm_cost_model, comm_decode) * comm_multiplier
+
+    print('----- communication cost ---- ')
+    print(comm_prefill, comm_decode)
 
     return group_L, N, BITs, M_d, M, (l_prefill, l_decode), omega, (comm_prefill, comm_decode)
 
@@ -223,11 +230,11 @@ def check_performance(lat, result):
         print('layer {}, device {}, bit {}, lat {}'.format(layer_idx, device, bit_idx, cur_lat))
     
 # Algo1
-def solve_ilp_for_best(T, current_D, comm_size, cost_model_pack, bz_pack):
+def solve_ilp_for_best(T, current_D, cost_model_pack, bz_pack):
     print("Try", bz_pack)
     num_hidden_layers = len(T) // 2
     SLO_lat = None
-    L, N, BITs, M_d, M, lat, omega, comm = prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pack, bz_pack, comm_size)
+    L, N, BITs, M_d, M, lat, omega, comm = prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pack, bz_pack)
     result, obj_value = solve_ilp_pulp(L, N, BITs, M, M_d, lat, omega, comm, theta, bz_pack)
     # result, obj_value, device_used = solve_ilp_pulp_with_price(L, N, BITs, M, M_d, l, omega, comm, price, theta, gamma)
     # check_performance(lat[0], result)
@@ -251,7 +258,7 @@ def get_factors(x):
     return factors
 
 def enumerate_best_result(args):
-    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = args.init_pack 
+    model_mem_estimator, comm_cost_model, lat_cost_model, T = args.init_pack 
     cost_model_pack = (model_mem_estimator, comm_cost_model, lat_cost_model)
     best_plan = {}
     best_plan['obj'] = 9999999
@@ -274,7 +281,7 @@ def enumerate_best_result(args):
             comm_cost_model.set_device_rank_map(maps)
             # test 
             bz_pack = (global_bz, prefill_bz, bz_decode_max)
-            res = solve_ilp_for_best(T, current_D, comm_size, cost_model_pack, bz_pack)
+            res = solve_ilp_for_best(T, current_D, cost_model_pack, bz_pack)
             if res['obj'] < best_plan['obj']:
                 print("Better Plan Generated")
                 best_plan = {
@@ -321,6 +328,7 @@ ilp_seed = 0
 ilp_time_limit = 20
 ilp_tolerance = None
 verbose_ilp = False
+comm_multiplier = 1
 def main(args):
     global global_bz, micro_bz, s, n
     global model_size, device_info
@@ -336,6 +344,7 @@ def main(args):
     global omega_file
     global group_size
     global ilp_seed, ilp_time_limit, ilp_tolerance, verbose_ilp
+    global comm_multiplier
     # global variables
 
     omega_file = args.omega_file
@@ -347,6 +356,7 @@ def main(args):
     verbose_ilp = args.debug
     if ilp_tolerance is not None:
         pulp.LpSolverDefault.eps = ilp_tolerance
+    comm_multiplier = args.comm_multiplier
 
     global_bz = gen_config.global_bz
     micro_bz = gen_config.micro_bz

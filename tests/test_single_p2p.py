@@ -144,7 +144,9 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                 set_input_ids_globals(chunk_idx, input_id)
             # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
             batch_size = len(data_chunks)
-            print("Pipeline Data Loaded, with initial batch size: ", batch_size)
+            print("Pipeline Data Loaded, with chunk size: ", batch_size)
+            for i in range(chunk_size):
+                print(data_chunks[i][0].shape)
         
         # get stage
         if rank not in sharding_strategy:

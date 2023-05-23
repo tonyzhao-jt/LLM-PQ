@@ -4,7 +4,7 @@ import pickle
 import os 
 from qpipe.rpc import init_env_gloo
 def test_comm_speed():
-    data_size_buffer, time_buffer = profile_comm.generate_cost_model_dataset(batch_size=4, hidden_space=4096, sample_num=10, warmup=3)
+    data_size_buffer, time_buffer = profile_comm.generate_cost_model_dataset(batch_size=32, hidden_space=4096, sample_num=5, warmup=3)
     rank = dist.get_rank()
     print(f"Rank {rank} communication times:")
     for pair, times in time_buffer.items():

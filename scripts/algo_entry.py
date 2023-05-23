@@ -61,7 +61,6 @@ def check_memory_budget_single_device(device_rank, device_name, layers_range, bi
         device_mem -= (time_mult_times * temp_tensor_mem)
     else:
         device_mem -= (time_mult_times * temp_later_decode)
-
     
     if i_to_j_mem > device_mem:
         print(f"memory budget exceeded for device {device_rank}, {i_to_j_mem} > {device_mem}")
@@ -151,13 +150,13 @@ def calculate_max_stage_lat(D, use_plan, \
             stage_lat += lat_prediction(lat_cost_model, D_name, b, s, i, atten_bit, ffn_bit, use_profiler_prediction=use_profiler_prediction)
         # next stage
         next_stage = (device_rank + 1) % len(D)
-        t_comm = comm_cost_model.predict_comm_time(device_rank, next_stage, comm_size * i)
+        t_comm = comm_cost_model.predict_comm_time(device_rank, next_stage, comm_size)
         # minmax throughput
         minmax_lat = max(minmax_lat, stage_lat, t_comm)
     return minmax_lat
 
 import math 
-def run_simu(sol, lat_cost_model, comm_cost_model, use_profiler_prediction, comm_size, mu_n):
+def run_simu(sol, lat_cost_model, comm_cost_model, use_profiler_prediction, mu_n, comm_multiplier):
     D = sol['D']
     use_plan = sol['use_plan']
     prefill_bz = sol['prefill_bz']
@@ -170,19 +169,22 @@ def run_simu(sol, lat_cost_model, comm_cost_model, use_profiler_prediction, comm
     cost_model_pack = (lat_cost_model, comm_cost_model)
     s = gen_config.s
     n = gen_config.n
+
+    comm_size_prefill = lat_cost_model.h1 * s * prefill_bz * 2 / 1024 / 1024 * comm_multiplier
+    comm_size_decode = lat_cost_model.h1 * 1 * bz_decode_max * 2 / 1024 / 1024 * comm_multiplier
+
     # average throughput should equals to 
     prefill_result = calculate_max_stage_lat(D, use_plan, \
-                                                    cost_model_pack, prefill_bz, s, 0, use_profiler_prediction, comm_size)
+                                                    cost_model_pack, prefill_bz, s, 0, use_profiler_prediction, comm_size_prefill)
     decode_result = calculate_max_stage_lat(D, use_plan, \
-                                                    cost_model_pack, bz_decode_max, 1, s + int(mu_n / 2), use_profiler_prediction, comm_size)
-    prefill_time = math.ceil(global_bz / prefill_bz + 1) * prefill_result
-    decode_time = math.ceil(global_bz / bz_decode_max + 1) * (mu_n-1) * decode_result
+                                                    cost_model_pack, bz_decode_max, 1, s + int(mu_n / 2), use_profiler_prediction,  comm_size_decode)
+    
+    prefill_scalar = 1 if prefill_bz == global_bz else math.ceil(global_bz / prefill_bz + 1)
+    prefill_time = prefill_scalar * prefill_result
+    decode_time = math.ceil(global_bz / bz_decode_max) * (mu_n-1) * decode_result
     # latency equals
     e2e_lat = prefill_time + decode_time
-    # print(math.ceil(global_bz / prefill_bz + 1), math.ceil(global_bz / bz_decode_max + 1))
-    # print(prefill_result, decode_result)
-    print("prefill_bz", prefill_bz, "bz_decode_max", bz_decode_max)
-    # print(prefill_time, decode_time, e2e_lat)
+    print(prefill_time, decode_time, e2e_lat)
     # remove maps
     if maps is not None:
         comm_cost_model.clear_device_rank_map() 
@@ -214,11 +216,11 @@ def main(args):
     config = args.config
     comm_cost_model_dir = f'{args.comm_cost_model_dir}/{device_info}'
     cost_model_store_path = None
-    model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
+    model_mem_estimator, comm_cost_model, lat_cost_model, T = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
                                                                                                      global_bz, micro_bz, s, n, \
                                                                                                   comm_cost_model_folder=comm_cost_model_dir)
     
-    args.init_pack = (model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size)
+    args.init_pack = (model_mem_estimator, comm_cost_model, lat_cost_model, T)
     lat_cost_model.update_profiled_result(args.lat_profile_dir)
     if args.fit:
         lat_cost_model.fit_regression_cost_model()
@@ -271,7 +273,7 @@ def main(args):
         check_memory_budget(sol, model_mem_estimator, name=sol_name)
         convert_to_adaqpipe_result2partitions(sol)
         result = run_simu(sol, lat_cost_model, comm_cost_model, \
-                            args.use_profiler_prediction, comm_size=comm_size, mu_n=mu_n)
+                            args.use_profiler_prediction, mu_n=mu_n, comm_multiplier=args.comm_multiplier)
         
         log_result(result, sol_name)
     

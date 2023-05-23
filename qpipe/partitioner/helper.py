@@ -42,7 +42,7 @@ def init_parameters_and_cost_models(config, device_names=[], device_numbers=[], 
 
     # estimators
     model_mem_estimator = create_mem_estimator(b, s, n, config)
-    comm_size = (b * 1 * h1 * 2) / 1024 / 1024 # MB
+    # comm_size = (b * 1 * h1 * 2) / 1024 / 1024 # MB
 
     single_device = False
     if len(device_names) == 1 and len(device_numbers) == 1 and device_numbers[0] == 1:
@@ -55,7 +55,7 @@ def init_parameters_and_cost_models(config, device_names=[], device_numbers=[], 
     else:
         lat_cost_model = LatCostModel(device_names, lat_cost_model_folder=cost_model_store_path)
         lat_cost_model.register_hyper_params(micro_b, s, n, h1, h2)
-    return model_mem_estimator, comm_cost_model, lat_cost_model, T, comm_size
+    return model_mem_estimator, comm_cost_model, lat_cost_model, T
 
 
 from .._globals import MEM_UNIT, RATIO_AVOID_OOM, CUDA_CONTEXT_MEM
