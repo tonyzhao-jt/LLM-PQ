@@ -212,8 +212,7 @@ class TensorWorkThread(threading.Thread):
                 self._queue_in.condition.notify_all()
             
             if self.on_device is not None:
-                if self.on_device is not None:
-                    tensor_in = to_device(tensor_in, self.on_device) # move to gpu if needed
+                tensor_in = to_device(tensor_in, self.on_device) # move to gpu if needed
                 tensor_out = self._callback.decode(tensor_in)
                 if self.device_index is None:
                     tensor_out = to_device(tensor_out, 'cpu') # move to cpu / test

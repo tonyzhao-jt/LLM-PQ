@@ -12,13 +12,13 @@ import lptorch
 from qllm.utils import (
     to_device_recursive
 )
-
 from qllm.models import create_empty_model
 from qllm.scheduler import DSScheduler
 
 CMD_STOP = 0
 CMD_SCHED = 1
 
+import qpipe
 from qpipe import (
     init_random_seed,
     fetch_prompts
@@ -28,7 +28,8 @@ from qpipe.logger import logger
 from qpipe.p2p import (
     init_env, DistP2pContext,
     handle_cmd, stop_event,
-    create_device_mesh
+    create_device_mesh,
+    new_nccl_group
 )
 from qpipe.thread import ThreadSafeCounter
 from qpipe.p2p.dist_pipe import (
@@ -68,7 +69,10 @@ def handle_results(final_intermediate_result) -> None:
             request_input_ids[request_id] = new_input_ids
             request_token = model_pre_and_post.preprocess_one_token(new_input_ids, concat_tokens, use_cache=True, request_id=request_id)
             logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
-            master_stage_context.enqueue_tensor(to_device_recursive(request_token, 'cpu'))
+            if args.nccl:
+                master_stage_context.enqueue_tensor(request_token)
+            else:
+                master_stage_context.enqueue_tensor(to_device_recursive(request_token, 'cpu'))
 
 
 def set_input_ids_globals(request_id, p_input_ids):
@@ -113,6 +117,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
             raise ValueError("sharding strategy is not set")
         else:
             loaded_llm_cpu._verify_shard_strategy(sharding_strategy)  
+    # communication group init with gloo
     with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=1800)}, handle_cmd) \
         as dist_ctx:
 
@@ -138,7 +143,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                         input_id_dict[request_id] = torch.cat([input_id_dict[request_id], current_sub_request_batch_ids['input_ids']], dim=0)
                     # print(current_sub_request_batch_ids['input_ids'].shape)
                     request_token = model_pre_and_post.preprocess(**current_sub_request_batch_ids, use_cache=True, request_id=request_id, batch_index=prefill_bs_index)
-                    request_token = to_device_recursive(request_token, 'cpu')
+                    # request_token = to_device_recursive(request_token, 'cpu')
                     data_chunks.append(request_token)
             for chunk_idx, input_id in enumerate(input_id_dict.values()):
                 set_input_ids_globals(chunk_idx, input_id)
@@ -172,9 +177,15 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
         module.on_device = f'cuda:{local_rank}'
         dist.barrier() # wait all device sharded finished.
 
+        # new a nccl group
+        if args.nccl:
+            nccl_group = new_nccl_group()
+            qpipe._globals.__PIPELINE__MODEL__PARALLEL__GROUP__ = nccl_group
+            qpipe._globals.__DEVICE__INDEX__ = local_rank
         with dist_p2p_pipeline_stage_factory(stage_ranks, data_rank, rank, stage_id, module,
                                                         handle_results) as stage_ctx:
 
+            
             if rank == data_rank:
                 master_stage_context = stage_ctx
                 # pipeline.rpc_register_forward_hook(forward_hook_to_cpu)
@@ -294,3 +305,6 @@ if __name__ == '__main__':
         model_pre_and_post = model_pre_and_post.cuda()
 
     run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
+
+
+    

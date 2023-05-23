@@ -9,7 +9,7 @@ import threading
 import time
 from typing import Any, Callable, List, Optional, Tuple, Type, Union
 from . import util
-from .env import init_env
+from .env import init_env, new_nccl_group
 from .comm import handle_cmd, stop_event
 from .device import create_device_mesh
 
@@ -70,7 +70,7 @@ class CommandThread(threading.Thread):
         while True:
             # contains (1) CMD enumeration and (2) an optional tensor count
             tensor_cmd = torch.zeros(2, dtype=torch.int, device=self.on_device)
-            ircv_req = dist.irecv(tensor=tensor_cmd, src=self.src_rank, tag=TAG_BASE_CMD)
+            ircv_req = dist.irecv(tensor=tensor_cmd, tag=TAG_BASE_CMD)
             ircv_req_t = util.DistRequestWaitDaemon(ircv_req)
             ircv_req_t.start()
             while ircv_req_t.is_alive():

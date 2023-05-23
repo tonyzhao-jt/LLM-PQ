@@ -15,3 +15,10 @@ def init_env():
     # torch set device
     torch.cuda.set_device(local_rank)
     return dist_cfg, None
+
+
+def new_nccl_group():
+    world_size = int(os.environ['WORLD_SIZE'])
+    # new a same group with the same worldsize
+    group = torch.distributed.new_group(list(range(world_size)), backend='nccl')
+    return group

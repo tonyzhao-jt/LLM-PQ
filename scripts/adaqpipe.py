@@ -68,7 +68,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
     # Define the objective function
     prefill_scalar = 1 if prefill_bz == global_bz else math.ceil(global_bz / prefill_bz + 1) # if equal, no waiting slot.
     prob += prefill_scalar * T_prefill + \
-          (math.ceil(global_bz / bz_decode_max)) * T_decode * (mu_n - 1) \
+          (math.ceil(global_bz / bz_decode_max) + 1) * T_decode * (mu_n - 1) \
           + theta * pulp.lpSum([omega[i][b] * y[(i, b)] for i in range(L) for b in range(B)])
 
     force_zero(l_prefill, z, prob)
@@ -83,7 +83,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
         prob += pulp.lpSum([z[(i, j, b)] * l_prefill[i][j][b] for i in range(L) for b in range(B)]) <= T_prefill_j[j]
         prob += pulp.lpSum([z[(i, j, b)] * l_decode[i][j][b] for i in range(L) for b in range(B)]) <= T_decode_j[j]
 
-        prob += T_prefill_j[j] >= comm_prefill[j] * s 
+        prob += T_prefill_j[j] >= comm_prefill[j] 
         prob += T_decode_j[j] >= comm_decode[j]
         prob += T_prefill >= T_prefill_j[j]
         prob += T_decode >= T_decode_j[j]
@@ -111,8 +111,11 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
                     if z[(i, j, b)].varValue > 0:
                         # print("z[{}, {}, {}] = {}".format(i, j, b, z[(i, j, b)].varValue))
                         result[i] = (j, b)
+        # min([v.varValue for k, v in z.items()])
+        # sum omega
+        # print("omega = {}".format(pulp.value(pulp.lpSum([omega[i][b] * y[(i, b)] for i in range(L) for b in range(B)]))))
         # print latency T_sum
-        T_sum = (math.ceil(global_bz / prefill_bz) + 1) * pulp.value(T_prefill) + \
+        T_sum = prefill_scalar * pulp.value(T_prefill) + \
           (math.ceil(global_bz / bz_decode_max) + 1) * pulp.value(T_decode) * (mu_n - 1)
         print("T_sum = {}".format(T_sum))
         print("Objective = {}".format(pulp.value(prob.objective)))
@@ -195,8 +198,8 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
     comm_decode = (model_mem_estimator.h1 * bz_decode_max * 1) * 2 / 1024 / 1024
     comm_decode = get_comm(current_D, comm_cost_model, comm_decode) * comm_multiplier
 
-    print('----- communication cost ---- ')
-    print(comm_prefill, comm_decode)
+    # print('----- communication cost ---- ')
+    # print(comm_prefill, comm_decode)
 
     return group_L, N, BITs, M_d, M, (l_prefill, l_decode), omega, (comm_prefill, comm_decode)
 
