@@ -107,7 +107,7 @@ if __name__ == '__main__':
         logits_processor = set_input_ids_globals(request_id, input_ids)
         # for prefill
         if prefill:
-            fake_final_intemediate = torch.rand([p_batch_size,p_prompt_length, h1]).cuda().half()
+            fake_final_intemediate = torch.rand([p_batch_size, p_prompt_length, h1]).cuda().half()
         else:
             # for decode
             fake_final_intemediate = torch.rand([p_batch_size, 1, h1]).cuda().half()
@@ -127,9 +127,9 @@ if __name__ == '__main__':
         final_intermediate = qllm_utils.to_device_recursive(final_intermediate, device=device)
         final_intermediate = qllm_utils.to_dtype_recursive(final_intermediate, dtype=torch.float16)
 
-        start = time.time()
         for _ in range(warmup):
             res = handle_results(final_intermediate, input_ids, logits_processor)
+        start = time.time()
         torch.cuda.synchronize()
         for _ in range(repeat):
             res = handle_results(final_intermediate, input_ids, logits_processor)
@@ -150,8 +150,10 @@ if __name__ == '__main__':
             for batch_size in [1, 2, 4, 8]:
                 # check whether entry has been profiled
                 if len(df[(df['batch_size'] == batch_size) & (df['prompt_length'] == prompt_length) & (df['stage'] == stage)]) > 0:
+                    print(f'batch_size: {batch_size}, prompt_length: {prompt_length}, stage: {stage} has been profiled')
                     continue
                 lat = run_prepose_profile(batch_size, prompt_length, prefill=stage==0)
+                print(f'batch_size: {batch_size}, prompt_length: {prompt_length}, stage: {stage}, latency: {lat}')
                 if pd.__version__ > '1.3.5':
                     df = df._append({
                         'model_name': model_name,
@@ -174,5 +176,41 @@ if __name__ == '__main__':
                         'stage': stage,
                         'time': lat
                     }, ignore_index=True)
-            df.to_csv(f'./{model_name}_{model_size}_prepose.csv', index=False)
+            df.to_csv(csv_file_name, index=False)
+
+    # decode
+    for stage in [1]: # prefill or not
+        for prompt_length in [128, 512]:
+            for past_seq_length_i in range(10, 110, 10):
+                past_seq_length = prompt_length + past_seq_length_i
+                for batch_size in [1, 2, 4, 8]:
+                    # check whether entry has been profiled
+                    if len(df[(df['batch_size'] == batch_size) & (df['prompt_length'] == past_seq_length) & (df['stage'] == stage)]) > 0:
+                        print(f'batch_size: {batch_size}, past_seq_length: {past_seq_length}, stage: {stage} has been profiled')
+                        continue
+                    lat = run_prepose_profile(batch_size, past_seq_length, prefill=stage==0)
+                    print(f'batch_size: {batch_size}, past_seq_length: {past_seq_length}, stage: {stage}, latency: {lat}')
+                    if pd.__version__ > '1.3.5':
+                        df = df._append({
+                            'model_name': model_name,
+                            'model_size': model_size,
+                            'h1': h1,
+                            'h2': h2,
+                            'batch_size': batch_size,
+                            'prompt_length': past_seq_length,
+                            'stage': stage,
+                            'time': lat
+                        }, ignore_index=True)
+                    else:
+                        df = df.append({
+                            'model_name': model_name,
+                            'model_size': model_size,
+                            'h1': h1,
+                            'h2': h2,
+                            'batch_size': batch_size,
+                            'prompt_length': past_seq_length,
+                            'stage': stage,
+                            'time': lat
+                        }, ignore_index=True)
+                df.to_csv(csv_file_name, index=False)
     

@@ -26,7 +26,8 @@ from qpipe.partitioner.helper import (
 
 from qpipe.utils import (
     get_default_decode_bz,
-    save_with_pickle, get_available_bits_pair
+    save_with_pickle, get_available_bits_pair,
+    get_factors
 )
 
 import pickle
@@ -253,12 +254,6 @@ def solve_ilp_for_best(T, current_D, cost_model_pack, bz_pack):
 # enumerate all devices combinations
 # enumerata all hybrid micro-batch combinations
 # micro-batch candidates
-def get_factors(x):
-    factors = []
-    for i in range(1, x + 1):
-        if x % i == 0:
-            factors.append(i)
-    return factors
 
 def enumerate_best_result(args):
     model_mem_estimator, comm_cost_model, lat_cost_model, T = args.init_pack 
