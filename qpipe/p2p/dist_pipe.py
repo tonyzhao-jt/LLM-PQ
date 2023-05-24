@@ -52,6 +52,33 @@ class AbstractTensorExchangeThread(threading.Thread):
         for hook, args in self._post_hooks:
             hook(tensors, *args)
 
+class SimpleQueueThread(AbstractTensorExchangeThread):
+    def __init__(self, lock_queue, work_queue, dst_func):
+        super().__init__()
+        self._dst_func = dst_func
+        self.lock_queue = lock_queue
+        self.work_queue = work_queue
+        # self.lock_queue = ConditionQueue(maxsize=1)
+        self._evt_stop_thread = threading.Event()
+    
+    def stop(self) -> None:
+        """Direct the thread to stop."""
+        self._evt_stop_thread.set()
+    
+    def run(self):
+        while self.lock_queue.empty():
+            # print("watiing")
+            time.sleep(0.001)
+        while True:
+            # get element from workqueue
+            with self.work_queue.condition:
+                while self.work_queue.empty():
+                    self.work_queue.condition.wait()
+                payload = self.work_queue.get(block=False)
+                self.work_queue.condition.notify_all()
+            # process element
+            self._dst_func(payload)
+
 class TensorSendThread(AbstractTensorExchangeThread):
     """Thread for sending tensors."""
 

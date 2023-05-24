@@ -219,7 +219,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
     
     qpipe._globals.__ROW__FIRST__RANK__ = same_row_ranks[0]
     
-    with DistP2pContext(('nccl',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=1800)}, handle_cmd) \
+    with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=1800)}, handle_cmd) \
         as dist_ctx:
         with dist_p2p_pipeline_stage_factory(same_row_ranks, data_stage, rank, stage_id, module,
                                                         handle_results) as stage_ctx:

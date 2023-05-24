@@ -33,16 +33,22 @@ from qpipe.p2p import (
 )
 from qpipe.thread import ThreadSafeCounter
 from qpipe.p2p.dist_pipe import (
-    dist_p2p_pipeline_stage_factory
+    dist_p2p_pipeline_stage_factory, SimpleQueueThread, ConditionQueue
 )
 
-master_stage_context = None
+import queue
+import time
 
+master_stage_context = None
 results_counter = ThreadSafeCounter()
+lock_queue = None
+work_queue = None
+simple_queue_thread = None
 final_result = {}
 request_input_ids = {}
 request_logit_processor = {}
 request_loop_counter = {}
+
 def handle_results(final_intermediate_result) -> None:
     request_id = final_intermediate_result[-2]
     if isinstance(request_id, torch.Tensor):
@@ -70,9 +76,14 @@ def handle_results(final_intermediate_result) -> None:
             request_token = model_pre_and_post.preprocess_one_token(new_input_ids, concat_tokens, use_cache=True, request_id=request_id)
             logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
             if args.nccl:
-                master_stage_context.enqueue_tensor(request_token)
+                payload = request_token
             else:
-                master_stage_context.enqueue_tensor(to_device_recursive(request_token, 'cpu'))
+                payload = to_device_recursive(request_token, 'cpu')
+            with work_queue.condition:
+                while work_queue.full():
+                    work_queue.condition.wait()
+                work_queue.put(payload)
+                work_queue.condition.notify_all()
 
 
 def set_input_ids_globals(request_id, p_input_ids):
@@ -107,6 +118,7 @@ def init_tokenizer():
 
 def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
     global master_stage_context
+    global simple_queue_thread, lock_queue, work_queue
     rank = dist_cfg.rank
     local_rank = dist_cfg.local_rank
     data_rank = 0 # by default, use rank 0 as the data rank
@@ -143,15 +155,16 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                         input_id_dict[request_id] = torch.cat([input_id_dict[request_id], current_sub_request_batch_ids['input_ids']], dim=0)
                     # print(current_sub_request_batch_ids['input_ids'].shape)
                     request_token = model_pre_and_post.preprocess(**current_sub_request_batch_ids, use_cache=True, request_id=request_id, batch_index=prefill_bs_index)
-                    # request_token = to_device_recursive(request_token, 'cpu')
+                    if not args.nccl:
+                        request_token = to_device_recursive(request_token, 'cpu')
                     data_chunks.append(request_token)
             for chunk_idx, input_id in enumerate(input_id_dict.values()):
                 set_input_ids_globals(chunk_idx, input_id)
             # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
-            batch_size = len(data_chunks)
-            print("Pipeline Data Loaded, with chunk size: ", batch_size)
-            for i in range(chunk_size):
-                print(data_chunks[i][0].shape)
+            prefill_cnt = len(data_chunks)
+            print("Pipeline Data Loaded, with data size: ", prefill_cnt)
+            # for i in range(prefill_cnt):
+            #     print(data_chunks[i][0].shape)
         
         # get stage
         if rank not in sharding_strategy:
@@ -188,6 +201,10 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
             
             if rank == data_rank:
                 master_stage_context = stage_ctx
+                lock_queue = ConditionQueue(maxsize=1)
+                work_queue = ConditionQueue(maxsize=chunk_size)
+                simple_queue_thread = SimpleQueueThread(lock_queue, work_queue, master_stage_context.enqueue_tensor)
+                simple_queue_thread.start() # start
                 # pipeline.rpc_register_forward_hook(forward_hook_to_cpu)
                 # pipeline.rpc_register_forward_pre_hook(forward_pre_hook_to_device)
                 tik_data = perf_counter()
@@ -198,7 +215,13 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                 # this only launch the tasks but not actually finish the tasks.
                 for data_chunk in data_chunks:
                     stage_ctx.enqueue_tensor(data_chunk)
-                results_counter.wait_gte(start_count + batch_size + chunk_size * (num_tokens_to_generate - 1))
+                
+                # unlock the queue
+                with lock_queue.condition:
+                    lock_queue.put(1)
+                    lock_queue.condition.notify_all()
+                results_counter.wait_gte(start_count + prefill_cnt + chunk_size * (num_tokens_to_generate - 1))
+
                 tok_data = perf_counter()
                 latency = tok_data - tik_data
                 # throughput  = bs * N(token generated) / latency
@@ -207,6 +230,10 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                 logger.info("Latency is %f, throughput is %f", latency, throughput)
                 logger.info('Token throughput is %f', token_throughput)
                 dist_ctx.cmd_broadcast(CMD_STOP)
+                # join the queue thread
+                lock_queue.join()
+                work_queue.join()
+                simple_queue_thread.join()
                 stop_event.set()
             else:
                 stop_event.wait()
@@ -219,7 +246,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_size", type=str, default="350m", help="model size")
     parser.add_argument("--model_name", type=str, default="opt", help="model name")
-    parser.add_argument("--bs_token", type=int, default=8, help="Global batch size for token")
+    parser.add_argument("--bs_token", type=int, default=32, help="Global batch size for token")
     parser.add_argument("--prompt_length", type=int, default=512, help="prompt length")
     parser.add_argument("--max_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
     parser.add_argument("--num_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
@@ -286,8 +313,7 @@ if __name__ == '__main__':
     bs_token = args.bs_token # how many sentence in a batch
 
     prefill_bs = 1
-    decoder_bss = [2, 3, 3]
-    decoder_bss = [2, 2, 2, 2]
+    decoder_bss = [8,8, 8, 8]
     chunk_size = len(decoder_bss)
     ds_scheduler = DSScheduler(prefill_bs, decoder_bss)
 

@@ -1,3 +1,5 @@
+export TOKENIZERS_PARALLELISM=0
+export OMP_NUM_THREADS=32
 available_methods=('adabits' 'pipeedge' 'uniform')
 rank=0
 model_size="13b"

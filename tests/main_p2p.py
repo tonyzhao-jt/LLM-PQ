@@ -19,6 +19,7 @@ from qllm.scheduler import DSScheduler
 CMD_STOP = 0
 CMD_SCHED = 1
 
+import qpipe
 from qpipe import (
     init_random_seed,
     fetch_prompts
@@ -28,15 +29,18 @@ from qpipe.logger import logger
 from qpipe.p2p import (
     init_env, DistP2pContext,
     handle_cmd, stop_event,
-    create_device_mesh
+    create_device_mesh,
+    new_nccl_group
 )
 from qpipe.thread import ThreadSafeCounter
 from qpipe.p2p.dist_pipe import (
-    dist_p2p_pipeline_stage_factory
+    dist_p2p_pipeline_stage_factory, SimpleQueueThread, ConditionQueue
 )
 
 master_stage_context = None
-
+lock_queue = None
+work_queue = None
+simple_queue_thread = None
 results_counter = ThreadSafeCounter()
 final_result = {}
 request_input_ids = {}
@@ -68,7 +72,16 @@ def handle_results(final_intermediate_result) -> None:
             request_input_ids[request_id] = new_input_ids
             request_token = model_pre_and_post.preprocess_one_token(new_input_ids, concat_tokens, use_cache=True, request_id=request_id)
             logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
-            master_stage_context.enqueue_tensor(to_device_recursive(request_token, 'cpu'))
+            print(request_token)
+            if args.nccl:
+                payload = request_token
+            else:
+                payload = to_device_recursive(request_token, 'cpu')
+            with work_queue.condition:
+                while work_queue.full():
+                    work_queue.condition.wait()
+                work_queue.put(payload)
+                work_queue.condition.notify_all()
 
 
 def set_input_ids_globals(request_id, p_input_ids):
@@ -103,6 +116,7 @@ def init_tokenizer():
 
 def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
     global master_stage_context
+    global prefill_cnt, simple_queue_thread, lock_queue, work_queue
     rank = dist_cfg.rank
     local_rank = dist_cfg.local_rank
     data_rank = 0 # by default, use rank 0 as the data rank
@@ -136,15 +150,16 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                     input_id_dict[request_id] = torch.cat([input_id_dict[request_id], current_sub_request_batch_ids['input_ids']], dim=0)
                 # print(current_sub_request_batch_ids['input_ids'].shape)
                 request_token = model_pre_and_post.preprocess(**current_sub_request_batch_ids, use_cache=True, request_id=request_id, batch_index=prefill_bs_index)
-                request_token = to_device_recursive(request_token, 'cpu')
+                if not args.nccl:
+                    request_token = to_device_recursive(request_token, 'cpu')
                 data_chunks.append(request_token)
         for chunk_idx, input_id in enumerate(input_id_dict.values()):
             set_input_ids_globals(chunk_idx, input_id)
         # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
-        batch_size = len(data_chunks)
-        print("Pipeline Data Loaded, with chunk size: ", batch_size)
-        for i in range(chunk_size):
-            print(data_chunks[i]['input_ids'].shape)
+        prefill_cnt = len(data_chunks)
+        print("Pipeline Data Loaded, with prefill cnts: ", prefill_cnt)
+        for i in range(prefill_cnt):
+            print(data_chunks[i][0].shape)
     
     # get stage
     if rank not in sharding_strategy:
@@ -172,11 +187,21 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
         as dist_ctx:
         dist.barrier() # wait all device sharded finished.
 
+        # new a nccl group
+        if args.nccl:
+            nccl_group = new_nccl_group()
+            qpipe._globals.__PIPELINE__MODEL__PARALLEL__GROUP__ = nccl_group
+            qpipe._globals.__DEVICE__INDEX__ = local_rank
+
         with dist_p2p_pipeline_stage_factory(stage_ranks, data_rank, rank, stage_id, module,
                                                         handle_results) as stage_ctx:
 
             if rank == data_rank:
                 master_stage_context = stage_ctx
+                lock_queue = ConditionQueue(maxsize=1)
+                work_queue = ConditionQueue(maxsize=chunk_size)
+                simple_queue_thread = SimpleQueueThread(lock_queue, work_queue, master_stage_context.enqueue_tensor)
+                simple_queue_thread.start() # start
                 # pipeline.rpc_register_forward_hook(forward_hook_to_cpu)
                 # pipeline.rpc_register_forward_pre_hook(forward_pre_hook_to_device)
                 tik_data = perf_counter()
@@ -187,7 +212,13 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                 # this only launch the tasks but not actually finish the tasks.
                 for data_chunk in data_chunks:
                     stage_ctx.enqueue_tensor(data_chunk)
-                results_counter.wait_gte(start_count + batch_size + chunk_size * (num_tokens_to_generate - 1))
+                
+                # unlock the queue
+                with lock_queue.condition:
+                    lock_queue.put(1)
+                    lock_queue.condition.notify_all()
+
+                results_counter.wait_gte(start_count + prefill_cnt + chunk_size * (num_tokens_to_generate - 1))
                 tok_data = perf_counter()
                 latency = tok_data - tik_data
                 # throughput  = bs * N(token generated) / latency
@@ -196,6 +227,10 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                 logger.info("Latency is %f, throughput is %f", latency, throughput)
                 logger.info('Token throughput is %f', token_throughput)
                 dist_ctx.cmd_broadcast(CMD_STOP)
+                # join the queue thread
+                lock_queue.join()
+                work_queue.join()
+                simple_queue_thread.join()
                 stop_event.set()
             else:
                 stop_event.wait()
@@ -208,7 +243,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_size", type=str, default="350m", help="model size")
     parser.add_argument("--model_name", type=str, default="opt", help="model name")
-    parser.add_argument("--bs_token", type=int, default=8, help="Global batch size for token")
+    parser.add_argument("--bs_token", type=int, default=32, help="Global batch size for token")
     parser.add_argument("--prompt_length", type=int, default=512, help="prompt length")
     parser.add_argument("--max_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
     parser.add_argument("--num_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
@@ -232,28 +267,75 @@ if __name__ == '__main__':
     caliber = lptorch.inner_caliber
     caliber.set_fake() 
     caliber.load_fake_calib_data(f'fake_calib_{model_name}_{model_size}.pkl')
-  
-    method = args.method
-    sol_file = f"sols_opt_13b_Tesla_V100-SXM2-32GB_1.pkl"
-    strat_folder = '/workspace/qpipe/scripts/part_strategy'
-    sols_path = f'{strat_folder}/{sol_file}'
-    sols = pickle.load(open(sols_path, "rb"))
-    num_tokens_to_generate = sols['mu_n']
-    max_tokens_to_generate = sols['n']
-    bs_token = sols['gloabl_bz'] # how many sentence in a batch
-    assert args.method in sols, f"no {args.method} in {sols_path}"
-    # get sols info
-    sol = sols[args.method]
-    sharding_strategy = sol['use_plan']
-    prefill_bs = sol['prefill_bz']
-    decoder_bss = sol['bz_decode_bss']
+
+    sharding_strategy = {
+        0: {},
+        1: {
+            0: {'shard': [0, 1], 'bits': [16, 16]},
+            1: {'shard': [0, 1], 'bits': [16, 16]},
+            2: {'shard': [0, 1], 'bits': [8, 16]},
+            3: {'shard': [0, 1], 'bits': [16, 16]},
+            4: {'shard': [0, 1], 'bits': [16, '8:tc-li']},
+            5: {'shard': [0, 1], 'bits': ['8:tc-li', 8]},
+            6: {'shard': [0, 1], 'bits': ['8:tc-li', 16]},
+            7: {'shard': [0, 1], 'bits': ['8:tc-li', 16]},
+            8: {'shard': [0], 'bits': [16]},
+        },
+        2: {
+            8: {'shard': [1], 'bits': [16]},
+            9: {'shard': [0,1], 'bits': ['8:tc-li', 8]},
+            10: {'shard': [0,1], 'bits': [8, 16]},
+            11: {'shard': [0,1], 'bits': [2, 16]},
+            # 350M
+            12: {'shard': [0,1], 'bits': ['8:tc-li', 16]},
+            13: {'shard': [0,1], 'bits': ['8:tc-li', 4]},
+            14: {'shard': [0,1], 'bits': [8, 16]},
+            15: {'shard': [0,1], 'bits': ['8:tc-li', 16]},
+            16: {'shard': [0,1], 'bits': ['8:tc-li', 8]},
+            17: {'shard': [0,1], 'bits': [16, 8]},
+        },
+        3:{
+            18: {'shard': [0,1], 'bits': [16, '8:tc-li']},
+            19: {'shard': [0,1], 'bits': ['8:tc-li', 16]},
+            20: {'shard': [0,1], 'bits': [8, '8:tc-li']},
+            21: {'shard': [0,1], 'bits': [4, '8:tc-li']},
+            22: {'shard': [0,1], 'bits': ['8:tc-li', 16]}, 
+            23: {'shard': [0,1], 'bits': [16,'8:tc-li']},
+        }
+    }
 
     # control the token generation
     max_tokens_to_generate = args.max_tokens_to_generate
+    num_tokens_to_generate = args.num_tokens_to_generate
     prompt_length = args.prompt_length
+    bs_token = args.bs_token # how many sentence in a batch
 
+    prefill_bs = 1
+    decoder_bss = [8, 8, 8, 8]
     chunk_size = len(decoder_bss)
     ds_scheduler = DSScheduler(prefill_bs, decoder_bss)
+  
+    # method = args.method
+    # sol_file = f"sols_opt_13b_Tesla_V100-SXM2-32GB_1.pkl"
+    # strat_folder = '/workspace/qpipe/scripts/part_strategy'
+    # sols_path = f'{strat_folder}/{sol_file}'
+    # sols = pickle.load(open(sols_path, "rb"))
+    # num_tokens_to_generate = sols['mu_n']
+    # max_tokens_to_generate = sols['n']
+    # bs_token = sols['gloabl_bz'] # how many sentence in a batch
+    # assert args.method in sols, f"no {args.method} in {sols_path}"
+    # # get sols info
+    # sol = sols[args.method]
+    # sharding_strategy = sol['use_plan']
+    # prefill_bs = sol['prefill_bz']
+    # decoder_bss = sol['bz_decode_bss']
+
+    # # control the token generation
+    # max_tokens_to_generate = args.max_tokens_to_generate
+    # prompt_length = args.prompt_length
+
+    # chunk_size = len(decoder_bss)
+    # ds_scheduler = DSScheduler(prefill_bs, decoder_bss)
 
     infer_configs = (bs_token, prompt_length, num_tokens_to_generate, chunk_size)
     loaded_llm_cpu._verify_shard_strategy(sharding_strategy)
