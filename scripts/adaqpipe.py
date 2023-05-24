@@ -169,7 +169,7 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
                                                                      use_profiler_prediction=use_profiler_prediction) * group_size
         l_decode[i, :, :] = get_latency_with_layer_device_bit_pair(current_D, BITs, lat_cost_model, bz_decode_max, 1, s + int(mu_n / 2), \
                                                                    use_profiler_prediction=use_profiler_prediction) * group_size
-    
+
     # omega
     omega = assign_omega_uniform(group_L, BITs)
     if omega_file is not None:

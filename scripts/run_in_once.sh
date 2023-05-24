@@ -9,7 +9,7 @@ python3 algo_entry.py --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --theta 0.01 --global_bz 32 --group 4 --ilp_time_limit 60
+ --theta 0.01 --global_bz 32 --group 4 --ilp_time_limit 60 --use_profiler_prediction
 
 # notice theta need to be changed
 # for 13b

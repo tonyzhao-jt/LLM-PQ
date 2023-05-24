@@ -72,7 +72,7 @@ def handle_results(final_intermediate_result) -> None:
             request_input_ids[request_id] = new_input_ids
             request_token = model_pre_and_post.preprocess_one_token(new_input_ids, concat_tokens, use_cache=True, request_id=request_id)
             logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
-            print(request_token)
+            # print(request_token)
             if args.nccl:
                 payload = request_token
             else:
@@ -158,8 +158,8 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
         # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
         prefill_cnt = len(data_chunks)
         print("Pipeline Data Loaded, with prefill cnts: ", prefill_cnt)
-        for i in range(prefill_cnt):
-            print(data_chunks[i][0].shape)
+        # for i in range(prefill_cnt):
+        #     print(data_chunks[i][0].shape)
     
     # get stage
     if rank not in sharding_strategy:
@@ -268,74 +268,28 @@ if __name__ == '__main__':
     caliber.set_fake() 
     caliber.load_fake_calib_data(f'fake_calib_{model_name}_{model_size}.pkl')
 
-    sharding_strategy = {
-        0: {},
-        1: {
-            0: {'shard': [0, 1], 'bits': [16, 16]},
-            1: {'shard': [0, 1], 'bits': [16, 16]},
-            2: {'shard': [0, 1], 'bits': [8, 16]},
-            3: {'shard': [0, 1], 'bits': [16, 16]},
-            4: {'shard': [0, 1], 'bits': [16, '8:tc-li']},
-            5: {'shard': [0, 1], 'bits': ['8:tc-li', 8]},
-            6: {'shard': [0, 1], 'bits': ['8:tc-li', 16]},
-            7: {'shard': [0, 1], 'bits': ['8:tc-li', 16]},
-            8: {'shard': [0], 'bits': [16]},
-        },
-        2: {
-            8: {'shard': [1], 'bits': [16]},
-            9: {'shard': [0,1], 'bits': ['8:tc-li', 8]},
-            10: {'shard': [0,1], 'bits': [8, 16]},
-            11: {'shard': [0,1], 'bits': [2, 16]},
-            # 350M
-            12: {'shard': [0,1], 'bits': ['8:tc-li', 16]},
-            13: {'shard': [0,1], 'bits': ['8:tc-li', 4]},
-            14: {'shard': [0,1], 'bits': [8, 16]},
-            15: {'shard': [0,1], 'bits': ['8:tc-li', 16]},
-            16: {'shard': [0,1], 'bits': ['8:tc-li', 8]},
-            17: {'shard': [0,1], 'bits': [16, 8]},
-        },
-        3:{
-            18: {'shard': [0,1], 'bits': [16, '8:tc-li']},
-            19: {'shard': [0,1], 'bits': ['8:tc-li', 16]},
-            20: {'shard': [0,1], 'bits': [8, '8:tc-li']},
-            21: {'shard': [0,1], 'bits': [4, '8:tc-li']},
-            22: {'shard': [0,1], 'bits': ['8:tc-li', 16]}, 
-            23: {'shard': [0,1], 'bits': [16,'8:tc-li']},
-        }
-    }
+  
+    method = args.method
+    sol_file = f"sols_opt_30b_Tesla_T4_3_Tesla_V100-SXM2-32GB_1.pkl"
+    strat_folder = '/opt/tiger/launch/qsync/QPipe/scripts/part_strategy/'
+    sols_path = f'{strat_folder}/{sol_file}'
+    sols = pickle.load(open(sols_path, "rb"))
+    num_tokens_to_generate = sols['mu_n']
+    max_tokens_to_generate = sols['n']
+    bs_token = sols['gloabl_bz'] # how many sentence in a batch
+    assert args.method in sols, f"no {args.method} in {sols_path}"
+    # get sols info
+    sol = sols[args.method]
+    sharding_strategy = sol['use_plan']
+    prefill_bs = sol['prefill_bz']
+    decoder_bss = sol['bz_decode_bss']
 
     # control the token generation
     max_tokens_to_generate = args.max_tokens_to_generate
-    num_tokens_to_generate = args.num_tokens_to_generate
     prompt_length = args.prompt_length
-    bs_token = args.bs_token # how many sentence in a batch
 
-    prefill_bs = 1
-    decoder_bss = [8, 8, 8, 8]
     chunk_size = len(decoder_bss)
     ds_scheduler = DSScheduler(prefill_bs, decoder_bss)
-  
-    # method = args.method
-    # sol_file = f"sols_opt_13b_Tesla_V100-SXM2-32GB_1.pkl"
-    # strat_folder = '/workspace/qpipe/scripts/part_strategy'
-    # sols_path = f'{strat_folder}/{sol_file}'
-    # sols = pickle.load(open(sols_path, "rb"))
-    # num_tokens_to_generate = sols['mu_n']
-    # max_tokens_to_generate = sols['n']
-    # bs_token = sols['gloabl_bz'] # how many sentence in a batch
-    # assert args.method in sols, f"no {args.method} in {sols_path}"
-    # # get sols info
-    # sol = sols[args.method]
-    # sharding_strategy = sol['use_plan']
-    # prefill_bs = sol['prefill_bz']
-    # decoder_bss = sol['bz_decode_bss']
-
-    # # control the token generation
-    # max_tokens_to_generate = args.max_tokens_to_generate
-    # prompt_length = args.prompt_length
-
-    # chunk_size = len(decoder_bss)
-    # ds_scheduler = DSScheduler(prefill_bs, decoder_bss)
 
     infer_configs = (bs_token, prompt_length, num_tokens_to_generate, chunk_size)
     loaded_llm_cpu._verify_shard_strategy(sharding_strategy)

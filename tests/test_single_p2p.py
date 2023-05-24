@@ -233,6 +233,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                 # join the queue thread
                 lock_queue.join()
                 work_queue.join()
+                simple_queue_thread.stop()
                 simple_queue_thread.join()
                 stop_event.set()
             else:
@@ -330,7 +331,17 @@ if __name__ == '__main__':
         model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
         model_pre_and_post = model_pre_and_post.cuda()
 
-    run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
+    from torch.profiler import profile, record_function, ProfilerActivity
+    with profile(
+        activities=[
+        ProfilerActivity.CPU, ProfilerActivity.CUDA], 
+        on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/test'),
+        record_shapes=True,
+        with_stack=True) as prof:
+        with record_function("model_inference"):
+            run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
+    print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
+    # prof.export_chrome_trace("trace.json")
 
 
     

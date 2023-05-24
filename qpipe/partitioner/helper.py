@@ -225,7 +225,7 @@ def lat_prediction(lat_cost_model, D_name, b, s, i, atten_bit, ffn_bit, use_prof
     else:
         atten_lat = lat_cost_model.predict_by_profiled_with_b_s_i_bit(D_name, 0, b, s, i, atten_bit)
         ffn_lat = lat_cost_model.predict_by_profiled_with_b_s_i_bit(D_name, 1, b, s, i, ffn_bit)
-    
+
     if atten_lat is None:
         atten_lat = 9999
     if ffn_lat is None:

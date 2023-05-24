@@ -93,7 +93,6 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
             request_id = 1
             if hasattr(decoder_layer, 'self_attention'):
                 attention_mod = decoder_layer.self_attention
-                
             else:
                 attention_mod = decoder_layer.self_attn
             
@@ -107,39 +106,51 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
             # Warmup
             for i in range(warmup):
                 decoder_layer(hidden_states)
-                torch.cuda.synchronize()
 
-            # Measure latency
-            latencies = []
+            torch.cuda.synchronize()
+            start = perf_counter()
             for i in range(repeat):
-                torch.cuda.synchronize()
-                start = perf_counter()
                 decoder_layer(hidden_states)
-                torch.cuda.synchronize()
-                end = perf_counter()
-                latencies.append(end - start)
+            torch.cuda.synchronize()
+            end = perf_counter()
+            lat_avg = (end - start) / repeat
+            # # Measure latency
+            # latencies = []
+            # for i in range(repeat):
+            #     torch.cuda.synchronize()
+            #     start = perf_counter()
+            #     decoder_layer(hidden_states)
+            #     torch.cuda.synchronize()
+            #     end = perf_counter()
+            #     latencies.append(end - start)
         else:
             causal_mask = causal_mask.cuda().bool()
             alibi = alibi.cuda().to(torch_dtype)
             # Warmup
             for i in range(warmup):
                 decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
-                torch.cuda.synchronize()
+            torch.cuda.synchronize()
 
             # Measure latency
-            latencies = []
+            start = perf_counter()
             for i in range(repeat):
-                torch.cuda.synchronize()
-                start = perf_counter()
                 decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
-                torch.cuda.synchronize()
-                end = perf_counter()
-                latencies.append(end - start)
+            torch.cuda.synchronize()
+            end = perf_counter()
+            lat_avg = (end - start) / repeat
+            # latencies = []
+            # for i in range(repeat):
+            #     torch.cuda.synchronize()
+            #     start = perf_counter()
+            #     decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
+            #     torch.cuda.synchronize()
+            #     end = perf_counter()
+            #     latencies.append(end - start)
             
 
         # Remove outliers and calculate average latency
-        latencies_without_outliers = remove_outliers(latencies)
-        lat_avg = sum(latencies_without_outliers) / len(latencies_without_outliers)
+        # latencies_without_outliers = remove_outliers(latencies)
+        # lat_avg = sum(latencies_without_outliers) / len(latencies_without_outliers)
 
         # calculate weight memory, kv memory and embedding memory
         mem_weight = get_size_cuda(decoder_layer, unit=mem_unit)
@@ -160,7 +171,8 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
     
     # del all the instances
     del decoder_layer
-    del attention_mod
+    if 0 in shard_strategy['shard']:
+        del attention_mod
     del fake_input
     if False not in availability_result:
         del hidden_states

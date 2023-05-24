@@ -8,6 +8,8 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip install gurobipy pulp sacrebleu
 RUN pip install -U scikit-learn scipy matplotlib statsmodels
+# ana
+RUN pip install torch_tb_profiler
 
 
 CMD echo "===========END========="
