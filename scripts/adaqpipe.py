@@ -285,6 +285,7 @@ def enumerate_best_result(args):
             # test 
             bz_pack = (global_bz, prefill_bz, bz_decode_max)
             res = solve_ilp_for_best(T, current_D, cost_model_pack, bz_pack)
+            # print(res['obj'], best_plan['obj'])
             if res['obj'] < best_plan['obj']:
                 print("Better Plan Generated")
                 best_plan = {

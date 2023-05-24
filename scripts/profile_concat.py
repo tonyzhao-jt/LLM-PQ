@@ -1,61 +1,178 @@
 import argparse
 import os 
-from qllm.models import create_empty_model
+from qllm.models import create_empty_model, create_model_config, return_h1_h2
+import qllm.utils as qllm_utils
 import torch
 import time
+import pandas as pd
+from qpipe.utils import get_device_name_and_mem
 def parse_args():
-    # add argparser for model name and model_size
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model_size", type=str, default="350m", help="model size")
-    parser.add_argument("--model_name", type=str, default="opt", help="model name")
-    parser.add_argument("--bs_token", type=int, default=32, help="Global batch size for token")
-    parser.add_argument("--prompt_length", type=int, default=512, help="prompt length")
-    parser.add_argument("--max_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
-    parser.add_argument("--num_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
-    parser.add_argument("--nccl", action='store_true', default=False, help="use nccl")
-    parser.parse_args()
+    parser = argparse.ArgumentParser(description='Profile a transformer model')
+    parser.add_argument('--model-name', type=str, default='opt', help='model name')
+    parser.add_argument('--model-size', type=str, default='175b', help='Size of the transformer model')
+    parser.add_argument('--batch-size', type=int, default=32, help='Batch size range(1,32)')
+    parser.add_argument('--prompt_length', type=int, default=1, help='Length of input sequence')
+    parser.add_argument('--step', type=int, default=1, help='Profiled step')
+    parser.add_argument('--repeat', type=int, default=100, help='Number of iterations to profile')
+    parser.add_argument('--warmup', type=int, default=10, help='Number of warmup iterations')
+    parser.add_argument('--bit', type=str, default='8:tc', help='Precision bit setting')
     args = parser.parse_args()
     return args
 
+
+def handle_results(final_intermediate_result, input_ids, logits_processor) -> None:
+    request_id = final_intermediate_result[-2]
+    if isinstance(request_id, torch.Tensor):
+        request_id = request_id.item()
+
+    outputs = model_pre_and_post.postprocess(final_intermediate_result, None)
+    next_token_logits = outputs.logits[:, -1, :]
+    next_tokens_scores = logits_processor(input_ids, next_token_logits)
+    next_tokens = torch.argmax(next_tokens_scores, dim=-1)
+    if len(next_tokens.shape) == 1:
+        next_tokens = next_tokens.view(-1,1)
+    new_input_ids = torch.cat([input_ids, next_tokens], dim=-1)
+    # new_input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
+    request_token = model_pre_and_post.preprocess_one_token(new_input_ids, next_tokens, use_cache=True, request_id=request_id)
+
+def set_input_ids_globals(request_id, p_input_ids):
+    generation_config = model_pre_and_post.generation_config
+    inputs_tensor, model_input_name, model_kwargs = model_pre_and_post._prepare_model_inputs(
+        p_input_ids, generation_config.bos_token_id, {}
+    )
+    input_ids_seq_length = p_input_ids.shape[-1]
+    logits_processor = LogitsProcessorList()
+    # 8. prepare distribution pre_processing samplers
+    logits_processor = model_pre_and_post._get_logits_processor(
+        generation_config=generation_config,
+        input_ids_seq_length=input_ids_seq_length,
+        encoder_input_ids=inputs_tensor,
+        prefix_allowed_tokens_fn=None,
+        logits_processor=logits_processor,
+    )
+    return logits_processor
+
+from transformers import LogitsProcessorList
+from transformers import (
+    AutoTokenizer
+)
+
+from qpipe import (
+    fetch_prompts
+)
+    
+def init_tokenizer(model_name):
+    if model_name == 'opt':
+        return AutoTokenizer.from_pretrained("facebook/opt-66b")
+    elif model_name == 'bloom':
+        return AutoTokenizer.from_pretrained("bigscience/bloom")
+    
 if __name__ == '__main__':
     # set env
-    # os.environ['SET_DECODERS_META'] = "1"
-    # os.environ['PERF_MODE'] = "1"
-    # args = parse_args()
-    # # test case
-    # model_name = args.model_name
-    # model_size = args.model_size
-    # loaded_llm_cpu = create_empty_model(model_name, model_size)
+    os.environ['SET_DECODERS_META'] = "1"
+    os.environ['PERF_MODE'] = "1"
+    args = parse_args()
+    # test case
+    model_name = args.model_name
+    model_size = args.model_size
+    batch_size = args.batch_size
+    prompt_length = args.prompt_length
+    loaded_llm_cpu = create_empty_model(model_name, model_size)
+    tokenizer = init_tokenizer(model_name)
+    config = create_model_config(model_name, model_size)
+    h1, h2 = return_h1_h2(config)
+    device_name, device_mem, _ = get_device_name_and_mem()
 
-    # loaded_llm_cpu.eval()
-    # loaded_llm_cpu.cuda()
+    loaded_llm_cpu.eval()
+    loaded_llm_cpu.cuda()
 
-    # all token size
-    # all_token_size = []
-    # # create token concat
-    # for i in range(args.num_tokens_togenerate):
-    #     token_size = [args.bs_token, i + args.prompt_length]
+    # generate input_ids with the next tokens
+    # two cases 
+    # 1. prefill stage, the intermediate should equal to the prompt length
+    # 2. decode stage, seq = 1, past seq length = s + i
+    repeat = args.repeat
+    warmup = args.warmup
+
+    request_id = 0
+    model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
+    model_pre_and_post = model_pre_and_post.cuda()
+    generation_config = model_pre_and_post.generation_config
+
+    def run_prepose_profile(p_batch_size, p_prompt_length, prefill=False):
+        device = torch.device("cuda:0")
+        sample_texts = fetch_prompts(batch_size, prompt_length)
+        input_ids = dict(tokenizer.batch_encode_plus(sample_texts, padding='max_length', max_length=prompt_length, return_tensors="pt"))
+        input_ids = qllm_utils.to_device_recursive(input_ids, device=device)
+        input_ids = input_ids['input_ids']
+        logits_processor = set_input_ids_globals(request_id, input_ids)
+        # for prefill
+        if prefill:
+            fake_final_intemediate = torch.rand([p_batch_size,p_prompt_length, h1]).cuda().half()
+        else:
+            # for decode
+            fake_final_intemediate = torch.rand([p_batch_size, 1, h1]).cuda().half()
+
+        # construct input for 
+        if model_name == 'opt':
+            # 6 entries
+            final_intermediate = [fake_final_intemediate, None, None, None, request_id, None]
+        
+        if model_name == 'bloom':
+            # 7 entries
+            final_intermediate = [fake_final_intemediate, None, None, None, None, request_id, None]
+
+        device = torch.device("cuda:0")
+        model_pre_and_post.return_dict = True
+        final_intermediate = qllm_utils.object_to_tensor(final_intermediate)
+        final_intermediate = qllm_utils.to_device_recursive(final_intermediate, device=device)
+        final_intermediate = qllm_utils.to_dtype_recursive(final_intermediate, dtype=torch.float16)
+
+        start = time.time()
+        for _ in range(warmup):
+            res = handle_results(final_intermediate, input_ids, logits_processor)
+        torch.cuda.synchronize()
+        for _ in range(repeat):
+            res = handle_results(final_intermediate, input_ids, logits_processor)
+        torch.cuda.synchronize()
+        end = time.time()
+        return (end - start) / repeat * 1000
     
-    bs = 8
-    token_size = [1, 1]
-    token_prev = torch.rand([bs, 512]).cuda()
-    cnt = 10
-    # create token
-    tokens = [torch.rand(token_size).cuda() for i in range(bs)]
-    # concate
-    start = time.time()
-    torch.cuda.synchronize()
-    for _ in range(cnt):
-        new_tokens = torch.cat(tokens, dim=0)
-    torch.cuda.synchronize()
-    end = time.time()
-    print(end-start)
 
-    # # create token
-    start = time.time()
-    torch.cuda.synchronize()
-    for _ in range(cnt):
-        tokens = torch.cat([new_tokens, token_prev], dim=-1)
-    torch.cuda.synchronize()
-    end = time.time()
-    print(end-start)
+    # pandas columns
+    columns = ['model_name', 'model_size', 'h1', 'h2', 'batch_size', 'prompt_length', 'stage', 'time']
+    csv_file_name = f'./{device_name}_{model_size}_prepose.csv'
+    if os.path.exists(csv_file_name):
+        df = pd.read_csv(csv_file_name)
+    else:
+        df = pd.DataFrame(columns=columns)
+    for stage in [0, 1]: # prefill or not
+        for prompt_length in [128, 512]:
+            for batch_size in [1, 2, 4, 8]:
+                # check whether entry has been profiled
+                if len(df[(df['batch_size'] == batch_size) & (df['prompt_length'] == prompt_length) & (df['stage'] == stage)]) > 0:
+                    continue
+                lat = run_prepose_profile(batch_size, prompt_length, prefill=stage==0)
+                if pd.__version__ > '1.3.5':
+                    df = df._append({
+                        'model_name': model_name,
+                        'model_size': model_size,
+                        'h1': h1,
+                        'h2': h2,
+                        'batch_size': batch_size,
+                        'prompt_length': prompt_length,
+                        'stage': stage,
+                        'time': lat
+                    }, ignore_index=True)
+                else:
+                    df = df.append({
+                        'model_name': model_name,
+                        'model_size': model_size,
+                        'h1': h1,
+                        'h2': h2,
+                        'batch_size': batch_size,
+                        'prompt_length': prompt_length,
+                        'stage': stage,
+                        'time': lat
+                    }, ignore_index=True)
+            df.to_csv(f'./{model_name}_{model_size}_prepose.csv', index=False)
+    

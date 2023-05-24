@@ -110,7 +110,7 @@ def set_input_ids_globals(request_id, p_input_ids):
 from datetime import timedelta
 
 
-def init_tokenizer():
+def init_tokenizer(model_name):
     if model_name == 'opt':
         return AutoTokenizer.from_pretrained("facebook/opt-66b")
     elif model_name == 'bloom':
@@ -169,7 +169,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
     if rank == data_rank:
         device = torch.device(f'cuda:{local_rank}')
         # init tokenizer
-        tokenizer = init_tokenizer()
+        tokenizer = init_tokenizer(model_name)
         data_chunks = []
         sample_texts = fetch_prompts(bs_token, prompt_length)
         sample_text_dict = ds_scheduler.split_list_of_prompts(sample_texts)

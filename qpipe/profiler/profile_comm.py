@@ -117,9 +117,10 @@ def fit_cost_model(dataset: Tuple[Dict[str, List[Tensor]], Dict[str, List[float]
     time_buffer = to_device_recursive(time_buffer, 'cpu')
 
     for pair_key in data_size_buffer.keys():
-        slope_vent, intercept_vent = np.polyfit(data_size_buffer[pair_key], time_buffer[pair_key], deg=1) # to prevent negative value, we use alpha-only model
+        # slope_vent, intercept_vent = np.polyfit(data_size_buffer[pair_key], time_buffer[pair_key], deg=1) # to prevent negative value, we use alpha-only model
                                                                               # alpha-beta model (y = alpha * x + beta)
-        cost_model[pair_key] = slope_vent
+        model = np.polyfit(data_size_buffer[pair_key], time_buffer[pair_key], deg=1)
+        cost_model[pair_key] = model
     return cost_model
 
 
