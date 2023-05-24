@@ -70,6 +70,7 @@ def handle_results(final_intermediate_result) -> None:
         # print(flag, concat_tokens.shape)
         request_loop_counter[request_id] += 1
         new_input_ids = torch.cat([input_ids, concat_tokens], dim=-1)
+
         # new_input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
         if request_loop_counter[request_id] < num_tokens_to_generate:
             request_input_ids[request_id] = new_input_ids
@@ -115,6 +116,44 @@ def init_tokenizer():
         return AutoTokenizer.from_pretrained("facebook/opt-66b")
     elif model_name == 'bloom':
         return AutoTokenizer.from_pretrained("bigscience/bloom")
+    
+
+def run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=None):
+    global lock_queue, work_queue, simple_queue_thread, num_tokens_to_generate
+    if sample_num is not None:
+        num_tokens_to_generate = sample_num
+    lock_queue = ConditionQueue(maxsize=1)
+    work_queue = ConditionQueue(maxsize=chunk_size)
+    simple_queue_thread = SimpleQueueThread(lock_queue, work_queue, master_stage_context.enqueue_tensor)
+    simple_queue_thread.start() # start
+    ds_scheduler.reset_status()
+    # set global vars.
+    for chunk_idx, input_id in enumerate(input_id_dict.values()):
+        set_input_ids_globals(chunk_idx, input_id)
+    prefill_cnt = len(data_chunks)
+    results_counter.set(0) # reset
+
+    tik_data = perf_counter()
+    logger.info("start pipe data")
+    start_count = results_counter.value
+    # this only launch the tasks but not actually finish the tasks.
+    for data_chunk in data_chunks:
+        stage_ctx.enqueue_tensor(data_chunk)
+    
+    # unlock the queue
+    with lock_queue.condition:
+        lock_queue.put(1)
+        lock_queue.condition.notify_all()
+    results_counter.wait_gte(start_count + prefill_cnt + chunk_size * (num_tokens_to_generate - 1))
+
+    tok_data = perf_counter()
+    latency = tok_data - tik_data
+    # throughput  = bs * N(token generated) / latency
+    throughput = bs_token / latency
+    token_throughput = throughput * num_tokens_to_generate
+    logger.info("Latency is %f, throughput is %f", latency, throughput)
+    logger.info('Token throughput is %f', token_throughput)
+
 
 def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
     global master_stage_context
@@ -133,6 +172,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
     with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=1800)}, handle_cmd) \
         as dist_ctx:
 
+        input_id_dict, data_chunks = None, None
         if rank == data_rank:
             device = torch.device(f'cuda:{local_rank}')
             # init tokenizer
@@ -158,13 +198,6 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                     if not args.nccl:
                         request_token = to_device_recursive(request_token, 'cpu')
                     data_chunks.append(request_token)
-            for chunk_idx, input_id in enumerate(input_id_dict.values()):
-                set_input_ids_globals(chunk_idx, input_id)
-            # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
-            prefill_cnt = len(data_chunks)
-            print("Pipeline Data Loaded, with data size: ", prefill_cnt)
-            # for i in range(prefill_cnt):
-            #     print(data_chunks[i][0].shape)
         
         # get stage
         if rank not in sharding_strategy:
@@ -197,48 +230,27 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
             qpipe._globals.__DEVICE__INDEX__ = local_rank
         with dist_p2p_pipeline_stage_factory(stage_ranks, data_rank, rank, stage_id, module,
                                                         handle_results) as stage_ctx:
-
+            
             
             if rank == data_rank:
                 master_stage_context = stage_ctx
-                lock_queue = ConditionQueue(maxsize=1)
-                work_queue = ConditionQueue(maxsize=chunk_size)
-                simple_queue_thread = SimpleQueueThread(lock_queue, work_queue, master_stage_context.enqueue_tensor)
-                simple_queue_thread.start() # start
-                # pipeline.rpc_register_forward_hook(forward_hook_to_cpu)
-                # pipeline.rpc_register_forward_pre_hook(forward_pre_hook_to_device)
-                tik_data = perf_counter()
-                # start results monitoring - see comments in handle_results
-                # this call is asynchronous - wait for results to get end-to-end timings
-                logger.info("start pipe data")
-                start_count = results_counter.value
-                # this only launch the tasks but not actually finish the tasks.
-                for data_chunk in data_chunks:
-                    stage_ctx.enqueue_tensor(data_chunk)
+                original_num_tokens_to_generate = num_tokens_to_generate
+                run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=warmup_tokens)
+                dist.barrier()
+                module._reset_kv_status()
                 
-                # unlock the queue
-                with lock_queue.condition:
-                    lock_queue.put(1)
-                    lock_queue.condition.notify_all()
-                results_counter.wait_gte(start_count + prefill_cnt + chunk_size * (num_tokens_to_generate - 1))
-
-                tok_data = perf_counter()
-                latency = tok_data - tik_data
-                # throughput  = bs * N(token generated) / latency
-                throughput = bs_token / latency
-                token_throughput = throughput * num_tokens_to_generate
-                logger.info("Latency is %f, throughput is %f", latency, throughput)
-                logger.info('Token throughput is %f', token_throughput)
+                dist.barrier()
+                run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=original_num_tokens_to_generate)
                 dist_ctx.cmd_broadcast(CMD_STOP)
                 # join the queue thread
-                lock_queue.join()
-                work_queue.join()
                 simple_queue_thread.stop()
                 simple_queue_thread.join()
                 stop_event.set()
             else:
+                dist.barrier()
+                module._reset_kv_status()
+                dist.barrier()
                 stop_event.wait()
-        
     pass
 
 import argparse
@@ -251,6 +263,7 @@ def parse_args():
     parser.add_argument("--prompt_length", type=int, default=512, help="prompt length")
     parser.add_argument("--max_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
     parser.add_argument("--num_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
+    parser.add_argument("--warmup_tokens", type=int, default=2, help="warmup")
     parser.add_argument("--nccl", action='store_true', default=False, help="use nccl")
     parser.parse_args()
     args = parser.parse_args()
@@ -310,6 +323,7 @@ if __name__ == '__main__':
     # control the token generation
     max_tokens_to_generate = args.max_tokens_to_generate
     num_tokens_to_generate = args.num_tokens_to_generate
+    warmup_tokens = args.warmup_tokens
     prompt_length = args.prompt_length
     bs_token = args.bs_token # how many sentence in a batch
 
@@ -331,17 +345,18 @@ if __name__ == '__main__':
         model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
         model_pre_and_post = model_pre_and_post.cuda()
 
-    from torch.profiler import profile, record_function, ProfilerActivity
-    with profile(
-        activities=[
-        ProfilerActivity.CPU, ProfilerActivity.CUDA], 
-        on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/test'),
-        record_shapes=True,
-        with_stack=True) as prof:
-        with record_function("model_inference"):
-            run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
-    print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
-    # prof.export_chrome_trace("trace.json")
+    run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
+    # from torch.profiler import profile, record_function, ProfilerActivity
+    # with profile(
+    #     activities=[
+    #     ProfilerActivity.CPU, ProfilerActivity.CUDA], 
+    #     on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/test'),
+    #     record_shapes=True,
+    #     with_stack=True) as prof:
+    #     with record_function("model_inference"):
+    #         run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
+    # print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
+    # # prof.export_chrome_trace("trace.json")
 
 
     

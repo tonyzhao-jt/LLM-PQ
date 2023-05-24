@@ -10,9 +10,11 @@ from qpipe._globals import __PIPELINE__MODEL__PARALLEL__GROUP__
 
 from .TYPES import *
 sched_q = queue.Queue()
+reset_q = queue.Queue()
 stop_event = threading.Event()
 CMD_STOP = 0
 CMD_SCHED = 1
+CMD_RESET = 2
 def handle_cmd(cmd: int, tensors: Tuple[torch.Tensor, ...]) -> None:
     """Process received commands."""
     if cmd == CMD_STOP:
@@ -21,6 +23,9 @@ def handle_cmd(cmd: int, tensors: Tuple[torch.Tensor, ...]) -> None:
     elif cmd == CMD_SCHED:
         logger.info("handle_cmd: sched")
         sched_q.put(tuple(t.tolist() for t in tensors))
+    elif cmd == CMD_RESET:
+        logger.info("handle_cmd: reset")
+        reset_q.put(tensors[0].item())
     else:
         logger.warning("handle_cmd: Unknown command: %s", cmd)
 

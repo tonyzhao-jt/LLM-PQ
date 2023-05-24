@@ -114,6 +114,42 @@ def init_tokenizer():
     elif model_name == 'bloom':
         return AutoTokenizer.from_pretrained("bigscience/bloom")
 
+def run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=None):
+    global lock_queue, work_queue, simple_queue_thread, num_tokens_to_generate
+    if sample_num is not None:
+        num_tokens_to_generate = sample_num
+    lock_queue = ConditionQueue(maxsize=1)
+    work_queue = ConditionQueue(maxsize=chunk_size)
+    simple_queue_thread = SimpleQueueThread(lock_queue, work_queue, master_stage_context.enqueue_tensor)
+    simple_queue_thread.start() # start
+    ds_scheduler.reset_status()
+    # set global vars.
+    for chunk_idx, input_id in enumerate(input_id_dict.values()):
+        set_input_ids_globals(chunk_idx, input_id)
+    prefill_cnt = len(data_chunks)
+    results_counter.set(0) # reset
+
+    tik_data = perf_counter()
+    logger.info("start pipe data")
+    start_count = results_counter.value
+    # this only launch the tasks but not actually finish the tasks.
+    for data_chunk in data_chunks:
+        stage_ctx.enqueue_tensor(data_chunk)
+    
+    # unlock the queue
+    with lock_queue.condition:
+        lock_queue.put(1)
+        lock_queue.condition.notify_all()
+    results_counter.wait_gte(start_count + prefill_cnt + chunk_size * (num_tokens_to_generate - 1))
+
+    tok_data = perf_counter()
+    latency = tok_data - tik_data
+    # throughput  = bs * N(token generated) / latency
+    throughput = bs_token / latency
+    token_throughput = throughput * num_tokens_to_generate
+    logger.info("Latency is %f, throughput is %f", latency, throughput)
+    logger.info('Token throughput is %f', token_throughput)
+
 def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
     global master_stage_context
     global prefill_cnt, simple_queue_thread, lock_queue, work_queue
@@ -198,41 +234,22 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
 
             if rank == data_rank:
                 master_stage_context = stage_ctx
-                lock_queue = ConditionQueue(maxsize=1)
-                work_queue = ConditionQueue(maxsize=chunk_size)
-                simple_queue_thread = SimpleQueueThread(lock_queue, work_queue, master_stage_context.enqueue_tensor)
-                simple_queue_thread.start() # start
-                # pipeline.rpc_register_forward_hook(forward_hook_to_cpu)
-                # pipeline.rpc_register_forward_pre_hook(forward_pre_hook_to_device)
-                tik_data = perf_counter()
-                # start results monitoring - see comments in handle_results
-                # this call is asynchronous - wait for results to get end-to-end timings
-                logger.info("start pipe data")
-                start_count = results_counter.value
-                # this only launch the tasks but not actually finish the tasks.
-                for data_chunk in data_chunks:
-                    stage_ctx.enqueue_tensor(data_chunk)
+                original_num_tokens_to_generate = num_tokens_to_generate
+                run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=warmup_tokens)
+                dist.barrier()
+                module._reset_kv_status()
                 
-                # unlock the queue
-                with lock_queue.condition:
-                    lock_queue.put(1)
-                    lock_queue.condition.notify_all()
-
-                results_counter.wait_gte(start_count + prefill_cnt + chunk_size * (num_tokens_to_generate - 1))
-                tok_data = perf_counter()
-                latency = tok_data - tik_data
-                # throughput  = bs * N(token generated) / latency
-                throughput = bs_token / latency
-                token_throughput = throughput * num_tokens_to_generate
-                logger.info("Latency is %f, throughput is %f", latency, throughput)
-                logger.info('Token throughput is %f', token_throughput)
+                dist.barrier()
+                run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=original_num_tokens_to_generate)
                 dist_ctx.cmd_broadcast(CMD_STOP)
                 # join the queue thread
-                lock_queue.join()
-                work_queue.join()
+                simple_queue_thread.stop()
                 simple_queue_thread.join()
                 stop_event.set()
             else:
+                dist.barrier()
+                module._reset_kv_status()
+                dist.barrier()
                 stop_event.wait()
         
     pass
@@ -248,6 +265,7 @@ def parse_args():
     parser.add_argument("--max_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
     parser.add_argument("--num_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
     parser.add_argument("--nccl", action='store_true', default=False, help="use nccl")
+    parser.add_argument("--warmup_tokens", type=int, default=2, help="warmup")
     parser.add_argument("--method", type=str, default="adaqpipe", help="method of sched")
     parser.parse_args()
     args = parser.parse_args()
@@ -286,6 +304,7 @@ if __name__ == '__main__':
 
     # control the token generation
     max_tokens_to_generate = args.max_tokens_to_generate
+    warmup_tokens = args.warmup_tokens
     prompt_length = args.prompt_length
 
     chunk_size = len(decoder_bss)

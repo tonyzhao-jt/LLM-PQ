@@ -4,6 +4,7 @@ import torch
 from qllm.utils import to_device_recursive
 import lptorch
 from time import perf_counter
+import time 
 from ..utils import get_size_cuda, get_iter_variable_size
 import copy
 import numpy as np
@@ -108,12 +109,14 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
                 decoder_layer(hidden_states)
 
             torch.cuda.synchronize()
-            start = perf_counter()
+            # start = perf_counter()
+            start = time.time()
             for i in range(repeat):
                 decoder_layer(hidden_states)
             torch.cuda.synchronize()
-            end = perf_counter()
-            lat_avg = (end - start) / repeat
+            # end = perf_counter()
+            end = time.time()
+            lat_avg = (end - start) / repeat * 1000 # in ms
             # # Measure latency
             # latencies = []
             # for i in range(repeat):
@@ -130,14 +133,14 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
             for i in range(warmup):
                 decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
             torch.cuda.synchronize()
-
             # Measure latency
-            start = perf_counter()
+            start = time.time()
             for i in range(repeat):
                 decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
             torch.cuda.synchronize()
-            end = perf_counter()
-            lat_avg = (end - start) / repeat
+            # end = perf_counter()
+            end = time.time()
+            lat_avg = (end - start) / repeat * 1000
             # latencies = []
             # for i in range(repeat):
             #     torch.cuda.synchronize()
