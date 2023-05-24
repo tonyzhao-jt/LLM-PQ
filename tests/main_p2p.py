@@ -69,6 +69,8 @@ def handle_results(final_intermediate_result) -> None:
         new_input_ids = torch.cat([input_ids, concat_tokens], dim=-1)
         # new_input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
         if request_loop_counter[request_id] < num_tokens_to_generate:
+            if request_loop_counter[request_id] == 0:
+                return # do nothing
             request_input_ids[request_id] = new_input_ids
             request_token = model_pre_and_post.preprocess_one_token(new_input_ids, concat_tokens, use_cache=True, request_id=request_id)
             logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
