@@ -21,6 +21,7 @@ def common_argparser():
     parser.add_argument('--use_profiler_prediction', action='store_true', help='use profiler prediction')
     parser.add_argument('--comm_cost_model_dir', type=str, default='/workspace/qpipe/scripts/comm_cost_model/')
     parser.add_argument('--lat_profile_dir', type=str, default='/workspace/qpipe/scripts/lat_profiled_result')
+    parser.add_argument('--lat_prepost_profile_dir', type=str, default='/workspace/qpipe/scripts/lat_prepost_profiled_result')
     parser.add_argument('--store_folder', type=str, default='/workspace/qpipe/scripts/part_strategy')
     # ilp control
     # different seed result in different performance
@@ -28,6 +29,7 @@ def common_argparser():
     parser.add_argument('--group_size', type=int, default=1) # when search space is too large, need to group
     parser.add_argument('--ilp_tolerance', type=float, default=None)
     parser.add_argument('--ilp_time_limit', type=int, default=20)
+    parser.add_argument('--adapp_group_size', type=int, default=1)
     # algo control
     parser.add_argument('--pe_bit', type=int, default=8)
     parser.add_argument('--uniform_bit', type=int, default=8)
@@ -84,7 +86,7 @@ def common_argparser():
 import pulp
 import gurobipy as gp
 import os
-def ilp_env():
+def ilp_env(timeLimit=None):
     # check whether file exists under 
     path = "/opt/gurobi/"
     if not os.path.exists(path):
@@ -93,6 +95,8 @@ def ilp_env():
     env.setParam('WLSACCESSID',"1b28dca7-337e-4811-b346-01087e09cd64")
     env.setParam('WLSSECRET', "629520bd-a114-45d7-b828-bfc5235c198d")
     env.setParam('LICENSEID', 965996)
+    if timeLimit is not None:
+        env.setParam('TimeLimit', timeLimit)
     env.start()
 
 SIGNAL_BASE=1234

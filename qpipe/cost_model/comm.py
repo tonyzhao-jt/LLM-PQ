@@ -43,4 +43,4 @@ class CommCostModel:
         cost = poly(data_size)
         # return cost in ms
         # what i want is s
-        return cost / 1000
+        return cost 

@@ -85,6 +85,9 @@ class LatCostModel:
         self.profiled_data = {}
         self.regression_models = {}
 
+        self.profiled_prepost_data = {}
+        self.has_fit_prepost = False
+
     def device_in_cost_model(self, device_name):
         return device_name in self.device_names
     
@@ -179,6 +182,53 @@ class LatCostModel:
         if not self.has_profiled:
             self.has_profiled = True
     
+        # following are pure analytical model
+    
+    def update_profiled_prepost_result(self, profiled_folder):
+        # list file under the folder
+        for file in os.listdir(profiled_folder):
+            # end with .csv
+            if file.endswith('.csv'):
+                # get device name
+                target_device = None
+                for device_name in self.device_names:
+                    if device_name in file:
+                        target_device = device_name
+                        break
+                if target_device is None: continue
+                if target_device not in self.profiled_prepost_data:
+                    self.profiled_prepost_data[target_device] = pd.read_csv(os.path.join(profiled_folder, file))
+                else:
+                    # update the pandas array
+                    self.profiled_prepost_data[target_device] = self.profiled_prepost_data[target_device]._append(pd.read_csv(os.path.join(profiled_folder, file)))
+                # drop the row with lat_avg > 99998
+                self.profiled_prepost_data[target_device] = self.profiled_prepost_data[target_device][self.profiled_prepost_data[target_device]['time'] < 99998]
+        
+        # check whether each device has one
+        for device_name in self.device_names:
+            if device_name not in self.profiled_prepost_data:
+                print(f"Cannot find profiling result for {device_name}, pls add later")
+
+        # read profiled data
+        if not self.has_fit_prepost:
+            self.has_fit_prepost = True
+
+    def fetch_prepost_lat(self, device_name, stage, batch_size, prompt_length):
+        # model_name,model_size,h1,h2,batch_size,prompt_length,stage,time
+        # input_seq = s
+        # past_seq = 0
+        h1, h2 = self.h1, self.h2
+        profiled_data = self.profiled_prepost_data[device_name]
+        profiled_data_device = profiled_data[(profiled_data['prompt_length'] == prompt_length) &
+                                            (profiled_data['batch_size'] == batch_size) &
+                                            (profiled_data['stage'] == stage) &
+                                            (profiled_data['h1'] == h1) &
+                                            (profiled_data['h2'] == h2)]
+        # lat_avg
+        lat_avg = profiled_data_device['time'].values[0]
+        return lat_avg
+
+
     def verbose_regression_names(self):
         assert len(self.regression_models) > 0, "Please load regression models first."
         for device_name in self.device_names:

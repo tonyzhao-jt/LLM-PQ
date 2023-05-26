@@ -5,10 +5,16 @@ RATIO_AVOID_OOM = 0.95 # 95% of the memory is used to avoid OOM
 TIME_MULT_TIMES = 1 # whether consider the temporary memory 
 SLO_RATE = 1.5 # times of fp16 inference time to be SLO.
 # global setup for available bits
-SUPPORTED_BITS=[2, 3, 4, 8, '8:tc-li', 16] # all supported bits
-AVAILABLE_BITS=[2, 3, 4, '8:tc-li', 16] # actualy use bits
+# all supported bits
+# 2,3,4,8: GPTQ weight only quantization
+# 8:tc: cutlass int8
+# 8:tc-li: bitsandbytes int8
+# 16: default, torch
+SUPPORTED_BITS=[2, 3, 4, 8, '8:tc', '8:tc-li', 16] 
+# Author: Here, we remove 2-bit since its performance is quite bad in accuracy. 
+AVAILABLE_BITS=[3, 4, '8:tc-li', 16] # actualy use bits
 # AVAILABLE_BITS=[2, 3, 4, 8, '8:tc', '8:tc-li', 16] # cutlass failed to perform correct when dealing with multiple inference.
-AVAILABLE_BITS_WO_INFO=[2, 3, 4, '8:tc-li', 16]
+AVAILABLE_BITS_WO_INFO=[3, 4, '8:tc-li', 16]
 gamma = 0.5 # expected generated tokens
 theta = 0.1 # control the concern for accuracy
 

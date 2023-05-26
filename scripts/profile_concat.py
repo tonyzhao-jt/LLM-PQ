@@ -147,7 +147,7 @@ if __name__ == '__main__':
         df = pd.DataFrame(columns=columns)
     for stage in [0, 1]: # prefill or not
         for prompt_length in [128, 512]:
-            for batch_size in [1, 2, 4, 8]:
+            for batch_size in [1, 2, 3, 4, 5, 6, 8]:
                 # check whether entry has been profiled
                 if len(df[(df['batch_size'] == batch_size) & (df['prompt_length'] == prompt_length) & (df['stage'] == stage)]) > 0:
                     print(f'batch_size: {batch_size}, prompt_length: {prompt_length}, stage: {stage} has been profiled')
@@ -183,7 +183,7 @@ if __name__ == '__main__':
         for prompt_length in [128, 512]:
             for past_seq_length_i in range(10, 110, 10):
                 past_seq_length = prompt_length + past_seq_length_i
-                for batch_size in [1, 2, 4, 8]:
+                for batch_size in [1, 2, 3, 4, 5, 6, 8]:
                     # check whether entry has been profiled
                     if len(df[(df['batch_size'] == batch_size) & (df['prompt_length'] == past_seq_length) & (df['stage'] == stage)]) > 0:
                         print(f'batch_size: {batch_size}, past_seq_length: {past_seq_length}, stage: {stage} has been profiled')

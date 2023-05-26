@@ -290,8 +290,8 @@ if __name__ == '__main__':
 
   
     method = args.method
-    sol_file = f"sols_opt_30b_Tesla_T4_3_Tesla_V100-SXM2-32GB_1.pkl"
-    strat_folder = '/opt/tiger/launch/qsync/QPipe/scripts/part_strategy/'
+    sol_file = f"sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2.pkl"
+    strat_folder = '/workspace/qpipe/scripts/part_strategy'
     sols_path = f'{strat_folder}/{sol_file}'
     sols = pickle.load(open(sols_path, "rb"))
     num_tokens_to_generate = sols['mu_n']

@@ -73,7 +73,8 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
         prob += pulp.lpSum([z[(i, j, b)] * M[i][b] for i in range(L) for b in range(B)]) <= M_d[j]
     
     # Solve the problem
-    status = prob.solve(pulp.GUROBI(msg=verbose_ilp, timeLimit=ilp_time_limit))
+    solver = pulp.GUROBI(msg=verbose_ilp, timeLimit=ilp_time_limit)
+    status = prob.solve(solver)
     # prob.solve(pulp.GUROBI())
     # prob.solve()
     # Print the solution status
@@ -92,7 +93,14 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
                         result[i] = (j, b)
                         # print(M[i][b])
                         mem_all += M[i][b]
-
+        # print the memory suage of each device
+        for j in range(N):
+            mem_j = 0
+            for i in range(L):
+                for b in range(B):
+                    mem_j += z[(i, j, b)].varValue * M[i][b]
+            print("mem_j = {}".format(mem_j))
+            
         return result, pulp.value(prob.objective) 
     else:
         print("Not Feasible for adabits")
@@ -155,7 +163,6 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits, bz_pack, model_mem_est
     #         excepted_indexes = list(set(range(len(BITs))) - set(new_BITs_idx))
     #         # change the omega outside the new_bits_idx to be extremely large
     #         omega[i][excepted_indexes] = 1e10
-
     return group_L, N, BITs, M_d, M, omega
 
 '''
@@ -202,7 +209,7 @@ def main(args):
 
     omega_file = args.omega_file
     ilp_seed = args.ilp_seed
-    group_size = args.group_size
+    group_size = args.adapp_group_size
     ilp_tolerance = args.ilp_tolerance
     ilp_time_limit = args.ilp_time_limit
     verbose_ilp = args.debug

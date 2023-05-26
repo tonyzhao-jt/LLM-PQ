@@ -64,12 +64,15 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
     T_decode_j = pulp.LpVariable.dicts("T_decode_j", [j for j in range(N)], lowBound=0, cat=pulp.LpContinuous)
     T_prefill = pulp.LpVariable("T_prefill", lowBound=0, cat=pulp.LpContinuous)
     T_decode = pulp.LpVariable("T_decode", lowBound=0, cat=pulp.LpContinuous)
-    T_sum = pulp.LpVariable("T_sum", lowBound=0, cat=pulp.LpContinuous)
 
-    # Define the objective function
-    prefill_scalar = 1 if prefill_bz == global_bz else math.ceil(global_bz / prefill_bz + 1) # if equal, no waiting slot.
-    prob += prefill_scalar * T_prefill + \
-          (math.ceil(global_bz / bz_decode_max) + 1) * T_decode * (mu_n - 1) \
+    # from alpa
+    # cost = stage_sum + (micro_bs - 1) * lowest_stage_cost
+    prefill_micro_bs_num = math.ceil(global_bz / prefill_bz)
+    decode_micro_bs_num = math.ceil(global_bz / bz_decode_max)
+    prefill_stage_sum = pulp.lpSum([T_prefill_j[j] for j in range(N)])
+    decode_stage_sum = pulp.lpSum([T_decode_j[j] for j in range(N)])
+    prob += prefill_stage_sum + (prefill_micro_bs_num - 1) * T_prefill + \
+          decode_stage_sum + (decode_micro_bs_num - 1) * T_decode * (mu_n - 1) \
           + theta * pulp.lpSum([omega[i][b] * y[(i, b)] for i in range(L) for b in range(B)])
 
     force_zero(l_prefill, z, prob)
@@ -116,8 +119,8 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
         # sum omega
         # print("omega = {}".format(pulp.value(pulp.lpSum([omega[i][b] * y[(i, b)] for i in range(L) for b in range(B)]))))
         # print latency T_sum
-        T_sum = prefill_scalar * pulp.value(T_prefill) + \
-          (math.ceil(global_bz / bz_decode_max) + 1) * pulp.value(T_decode) * (mu_n - 1)
+        T_sum = pulp.value(prefill_stage_sum) + (prefill_micro_bs_num - 1) * T_prefill.varValue + \
+          pulp.value(decode_stage_sum) + (decode_micro_bs_num - 1) * T_decode.varValue * (mu_n - 1)
         print("T_sum = {}".format(T_sum))
         print("Objective = {}".format(pulp.value(prob.objective)))
         return result, pulp.value(prob.objective)
@@ -171,6 +174,16 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
         l_decode[i, :, :] = get_latency_with_layer_device_bit_pair(current_D, BITs, lat_cost_model, bz_decode_max, 1, s + int(mu_n / 2), \
                                                                    use_profiler_prediction=use_profiler_prediction) * group_size
 
+    # preposet
+    first_device_name = current_D[0]
+    # prefill
+    prefill_prepost_cost = lat_cost_model.fetch_prepost_lat(first_device_name, 0, prefill_bz, s)
+    # decode
+    print(bz_decode_max, s + int(mu_n / 2))
+    decode_prepost_cost = lat_cost_model.fetch_prepost_lat(first_device_name, 1, bz_decode_max, s + int(mu_n / 2))
+    # add to l_prefill and l_decode
+    l_prefill[:, 0, :] += prefill_prepost_cost
+    l_decode[:, 0, :] += decode_prepost_cost
     # omega
     omega = assign_omega_uniform(group_L, BITs)
     if omega_file is not None:
@@ -201,7 +214,6 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
 
     # print('----- communication cost ---- ')
     # print(comm_prefill, comm_decode)
-
     return group_L, N, BITs, M_d, M, (l_prefill, l_decode), omega, (comm_prefill, comm_decode)
 
 # algo 2
@@ -259,7 +271,7 @@ def enumerate_best_result(args):
     model_mem_estimator, comm_cost_model, lat_cost_model, T = args.init_pack 
     cost_model_pack = (model_mem_estimator, comm_cost_model, lat_cost_model)
     best_plan = {}
-    best_plan['obj'] = 9999999
+    best_plan['obj'] = float("inf")
 
     num_device_all = sum(device_numbers)
     strat = partition_a_into_b_bins(global_bz, num_device_all)

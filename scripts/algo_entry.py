@@ -140,6 +140,7 @@ def calculate_max_stage_lat(D, use_plan, \
     lat_cost_model, comm_cost_model = cost_model_pack
 
     minmax_lat = 0
+    stage_sum = 0
     for device_rank, shard_strategy in use_plan.items():
         stage_lat = 0
         D_name = D[device_rank]
@@ -153,7 +154,8 @@ def calculate_max_stage_lat(D, use_plan, \
         t_comm = comm_cost_model.predict_comm_time(device_rank, next_stage, comm_size)
         # minmax throughput
         minmax_lat = max(minmax_lat, stage_lat, t_comm)
-    return minmax_lat
+        stage_sum += stage_lat
+    return minmax_lat, stage_sum
 
 import math 
 def run_simu(sol, lat_cost_model, comm_cost_model, use_profiler_prediction, mu_n, comm_multiplier):
@@ -174,14 +176,15 @@ def run_simu(sol, lat_cost_model, comm_cost_model, use_profiler_prediction, mu_n
     comm_size_decode = lat_cost_model.h1 * 1 * bz_decode_max * 2 / 1024 / 1024 * comm_multiplier
 
     # average throughput should equals to 
-    prefill_result = calculate_max_stage_lat(D, use_plan, \
+    prefill_result, prefill_sum = calculate_max_stage_lat(D, use_plan, \
                                                     cost_model_pack, prefill_bz, s, 0, use_profiler_prediction, comm_size_prefill)
-    decode_result = calculate_max_stage_lat(D, use_plan, \
+    decode_result, decode_sum = calculate_max_stage_lat(D, use_plan, \
                                                     cost_model_pack, bz_decode_max, 1, s + int(mu_n / 2), use_profiler_prediction,  comm_size_decode)
     
-    prefill_scalar = 1 if prefill_bz == global_bz else math.ceil(global_bz / prefill_bz + 1)
-    prefill_time = prefill_scalar * prefill_result
-    decode_time = math.ceil(global_bz / bz_decode_max) * (mu_n-1) * decode_result
+    prefill_micro_bs_num = math.ceil(global_bz / prefill_bz)
+    decode_micro_bs_num = math.ceil(global_bz / bz_decode_max)
+    prefill_time = prefill_sum + prefill_result * (prefill_micro_bs_num - 1)
+    decode_time = decode_sum + decode_result * (decode_micro_bs_num - 1) * (mu_n - 1)
     # latency equals
     e2e_lat = prefill_time + decode_time
     print(prefill_time, decode_time, e2e_lat)
@@ -200,8 +203,6 @@ def main(args):
     device_info = get_device_info(device_names, device_numbers)
     args.device_info = device_info # use to store device info
     
-
-
     # run simulation
     global_bz = gen_config.global_bz
     micro_bz = gen_config.micro_bz
@@ -222,10 +223,12 @@ def main(args):
     
     args.init_pack = (model_mem_estimator, comm_cost_model, lat_cost_model, T)
     lat_cost_model.update_profiled_result(args.lat_profile_dir)
+    lat_cost_model.update_profiled_prepost_result(args.lat_prepost_profile_dir)
     if args.fit:
         lat_cost_model.fit_regression_cost_model()
-    if not args.use_profiler_prediction:
-        lat_cost_model.load_regression_cost_model()
+    else:
+        if not args.use_profiler_prediction:
+            lat_cost_model.load_regression_cost_model()
     
     # get solutions
     sol_adabits = adaptive_bits_main(args)

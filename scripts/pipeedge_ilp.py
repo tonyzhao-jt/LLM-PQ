@@ -151,7 +151,6 @@ def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack):
     # comm
     comm_decode = (model_mem_estimator.h1 * bz_decode_max * 1)  * 2 / 1024 / 1024
     comm = get_comm(D, comm_cost_model, comm_decode) * comm_multiplier
-
     return group_L, N, BITs, M_d, M, l, comm
 
 '''
@@ -198,7 +197,7 @@ def main(args):
 
     omega_file = args.omega_file
     ilp_seed = args.ilp_seed
-    group_size = args.group_size
+    group_size = args.adapp_group_size
     ilp_tolerance = args.ilp_tolerance
     ilp_time_limit = args.ilp_time_limit
     verbose_ilp = args.debug

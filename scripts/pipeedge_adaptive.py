@@ -45,8 +45,7 @@ import numpy as np
 # setup ilp configs
 import pulp
 import gurobipy as gp
-ilp_env()
-args = common_argparser()
+
 
 unit = qpipe._globals.MEM_UNIT
 time_mult_times = qpipe._globals.TIME_MULT_TIMES

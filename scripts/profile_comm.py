@@ -9,7 +9,7 @@ from qpipe.p2p import (
 )
 import argparse
 def test_comm_speed():
-    data_size_buffer, time_buffer = profile_comm.generate_cost_model_dataset(batch_size=32, hidden_space=4096, sample_num=30, warmup=3)
+    data_size_buffer, time_buffer = profile_comm.generate_cost_model_dataset(batch_size=16, hidden_space=2048, sample_num=15, warmup=3)
     rank = dist.get_rank()
     print(f"Rank {rank} communication times:")
     for pair, times in time_buffer.items():

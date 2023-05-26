@@ -9,7 +9,7 @@ export CUDA_VISIBLE_DEVICES=0 # use last one
 
 
 # prefill
-for batch_size in 1 2 4 8 16 32
+for batch_size in 1 2 3 4 5 6 8 16 32
 do
     for prompt_length in 512 128 
     do
@@ -23,7 +23,7 @@ done
 
 
 # decode
-for batch_size in 32 16 8 4 2 1
+for batch_size in 1 2 3 4 5 6 8 16 32
 do
     for past_seq_length in 128 512
     do
@@ -37,7 +37,7 @@ done
 
 echo "run 176b"
 # for model 176b
-for batch_size in 32 16 8 4 2 1
+for batch_size in 1 2 3 4 5 6 8 16 32
 do
     for past_seq_length in 128 512
     do
