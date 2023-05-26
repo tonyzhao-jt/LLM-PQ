@@ -175,15 +175,16 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
                                                                    use_profiler_prediction=use_profiler_prediction) * group_size
 
     # preposet
-    first_device_name = current_D[0]
-    # prefill
-    prefill_prepost_cost = lat_cost_model.fetch_prepost_lat(first_device_name, 0, prefill_bz, s)
-    # decode
-    print(bz_decode_max, s + int(mu_n / 2))
-    decode_prepost_cost = lat_cost_model.fetch_prepost_lat(first_device_name, 1, bz_decode_max, s + int(mu_n / 2))
-    # add to l_prefill and l_decode
-    l_prefill[:, 0, :] += prefill_prepost_cost
-    l_decode[:, 0, :] += decode_prepost_cost
+    if len(current_D) > 1:
+        first_device_name = current_D[0]
+        # prefill
+        prefill_prepost_cost = lat_cost_model.fetch_prepost_lat(first_device_name, 0, prefill_bz, s)
+        # decode
+        print(bz_decode_max, s + int(mu_n / 2))
+        decode_prepost_cost = lat_cost_model.fetch_prepost_lat(first_device_name, 1, bz_decode_max, s + int(mu_n / 2))
+        # add to l_prefill and l_decode
+        l_prefill[:, 0, :] += prefill_prepost_cost
+        l_decode[:, 0, :] += decode_prepost_cost
     # omega
     omega = assign_omega_uniform(group_L, BITs)
     if omega_file is not None:

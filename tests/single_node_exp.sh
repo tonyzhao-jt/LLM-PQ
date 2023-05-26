@@ -1,4 +1,5 @@
-available_methods=('adabits' 'adaqpipe' 'pipeedge' 'uniform')
+export CUDA_VISIBLE_DEVICES=3
+available_methods=('adaqpipe')
 for i in "${!available_methods[@]}"
 do  
     torchrun --nnodes=1 --nproc_per_node=1 --master_port 6666 main_p2p.py --model_name opt --model_size 13b --method ${available_methods[i]} \

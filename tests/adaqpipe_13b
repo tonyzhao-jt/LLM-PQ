@@ -6,72 +6,128 @@ python -m bitsandbytes
 
  and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
 ================================================================================
-bin /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117_nocublaslt.so
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/usr/local/nvidia/lib64'), PosixPath('/usr/local/nvidia/lib')}
+bin /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117.so
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/usr/local/nvidia/lib'), PosixPath('/usr/local/nvidia/lib64')}
   warn(msg)
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: /usr/local/nvidia/lib:/usr/local/nvidia/lib64 did not contain ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] as expected! Searching further paths...
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: /usr/local/nvidia/lib:/usr/local/nvidia/lib64 did not contain ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] as expected! Searching further paths...
   warn(msg)
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_bkmiesxf/none_a5aujay5/attempt_0/0/error.json')}
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_mhk_is9o/none_vdu_qt_r/attempt_0/0/error.json')}
   warn(msg)
 CUDA_SETUP: WARNING! libcudart.so not found in any environmental path. Searching in backup paths...
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: Found duplicate ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] files: {PosixPath('/usr/local/cuda/lib64/libcudart.so.11.0'), PosixPath('/usr/local/cuda/lib64/libcudart.so')}.. We'll flip a coin and try one of these, in order to fail forward.
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: Found duplicate ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] files: {PosixPath('/usr/local/cuda/lib64/libcudart.so'), PosixPath('/usr/local/cuda/lib64/libcudart.so.11.0')}.. We'll flip a coin and try one of these, in order to fail forward.
 Either way, this might cause trouble in the future:
 If you get `CUDA error: invalid device function` errors, the above might be the cause and the solution is to make sure only one ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] in the paths that we search based on your env.
   warn(msg)
-CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so.11.0
-CUDA SETUP: Highest compute capability among GPUs detected: 7.0
+CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so
+CUDA SETUP: Highest compute capability among GPUs detected: 8.0
 CUDA SETUP: Detected CUDA version 117
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: Compute capability < 7.5 detected! Only slow 8-bit matmul is supported for your GPU!
-  warn(msg)
-CUDA SETUP: Loading binary /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117_nocublaslt.so...
-Pipeline Data Loaded, with initial batch size:  8
+CUDA SETUP: Loading binary /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117.so...
+STAGE:2023-05-26 10:27:19 25068:25068 ActivityProfilerController.cpp:311] Completed Stage: Warm Up
+Pipeline Data Loaded, with prefill cnts:  4
 rank 0 is in stage 0
 create layer: 0|create layer: 1|create layer: 2|create layer: 3|create layer: 4|create layer: 5|create layer: 6|create layer: 7|create layer: 8|create layer: 9|create layer: 10|create layer: 11|create layer: 12|create layer: 13|create layer: 14|create layer: 15|create layer: 16|create layer: 17|create layer: 18|create layer: 19|create layer: 20|create layer: 21|create layer: 22|create layer: 23|create layer: 24|create layer: 25|create layer: 26|create layer: 27|create layer: 28|create layer: 29|create layer: 30|create layer: 31|create layer: 32|create layer: 33|create layer: 34|create layer: 35|create layer: 36|create layer: 37|create layer: 38|create layer: 39|Stage 0 module sharded
+Stage 0 kv initialized
+rank_src: None, rank_dst: None, rank: 0, results_cb: <function handle_results at 0x7ff785ca3d90>
+2023-05-26 10:30:45,583 - INFO - start pipe data
+2023-05-26 10:30:49,271 - INFO - Request id 0 done for token 1
+2023-05-26 10:30:49,460 - INFO - Latency is 3.877388, throughput is 8.252978
+2023-05-26 10:30:49,461 - INFO - Token throughput is 16.505956
+2023-05-26 10:30:59,475 - INFO - start pipe data
+2023-05-26 10:31:02,217 - INFO - Request id 0 done for token 1
+2023-05-26 10:31:02,413 - INFO - Request id 0 done for token 2
+2023-05-26 10:31:02,602 - INFO - Request id 0 done for token 3
+2023-05-26 10:31:02,790 - INFO - Request id 0 done for token 4
+2023-05-26 10:31:02,974 - INFO - Request id 0 done for token 5
+2023-05-26 10:31:03,158 - INFO - Request id 0 done for token 6
+2023-05-26 10:31:03,339 - INFO - Request id 0 done for token 7
+2023-05-26 10:31:03,524 - INFO - Request id 0 done for token 8
+2023-05-26 10:31:03,708 - INFO - Request id 0 done for token 9
+2023-05-26 10:31:03,898 - INFO - Request id 0 done for token 10
+2023-05-26 10:31:04,079 - INFO - Request id 0 done for token 11
+2023-05-26 10:31:04,263 - INFO - Request id 0 done for token 12
+2023-05-26 10:31:04,445 - INFO - Request id 0 done for token 13
+2023-05-26 10:31:04,627 - INFO - Request id 0 done for token 14
+2023-05-26 10:31:04,816 - INFO - Request id 0 done for token 15
+2023-05-26 10:31:05,003 - INFO - Request id 0 done for token 16
+2023-05-26 10:31:05,186 - INFO - Request id 0 done for token 17
+2023-05-26 10:31:05,371 - INFO - Request id 0 done for token 18
+2023-05-26 10:31:05,554 - INFO - Request id 0 done for token 19
+2023-05-26 10:31:05,740 - INFO - Request id 0 done for token 20
+2023-05-26 10:31:05,930 - INFO - Request id 0 done for token 21
+2023-05-26 10:31:06,115 - INFO - Request id 0 done for token 22
+2023-05-26 10:31:06,299 - INFO - Request id 0 done for token 23
+2023-05-26 10:31:06,486 - INFO - Request id 0 done for token 24
+2023-05-26 10:31:06,669 - INFO - Request id 0 done for token 25
+2023-05-26 10:31:06,861 - INFO - Request id 0 done for token 26
+2023-05-26 10:31:07,047 - INFO - Request id 0 done for token 27
+2023-05-26 10:31:07,235 - INFO - Request id 0 done for token 28
+2023-05-26 10:31:07,421 - INFO - Request id 0 done for token 29
+2023-05-26 10:31:07,608 - INFO - Request id 0 done for token 30
+2023-05-26 10:31:07,791 - INFO - Request id 0 done for token 31
+2023-05-26 10:31:07,992 - INFO - Request id 0 done for token 32
+2023-05-26 10:31:08,178 - INFO - Request id 0 done for token 33
+2023-05-26 10:31:08,363 - INFO - Request id 0 done for token 34
+2023-05-26 10:31:08,546 - INFO - Request id 0 done for token 35
+2023-05-26 10:31:08,731 - INFO - Request id 0 done for token 36
+2023-05-26 10:31:08,915 - INFO - Request id 0 done for token 37
+2023-05-26 10:31:09,100 - INFO - Request id 0 done for token 38
+2023-05-26 10:31:09,294 - INFO - Request id 0 done for token 39
+2023-05-26 10:31:09,481 - INFO - Request id 0 done for token 40
+2023-05-26 10:31:09,668 - INFO - Request id 0 done for token 41
+2023-05-26 10:31:09,857 - INFO - Request id 0 done for token 42
+2023-05-26 10:31:10,043 - INFO - Request id 0 done for token 43
+2023-05-26 10:31:10,232 - INFO - Request id 0 done for token 44
+2023-05-26 10:31:10,425 - INFO - Request id 0 done for token 45
+2023-05-26 10:31:10,614 - INFO - Request id 0 done for token 46
+2023-05-26 10:31:10,801 - INFO - Request id 0 done for token 47
+2023-05-26 10:31:10,990 - INFO - Request id 0 done for token 48
+2023-05-26 10:31:11,179 - INFO - Request id 0 done for token 49
+2023-05-26 10:31:11,365 - INFO - Request id 0 done for token 50
+2023-05-26 10:31:11,555 - INFO - Request id 0 done for token 51
+2023-05-26 10:31:11,747 - INFO - Request id 0 done for token 52
+2023-05-26 10:31:11,935 - INFO - Request id 0 done for token 53
+2023-05-26 10:31:12,125 - INFO - Request id 0 done for token 54
+2023-05-26 10:31:12,312 - INFO - Request id 0 done for token 55
+2023-05-26 10:31:12,503 - INFO - Request id 0 done for token 56
+2023-05-26 10:31:12,689 - INFO - Request id 0 done for token 57
+2023-05-26 10:31:12,879 - INFO - Request id 0 done for token 58
+2023-05-26 10:31:13,068 - INFO - Request id 0 done for token 59
+2023-05-26 10:31:13,258 - INFO - Request id 0 done for token 60
+2023-05-26 10:31:13,449 - INFO - Request id 0 done for token 61
+2023-05-26 10:31:13,636 - INFO - Request id 0 done for token 62
+2023-05-26 10:31:13,826 - INFO - Request id 0 done for token 63
+2023-05-26 10:31:14,015 - INFO - Request id 0 done for token 64
+2023-05-26 10:31:14,202 - INFO - Request id 0 done for token 65
+2023-05-26 10:31:14,390 - INFO - Request id 0 done for token 66
+2023-05-26 10:31:14,582 - INFO - Request id 0 done for token 67
+2023-05-26 10:31:14,772 - INFO - Request id 0 done for token 68
+2023-05-26 10:31:14,960 - INFO - Request id 0 done for token 69
+2023-05-26 10:31:15,151 - INFO - Request id 0 done for token 70
+2023-05-26 10:31:15,342 - INFO - Request id 0 done for token 71
+2023-05-26 10:31:15,530 - INFO - Request id 0 done for token 72
+2023-05-26 10:31:15,725 - INFO - Request id 0 done for token 73
+2023-05-26 10:31:15,913 - INFO - Request id 0 done for token 74
+2023-05-26 10:31:16,103 - INFO - Request id 0 done for token 75
+2023-05-26 10:31:16,296 - INFO - Request id 0 done for token 76
+2023-05-26 10:31:16,489 - INFO - Request id 0 done for token 77
+2023-05-26 10:31:16,682 - INFO - Request id 0 done for token 78
+2023-05-26 10:31:16,872 - INFO - Request id 0 done for token 79
+2023-05-26 10:31:17,063 - INFO - Latency is 17.587921, throughput is 1.819431
+2023-05-26 10:31:17,063 - INFO - Token throughput is 145.554443
+STAGE:2023-05-26 10:31:17 25068:25068 ActivityProfilerController.cpp:317] Completed Stage: Collection
+STAGE:2023-05-26 10:31:17 25068:25068 ActivityProfilerController.cpp:321] Completed Stage: Post Processing
 Traceback (most recent call last):
-  File "/workspace/qpipe/tests/main_p2p.py", line 269, in <module>
-    run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
-  File "/workspace/qpipe/tests/main_p2p.py", line 164, in run_pipeline_p2p
-    module.init_kv_cache(decoder_bss[chunk_id], prompt_length, max_tokens_to_generate, chunk_id)
-  File "/opt/conda/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
-    return func(*args, **kwargs)
-  File "/opt/conda/lib/python3.10/site-packages/qllm/models/OPT/seq_layers.py", line 1483, in init_kv_cache
-    return self.model.decoder.init_kv_cache(b, prompt_length, token_to_generate, request_id)
-  File "/opt/conda/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
-    return func(*args, **kwargs)
-  File "/opt/conda/lib/python3.10/site-packages/qllm/models/OPT/seq_layers.py", line 1208, in init_kv_cache
-    block.self_attn.init_kv_cache(b, prompt_length, token_to_generate, request_id, torch_dtype=torch_dtype)
-  File "/opt/conda/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
-    return func(*args, **kwargs)
-  File "/opt/conda/lib/python3.10/site-packages/qllm/models/OPT/seq_layers.py", line 472, in init_kv_cache
-    self.kv_cache[request_id] = torch.empty(kv_shape_2, dtype=torch_dtype, device=device)
-torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 384.00 MiB (GPU 0; 31.74 GiB total capacity; 14.30 GiB already allocated; 25.62 MiB free; 14.39 GiB reserved in total by PyTorch) If reserved memory is >> allocated memory try setting max_split_size_mb to avoid fragmentation.  See documentation for Memory Management and PYTORCH_CUDA_ALLOC_CONF
-ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 1) local_rank: 0 (pid: 167658) of binary: /opt/conda/bin/python
+  File "/workspace/qpipe/tests/main_p2p.py", line 332, in <module>
+    prof.export_chrome_trace("trace.json")
+  File "/opt/conda/lib/python3.10/site-packages/torch/profiler/profiler.py", line 156, in export_chrome_trace
+    return self.profiler.export_chrome_trace(path)
+  File "/opt/conda/lib/python3.10/site-packages/torch/autograd/profiler.py", line 281, in export_chrome_trace
+    self.kineto_results.save(path)  # type: ignore[union-attr]
+RuntimeError: Trace is already saved.
+Exception in thread Thread-2:
 Traceback (most recent call last):
-  File "/opt/conda/bin/torchrun", line 33, in <module>
-    sys.exit(load_entry_point('torch==2.0.0', 'console_scripts', 'torchrun')())
-  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 346, in wrapper
-    return f(*args, **kwargs)
-  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/run.py", line 794, in main
-    run(args)
-  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/run.py", line 785, in run
-    elastic_launch(
-  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 134, in __call__
-    return launch_agent(self._config, self._entrypoint, list(args))
-  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 250, in launch_agent
-    raise ChildFailedError(
-torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
-============================================================
-main_p2p.py FAILED
-------------------------------------------------------------
-Failures:
-  <NO_OTHER_FAILURES>
-------------------------------------------------------------
-Root Cause (first observed failure):
-[0]:
-  time      : 2023-05-23_07:09:13
-  host      : ***REMOVED***
-  rank      : 0 (local_rank: 0)
-  exitcode  : 1 (pid: 167658)
-  error_file: <N/A>
-  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
-============================================================
+  File "/opt/conda/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/opt/conda/lib/python3.10/site-packages/qpipe/p2p/util.py", line 24, in run
+    self._req.wait()
+RuntimeError: [/opt/conda/conda-bld/pytorch_1678411187366/work/third_party/gloo/gloo/transport/tcp/unbound_buffer.cc:81] Timed out waiting 3000000ms for recv operation to complete

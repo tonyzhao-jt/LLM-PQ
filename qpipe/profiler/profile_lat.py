@@ -28,6 +28,8 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
     h1 = config.hidden_size
 
     shard_strategy = {'shard': [shard], 'bits': [bit]}
+    if shard == 2:
+        shard_strategy = {'shard': [0, 1], 'bits': [bit, bit]}
 
     # fake input = b * 1 * hidden_size
     fake_input = torch.randn(batch_size, input_seq_length, h1)

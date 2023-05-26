@@ -15,7 +15,7 @@ from qllm.utils import (
 
 from qllm.models import create_empty_model
 from qllm.scheduler import DSScheduler
-
+import time
 CMD_STOP = 0
 CMD_SCHED = 1
 
@@ -239,17 +239,16 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                 original_num_tokens_to_generate = num_tokens_to_generate
                 run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=warmup_tokens)
                 dist.barrier()
+                time.sleep(10)
                 module._reset_kv_status()
-                
                 dist.barrier()
                 run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=original_num_tokens_to_generate)
                 dist_ctx.cmd_broadcast(CMD_STOP)
                 # join the queue thread
-                simple_queue_thread.stop()
-                simple_queue_thread.join()
                 stop_event.set()
             else:
                 dist.barrier()
+                time.sleep(10)
                 module._reset_kv_status()
                 dist.barrier()
                 stop_event.wait()
@@ -290,7 +289,7 @@ if __name__ == '__main__':
 
   
     method = args.method
-    sol_file = f"sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2.pkl"
+    sol_file = f"sols_opt_13b_NVIDIA_A100-SXM4-40GB_1.pkl"
     strat_folder = '/workspace/qpipe/scripts/part_strategy'
     sols_path = f'{strat_folder}/{sol_file}'
     sols = pickle.load(open(sols_path, "rb"))
@@ -325,7 +324,16 @@ if __name__ == '__main__':
         model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
         model_pre_and_post = model_pre_and_post.cuda()
 
-    run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
+    from torch import profiler
+    from torch.profiler import profile, record_function, ProfilerActivity
+    with profiler.profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], with_stack=True, \
+                          on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/test')) as prof:
+        run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
+    prof.export_chrome_trace("trace.json")
+    simple_queue_thread.join()
+    print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
+    
+    # run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
 
 
 
