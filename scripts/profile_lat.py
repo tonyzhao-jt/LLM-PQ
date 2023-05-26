@@ -44,7 +44,6 @@ if __name__ == '__main__':
     file_name = device_name + "_" + str(model_size) + ".csv"
 
     decoder_layer, (h1, h2), config = create_empty_decoder(model_name, model_size)
-
     # print(h1, h2)
     def convert_to_int(x):
         if type(x) is float:
@@ -62,7 +61,7 @@ if __name__ == '__main__':
                                     'bit', 'batch_size', 'input_seq_length', 'past_seq_length', \
                                     'lat_avg', 'mem_weight', 'mem_kv', 'mem_embedding'])
 
-    for shard in [2]:
+    for shard in [0, 1, 2]:
         # for bz in range(1, batch_size + 1):
         for bit in available_bits:
             bz = batch_size

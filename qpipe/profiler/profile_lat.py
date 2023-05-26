@@ -104,53 +104,54 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
             attention_mod.profile = True # set profile to make the kv didn't increase
             if input_seq_length == 1:
                 attention_mod.kv_status[request_id][0] = input_seq_length
+        
+        with torch.no_grad():
+            if model_name.lower() == 'opt':
+                # Warmup
+                for i in range(warmup):
+                    decoder_layer(hidden_states)
 
-        if model_name.lower() == 'opt':
-            # Warmup
-            for i in range(warmup):
-                decoder_layer(hidden_states)
-
-            torch.cuda.synchronize()
-            # start = perf_counter()
-            start = time.time()
-            for i in range(repeat):
-                decoder_layer(hidden_states)
-            torch.cuda.synchronize()
-            # end = perf_counter()
-            end = time.time()
-            lat_avg = (end - start) / repeat * 1000 # in ms
-            # # Measure latency
-            # latencies = []
-            # for i in range(repeat):
-            #     torch.cuda.synchronize()
-            #     start = perf_counter()
-            #     decoder_layer(hidden_states)
-            #     torch.cuda.synchronize()
-            #     end = perf_counter()
-            #     latencies.append(end - start)
-        else:
-            causal_mask = causal_mask.cuda().bool()
-            alibi = alibi.cuda().to(torch_dtype)
-            # Warmup
-            for i in range(warmup):
-                decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
-            torch.cuda.synchronize()
-            # Measure latency
-            start = time.time()
-            for i in range(repeat):
-                decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
-            torch.cuda.synchronize()
-            # end = perf_counter()
-            end = time.time()
-            lat_avg = (end - start) / repeat * 1000
-            # latencies = []
-            # for i in range(repeat):
-            #     torch.cuda.synchronize()
-            #     start = perf_counter()
-            #     decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
-            #     torch.cuda.synchronize()
-            #     end = perf_counter()
-            #     latencies.append(end - start)
+                torch.cuda.synchronize()
+                # start = perf_counter()
+                start = time.time()
+                for i in range(repeat):
+                    decoder_layer(hidden_states)
+                torch.cuda.synchronize()
+                # end = perf_counter()
+                end = time.time()
+                lat_avg = (end - start) / repeat * 1000 # in ms
+                # # Measure latency
+                # latencies = []
+                # for i in range(repeat):
+                #     torch.cuda.synchronize()
+                #     start = perf_counter()
+                #     decoder_layer(hidden_states)
+                #     torch.cuda.synchronize()
+                #     end = perf_counter()
+                #     latencies.append(end - start)
+            else:
+                causal_mask = causal_mask.cuda().bool()
+                alibi = alibi.cuda().to(torch_dtype)
+                # Warmup
+                for i in range(warmup):
+                    decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
+                torch.cuda.synchronize()
+                # Measure latency
+                start = time.time()
+                for i in range(repeat):
+                    decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
+                torch.cuda.synchronize()
+                # end = perf_counter()
+                end = time.time()
+                lat_avg = (end - start) / repeat * 1000
+                # latencies = []
+                # for i in range(repeat):
+                #     torch.cuda.synchronize()
+                #     start = perf_counter()
+                #     decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
+                #     torch.cuda.synchronize()
+                #     end = perf_counter()
+                #     latencies.append(end - start)
             
 
         # Remove outliers and calculate average latency
