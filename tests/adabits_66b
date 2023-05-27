@@ -15,11 +15,11 @@ python -m bitsandbytes
  and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
 ================================================================================
 bin /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117.so
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/usr/local/nvidia/lib64'), PosixPath('/usr/local/nvidia/lib')}
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/usr/local/nvidia/lib'), PosixPath('/usr/local/nvidia/lib64')}
   warn(msg)
 /opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: /usr/local/nvidia/lib:/usr/local/nvidia/lib64 did not contain ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] as expected! Searching further paths...
   warn(msg)
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_90vn6hp0/none_czht4g6m/attempt_0/1/error.json')}
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_y5cbq8q8/none_gpb6ap5a/attempt_0/1/error.json')}
   warn(msg)
 CUDA_SETUP: WARNING! libcudart.so not found in any environmental path. Searching in backup paths...
 /opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: Found duplicate ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] files: {PosixPath('/usr/local/cuda/lib64/libcudart.so'), PosixPath('/usr/local/cuda/lib64/libcudart.so.11.0')}.. We'll flip a coin and try one of these, in order to fail forward.
@@ -35,7 +35,7 @@ bin /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117
   warn(msg)
 /opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: /usr/local/nvidia/lib:/usr/local/nvidia/lib64 did not contain ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] as expected! Searching further paths...
   warn(msg)
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_90vn6hp0/none_czht4g6m/attempt_0/0/error.json')}
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_y5cbq8q8/none_gpb6ap5a/attempt_0/0/error.json')}
   warn(msg)
 CUDA_SETUP: WARNING! libcudart.so not found in any environmental path. Searching in backup paths...
 /opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: Found duplicate ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] files: {PosixPath('/usr/local/cuda/lib64/libcudart.so'), PosixPath('/usr/local/cuda/lib64/libcudart.so.11.0')}.. We'll flip a coin and try one of these, in order to fail forward.
@@ -46,24 +46,57 @@ CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so
 CUDA SETUP: Highest compute capability among GPUs detected: 8.0
 CUDA SETUP: Detected CUDA version 117
 CUDA SETUP: Loading binary /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117.so...
-rank 2 is in stage 2
 rank 3 is in stage 3
-create layer: 26|create layer: 45|create layer: 27|create layer: 46|create layer: 47|create layer: 28|create layer: 29|create layer: 48|create layer: 30|create layer: 49|create layer: 31|create layer: 50|create layer: 32|create layer: 51|create layer: 52|create layer: 33|create layer: 53|create layer: 34|create layer: 54|create layer: 35|create layer: 55|create layer: 36|create layer: 56|create layer: 37|create layer: 57|create layer: 38|create layer: 58|create layer: 39|create layer: 59|create layer: 40|create layer: 60|create layer: 41|create layer: 61|create layer: 42|create layer: 62|create layer: 43|create layer: 63|create layer: 44|Stage 2 module sharded
+rank 2 is in stage 2
+create layer: 46|create layer: 28|create layer: 47|create layer: 29|create layer: 48|create layer: 30|create layer: 49|create layer: 31|create layer: 50|create layer: 32|create layer: 51|create layer: 33|create layer: 52|create layer: 34|create layer: 53|create layer: 35|create layer: 54|create layer: 36|create layer: 55|create layer: 37|create layer: 56|create layer: 38|create layer: 57|create layer: 39|create layer: 58|create layer: 40|create layer: 41|create layer: 59|create layer: 42|create layer: 60|create layer: 43|create layer: 61|create layer: 44|create layer: 62|create layer: 63|create layer: 45|Stage 2 module sharded
 Stage 2 kv initialized
 Stage 3 module sharded
 Stage 3 kv initialized
-rank_src: 1, rank_dst: 3, rank: 2, results_cb: None
 rank_src: 2, rank_dst: 0, rank: 3, results_cb: None
-2023-05-27 11:19:18,816 - INFO - handle_cmd: stop
-2023-05-27 11:19:18,846 - INFO - handle_cmd: stop
-ERROR:torch.distributed.elastic.agent.server.api:Error waiting on exit barrier. Elapsed: 11.475718975067139 seconds
+rank_src: 1, rank_dst: 3, rank: 2, results_cb: None
+2023-05-27 12:29:11,233 - INFO - handle_cmd: stop
+2023-05-27 12:29:11,256 - INFO - handle_cmd: stop
 Traceback (most recent call last):
-  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/elastic/agent/server/api.py", line 920, in _exit_barrier
-    store_util.barrier(
-  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/elastic/utils/store.py", line 78, in barrier
-    synchronize(store, data, rank, world_size, key_prefix, barrier_timeout)
-  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/elastic/utils/store.py", line 64, in synchronize
-    agent_data = get_all(store, rank, key_prefix, world_size)
-  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/elastic/utils/store.py", line 34, in get_all
-    data = store.get(f"{prefix}{idx}")
-RuntimeError: Connection reset by peer
+  File "/workspace/qpipe/tests/main_p2p.py", line 329, in <module>
+    simple_queue_thread.join()
+AttributeError: 'NoneType' object has no attribute 'join'
+Traceback (most recent call last):
+  File "/workspace/qpipe/tests/main_p2p.py", line 329, in <module>
+    simple_queue_thread.join()
+AttributeError: 'NoneType' object has no attribute 'join'
+ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: -6) local_rank: 0 (pid: 183960) of binary: /opt/conda/bin/python
+Traceback (most recent call last):
+  File "/opt/conda/bin/torchrun", line 33, in <module>
+    sys.exit(load_entry_point('torch==2.0.0', 'console_scripts', 'torchrun')())
+  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 346, in wrapper
+    return f(*args, **kwargs)
+  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/run.py", line 794, in main
+    run(args)
+  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/run.py", line 785, in run
+    elastic_launch(
+  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 134, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/launcher/api.py", line 250, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+main_p2p.py FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2023-05-27_12:29:17
+  host      : net-g14
+  rank      : 3 (local_rank: 1)
+  exitcode  : 1 (pid: 183961)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2023-05-27_12:29:17
+  host      : net-g14
+  rank      : 2 (local_rank: 0)
+  exitcode  : -6 (pid: 183960)
+  error_file: <N/A>
+  traceback : Signal 6 (SIGABRT) received by PID 183960
+============================================================

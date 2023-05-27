@@ -268,6 +268,7 @@ def parse_args():
     parser.add_argument("--nccl", action='store_true', default=False, help="use nccl")
     parser.add_argument("--warmup_tokens", type=int, default=2, help="warmup")
     parser.add_argument("--method", type=str, default="adaqpipe", help="method of sched")
+    parser.add_argument("--strat_file_name", type=str, default=None)
     parser.parse_args()
     args = parser.parse_args()
     return args
@@ -289,7 +290,7 @@ if __name__ == '__main__':
 
   
     method = args.method
-    sol_file = f"sols_opt_13b_NVIDIA_A100-SXM4-40GB_1.pkl"
+    sol_file = f"{args.strat_file_name}.pkl"
     strat_folder = '/workspace/qpipe/scripts/part_strategy'
     sols_path = f'{strat_folder}/{sol_file}'
     sols = pickle.load(open(sols_path, "rb"))
@@ -324,8 +325,8 @@ if __name__ == '__main__':
         model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
         model_pre_and_post = model_pre_and_post.cuda()
 
-
     run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
+    simple_queue_thread.join()
     # from torch import profiler
     # from torch.profiler import profile, record_function, ProfilerActivity
     # with profiler.profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], with_stack=True, \

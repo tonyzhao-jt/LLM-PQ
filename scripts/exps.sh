@@ -91,7 +91,7 @@ python3 algo_entry.py --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --theta 1 --global_bz 32 --group 2 --ilp_time_limit 200 --fit --debug --ilp_tolerance 0.04
+ --theta 0.1 --global_bz 32 --group 2 --ilp_time_limit 160 --fit --debug --ilp_tolerance 0.08
 
 # case6
 model_size=66b
@@ -103,7 +103,7 @@ python3 algo_entry.py --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --theta 1 --global_bz 32 --group 8 --ilp_time_limit 200 --fit --debug --ilp_tolerance 0.07
+ --theta 0.001 --global_bz 32 --group 4 --ilp_time_limit 200 --debug  --use_profiler_prediction
 
 # case 7
 model_size=176b
@@ -116,7 +116,7 @@ python3 algo_entry.py --model_size ${model_size} \
  --device_numbers "${device_numbers[@]}" \
  --model_name bloom \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --theta 0.01 --global_bz 32 --group 2 --adapp_group_size 2 --ilp_time_limit 60  --ilp_tolerance 0.01
+ --theta 0.01 --global_bz 32 --group 1 --adapp_group_size 1 --ilp_time_limit 150 --debug  --ilp_tolerance 0.095
 
 # case 8
 model_size=176b

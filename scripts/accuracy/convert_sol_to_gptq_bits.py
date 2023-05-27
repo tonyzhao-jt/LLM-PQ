@@ -18,6 +18,8 @@ for method in available_methods:
     # bit assignment
     # former two are for qkv and dense, latter two are for fc1 and fc2
     # first unpack the shard strategy from ranks
+    if method not in sols:
+        continue # skip if method not in sols
     strategy_result = sols[method]['use_plan']
     pure_shard_strategy = {}
     for rank, val in strategy_result.items():

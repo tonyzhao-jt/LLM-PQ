@@ -214,7 +214,6 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
 
     # print('----- communication cost ---- ')
     # print(comm_prefill, comm_decode)
-
     return group_L, N, BITs, M_d, M, (l_prefill, l_decode), omega, (comm_prefill, comm_decode)
 
 # algo 2

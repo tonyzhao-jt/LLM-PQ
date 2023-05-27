@@ -6,7 +6,7 @@ model_size="30b"
 device_info="Tesla_P100-PCIE-12GB_3_Tesla_V100-SXM2-32GB_1"
 available_methods=('adabits' 'adaqpipe' 'pipeedge' 'uniform')
 folder_abs_path="/workspace/qpipe/scripts/accuracy/bit_for_gptq_test/"
-export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 # create the corresponding files
 python3 convert_sol_to_gptq_bits.py --model-name ${model_name} --model-size ${model_size} \
         --device-info ${device_info}
@@ -16,6 +16,11 @@ do
     echo "run ${available_methods[i]} accuracy test"
     file_name="${available_methods[i]}_${model_size}_${device_info}_acc_test.pkl"
     file_abs_path="${folder_abs_path}${file_name}"
-    python3 main.py ${model_prefix}${model_size} c4 --wbits 4 --task piqa,arc_easy,lambada \
+    if [ -f $file_abs_path ]; then
+        python3 main.py ${model_prefix}${model_size} c4 --wbits 4 --task piqa,arc_easy,lambada \
         --ada-file ${file_abs_path} 2>&1 | tee "${file_name}.txt"
+    else
+        echo "$file_abs_path does not exist"
+    fi
+
 done
