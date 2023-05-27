@@ -347,6 +347,25 @@ class LatCostModel:
         X = np.array([[b, i, 1]])
         return model.predict(X)[0]
     
+    def predict_same_bit(self, device_name, b, s, i, h1, h2, bit):
+        assert self.has_fit, "Cost model is not fitted."
+        assert device_name in self.regression_models, f"Cannot find regression model for {device_name}"
+        shard = 2
+        model_name = f"{device_name}_{shard}_{h1}_{h2}_{s}_{bit}.pkl"
+        if model_name not in self.regression_models[device_name]:
+            # print(f"Cannot find regression model for {model_name}")
+            return None
+        model = self.regression_models[device_name][model_name]
+        X = np.array([[b, i, 1]])
+        return model.predict(X)[0]
+    
+    def predict_same_bit_with_b_s_i_bit(self, device_name, b, s, i, bit):
+        return self.predict_same_bit(device_name, b, s, i, self.h1, self.h2, bit)
+    
+    def predict_same_bit_by_profiled_with_b_s_i_bit(self, device_name, b, s, i, bit):
+        shard = 2
+        return self.fetch_lat(device_name, shard, b, s, i, self.h1, self.h2, bit)
+
     def predict_by_model_with_b_s_i_bit(self, device_name, shard, b, s, i, bit):
         return self.predict(device_name, shard, b, s, i, self.h1, self.h2, bit)
 

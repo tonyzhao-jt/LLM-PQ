@@ -92,7 +92,6 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
         prob += T_prefill >= T_prefill_j[j]
         prob += T_decode >= T_decode_j[j]
 
-
     # Solve the problem
     # prob.solve(pulp.apis.PULP_CBC_CMD())
     if ilp_tolerance is not None:
@@ -168,19 +167,19 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
     l_prefill = np.zeros((group_L, N, len(BITs)))
     l_decode = np.zeros((group_L, N, len(BITs))) 
 
+
     for i in range(group_L):
         l_prefill[i, :, :] = get_latency_with_layer_device_bit_pair(current_D, BITs, lat_cost_model, prefill_bz, s, 0, \
                                                                      use_profiler_prediction=use_profiler_prediction) * group_size
         l_decode[i, :, :] = get_latency_with_layer_device_bit_pair(current_D, BITs, lat_cost_model, bz_decode_max, 1, s + int(mu_n / 2), \
                                                                    use_profiler_prediction=use_profiler_prediction) * group_size
-
     # preposet
     if len(current_D) > 1:
         first_device_name = current_D[0]
         # prefill
-        prefill_prepost_cost = lat_cost_model.fetch_prepost_lat(first_device_name, 0, prefill_bz, s)
+        prefill_prepost_cost = lat_cost_model.fetch_prepost_lat(first_device_name, 0, prefill_bz, s) * math.ceil(global_bz / prefill_bz)
         # decode
-        print(bz_decode_max, s + int(mu_n / 2))
+        # print(bz_decode_max, s + int(mu_n / 2))
         decode_prepost_cost = lat_cost_model.fetch_prepost_lat(first_device_name, 1, bz_decode_max, s + int(mu_n / 2))
         # add to l_prefill and l_decode
         l_prefill[:, 0, :] += prefill_prepost_cost
@@ -215,6 +214,7 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
 
     # print('----- communication cost ---- ')
     # print(comm_prefill, comm_decode)
+
     return group_L, N, BITs, M_d, M, (l_prefill, l_decode), omega, (comm_prefill, comm_decode)
 
 # algo 2

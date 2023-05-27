@@ -19,3 +19,4 @@
 trace.json
 profile.json
 *.trace.json
+!result/*

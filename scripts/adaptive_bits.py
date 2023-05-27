@@ -132,6 +132,7 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits, bz_pack, model_mem_est
     M_d = np.floor(M_d).astype(int) # floor
     M = np.ceil(M).astype(int) # ceil
 
+
     # omega
     omega = assign_omega_uniform(group_L, BITs)
     if omega_file is not None:

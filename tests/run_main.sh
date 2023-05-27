@@ -29,7 +29,7 @@ torchrun --nnodes=2 --nproc_per_node=4 --master_addr net-g14 --master_port 7777 
 torchrun --nnodes=1 --nproc_per_node=4 --master_port 9999 test_rpc_tp.py --model_name opt --model_size "350m"
 torchrun --nnodes=1 --nproc_per_node=4 --master_port 9999 test_rpc_tp.py --model_name bloom --model_size "560m"
 torchrun --nnodes=1 --nproc_per_node=4 --master_port 6666 test_single_p2p.py --model_name bloom --model_size "560m"
-torchrun --nnodes=1 --nproc_per_node=4 --master_port 6666 test_single_p2p.py --model_name opt --model_size "350m"
+torchrun --nnodes=1 --nproc_per_node=4 --master_port 6666 test_single_p2p.py --model_name opt --model_size "350m" --nccl
 
 # p2p test dist
 torchrun --nnodes=2 --node_rank=0 --nproc_per_node=2 --master_addr ***REMOVED*** --master_port 6666 main_p2p.py --model_name opt --model_size "350m"

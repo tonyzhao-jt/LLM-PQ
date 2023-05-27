@@ -324,14 +324,16 @@ if __name__ == '__main__':
         model_pre_and_post = loaded_llm_cpu._pure_pre_and_post()
         model_pre_and_post = model_pre_and_post.cuda()
 
-    from torch import profiler
-    from torch.profiler import profile, record_function, ProfilerActivity
-    with profiler.profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], with_stack=True, \
-                          on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/test')) as prof:
-        run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
-    prof.export_chrome_trace("trace.json")
-    simple_queue_thread.join()
-    print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
+
+    run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
+    # from torch import profiler
+    # from torch.profiler import profile, record_function, ProfilerActivity
+    # with profiler.profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], with_stack=True, \
+    #                       on_trace_ready=torch.profiler.tensorboard_trace_handler('./log/test')) as prof:
+    #     run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
+    # prof.export_chrome_trace("trace.json")
+    # simple_queue_thread.join()
+    # print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=10))
     
     # run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
 

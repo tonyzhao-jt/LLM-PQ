@@ -1,0 +1,395 @@
+
+===================================BUG REPORT===================================
+Welcome to bitsandbytes. For bug reports, please run
+
+python -m bitsandbytes
+
+ and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
+================================================================================
+
+===================================BUG REPORT===================================
+Welcome to bitsandbytes. For bug reports, please run
+
+python -m bitsandbytes
+
+ and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
+================================================================================
+bin /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117_nocublaslt.so
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/usr/local/nvidia/lib64'), PosixPath('/usr/local/nvidia/lib')}
+  warn(msg)
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: /usr/local/nvidia/lib:/usr/local/nvidia/lib64 did not contain ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] as expected! Searching further paths...
+  warn(msg)
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_204xz53o/none_h_4ziubz/attempt_0/1/error.json')}
+  warn(msg)
+CUDA_SETUP: WARNING! libcudart.so not found in any environmental path. Searching in backup paths...
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: Found duplicate ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] files: {PosixPath('/usr/local/cuda/lib64/libcudart.so.11.0'), PosixPath('/usr/local/cuda/lib64/libcudart.so')}.. We'll flip a coin and try one of these, in order to fail forward.
+Either way, this might cause trouble in the future:
+If you get `CUDA error: invalid device function` errors, the above might be the cause and the solution is to make sure only one ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] in the paths that we search based on your env.
+  warn(msg)
+CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so.11.0
+CUDA SETUP: Highest compute capability among GPUs detected: 6.0
+CUDA SETUP: Detected CUDA version 117
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: WARNING: Compute capability < 7.5 detected! Only slow 8-bit matmul is supported for your GPU!
+  warn(msg)
+CUDA SETUP: Loading binary /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117_nocublaslt.so...
+bin /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117_nocublaslt.so
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/usr/local/nvidia/lib'), PosixPath('/usr/local/nvidia/lib64')}
+  warn(msg)
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: /usr/local/nvidia/lib:/usr/local/nvidia/lib64 did not contain ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] as expected! Searching further paths...
+  warn(msg)
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_204xz53o/none_h_4ziubz/attempt_0/0/error.json')}
+  warn(msg)
+CUDA_SETUP: WARNING! libcudart.so not found in any environmental path. Searching in backup paths...
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: Found duplicate ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] files: {PosixPath('/usr/local/cuda/lib64/libcudart.so.11.0'), PosixPath('/usr/local/cuda/lib64/libcudart.so')}.. We'll flip a coin and try one of these, in order to fail forward.
+Either way, this might cause trouble in the future:
+If you get `CUDA error: invalid device function` errors, the above might be the cause and the solution is to make sure only one ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] in the paths that we search based on your env.
+  warn(msg)
+CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so.11.0
+CUDA SETUP: Highest compute capability among GPUs detected: 6.0
+CUDA SETUP: Detected CUDA version 117
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:149: UserWarning: WARNING: Compute capability < 7.5 detected! Only slow 8-bit matmul is supported for your GPU!
+  warn(msg)
+CUDA SETUP: Loading binary /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117_nocublaslt.so...
+rank 1 is in stage 1
+Pipeline Data Loaded, with prefill cnts:  4
+rank 0 is in stage 0
+create layer: 8|create layer: 0|create layer: 9|create layer: 1|create layer: 10|create layer: 2|create layer: 11|create layer: 3|create layer: 12|create layer: 4|create layer: 13|create layer: 5|create layer: 14|create layer: 6|create layer: 15|create layer: 7|Stage 1 module sharded
+Stage 1 kv initialized
+Stage 0 module sharded
+Stage 0 kv initialized
+rank_src: 3, rank_dst: 1, rank: 0, results_cb: <function handle_results at 0x7f9d375ebd90>
+rank_src: 0, rank_dst: 2, rank: 1, results_cb: None
+2023-05-27 06:11:31,569 - INFO - start pipe data
+2023-05-27 06:14:57,697 - INFO - Request id 0 done for token 1
+2023-05-27 06:15:51,048 - INFO - Request id 1 done for token 1
+2023-05-27 06:16:44,398 - INFO - Request id 2 done for token 1
+2023-05-27 06:17:39,039 - INFO - Request id 3 done for token 1
+2023-05-27 06:17:40,120 - INFO - Latency is 368.550665, throughput is 0.086827
+2023-05-27 06:17:40,120 - INFO - Token throughput is 0.173653
+2023-05-27 06:17:50,135 - INFO - start pipe data
+2023-05-27 06:21:20,134 - INFO - Request id 0 done for token 1
+2023-05-27 06:22:08,107 - INFO - Request id 1 done for token 1
+2023-05-27 06:23:08,444 - INFO - Request id 2 done for token 1
+2023-05-27 06:24:09,727 - INFO - Request id 3 done for token 1
+2023-05-27 06:24:10,194 - INFO - Request id 0 done for token 2
+2023-05-27 06:24:10,217 - INFO - Request id 1 done for token 2
+2023-05-27 06:24:10,234 - INFO - Request id 2 done for token 2
+2023-05-27 06:24:10,819 - INFO - Request id 3 done for token 2
+2023-05-27 06:24:10,962 - INFO - Request id 0 done for token 3
+2023-05-27 06:24:11,110 - INFO - Request id 1 done for token 3
+2023-05-27 06:24:11,253 - INFO - Request id 2 done for token 3
+2023-05-27 06:24:11,397 - INFO - Request id 3 done for token 3
+2023-05-27 06:24:11,538 - INFO - Request id 0 done for token 4
+2023-05-27 06:24:11,681 - INFO - Request id 1 done for token 4
+2023-05-27 06:24:11,823 - INFO - Request id 2 done for token 4
+2023-05-27 06:24:11,965 - INFO - Request id 3 done for token 4
+2023-05-27 06:24:12,108 - INFO - Request id 0 done for token 5
+2023-05-27 06:24:12,254 - INFO - Request id 1 done for token 5
+2023-05-27 06:24:12,400 - INFO - Request id 2 done for token 5
+2023-05-27 06:24:12,542 - INFO - Request id 3 done for token 5
+2023-05-27 06:24:12,683 - INFO - Request id 0 done for token 6
+2023-05-27 06:24:12,826 - INFO - Request id 1 done for token 6
+2023-05-27 06:24:12,968 - INFO - Request id 2 done for token 6
+2023-05-27 06:24:13,115 - INFO - Request id 3 done for token 6
+2023-05-27 06:24:13,259 - INFO - Request id 0 done for token 7
+2023-05-27 06:24:13,402 - INFO - Request id 1 done for token 7
+2023-05-27 06:24:13,544 - INFO - Request id 2 done for token 7
+2023-05-27 06:24:13,687 - INFO - Request id 3 done for token 7
+2023-05-27 06:24:13,829 - INFO - Request id 0 done for token 8
+2023-05-27 06:24:13,973 - INFO - Request id 1 done for token 8
+2023-05-27 06:24:14,115 - INFO - Request id 2 done for token 8
+2023-05-27 06:24:14,255 - INFO - Request id 3 done for token 8
+2023-05-27 06:24:14,401 - INFO - Request id 0 done for token 9
+2023-05-27 06:24:14,546 - INFO - Request id 1 done for token 9
+2023-05-27 06:24:14,692 - INFO - Request id 2 done for token 9
+2023-05-27 06:24:14,833 - INFO - Request id 3 done for token 9
+2023-05-27 06:24:14,975 - INFO - Request id 0 done for token 10
+2023-05-27 06:24:15,116 - INFO - Request id 1 done for token 10
+2023-05-27 06:24:15,267 - INFO - Request id 2 done for token 10
+2023-05-27 06:24:15,408 - INFO - Request id 3 done for token 10
+2023-05-27 06:24:15,554 - INFO - Request id 0 done for token 11
+2023-05-27 06:24:15,695 - INFO - Request id 1 done for token 11
+2023-05-27 06:24:15,837 - INFO - Request id 2 done for token 11
+2023-05-27 06:24:15,980 - INFO - Request id 3 done for token 11
+2023-05-27 06:24:16,126 - INFO - Request id 0 done for token 12
+2023-05-27 06:24:16,268 - INFO - Request id 1 done for token 12
+2023-05-27 06:24:16,413 - INFO - Request id 2 done for token 12
+2023-05-27 06:24:16,555 - INFO - Request id 3 done for token 12
+2023-05-27 06:24:16,697 - INFO - Request id 0 done for token 13
+2023-05-27 06:24:16,841 - INFO - Request id 1 done for token 13
+2023-05-27 06:24:16,984 - INFO - Request id 2 done for token 13
+2023-05-27 06:24:17,129 - INFO - Request id 3 done for token 13
+2023-05-27 06:24:17,270 - INFO - Request id 0 done for token 14
+2023-05-27 06:24:17,415 - INFO - Request id 1 done for token 14
+2023-05-27 06:24:17,558 - INFO - Request id 2 done for token 14
+2023-05-27 06:24:17,707 - INFO - Request id 3 done for token 14
+2023-05-27 06:24:17,850 - INFO - Request id 0 done for token 15
+2023-05-27 06:24:17,992 - INFO - Request id 1 done for token 15
+2023-05-27 06:24:18,134 - INFO - Request id 2 done for token 15
+2023-05-27 06:24:18,283 - INFO - Request id 3 done for token 15
+2023-05-27 06:24:18,425 - INFO - Request id 0 done for token 16
+2023-05-27 06:24:18,569 - INFO - Request id 1 done for token 16
+2023-05-27 06:24:18,711 - INFO - Request id 2 done for token 16
+2023-05-27 06:24:18,856 - INFO - Request id 3 done for token 16
+2023-05-27 06:24:18,998 - INFO - Request id 0 done for token 17
+2023-05-27 06:24:19,143 - INFO - Request id 1 done for token 17
+2023-05-27 06:24:19,289 - INFO - Request id 2 done for token 17
+2023-05-27 06:24:19,431 - INFO - Request id 3 done for token 17
+2023-05-27 06:24:19,575 - INFO - Request id 0 done for token 18
+2023-05-27 06:24:19,717 - INFO - Request id 1 done for token 18
+2023-05-27 06:24:19,863 - INFO - Request id 2 done for token 18
+2023-05-27 06:24:20,006 - INFO - Request id 3 done for token 18
+2023-05-27 06:24:20,150 - INFO - Request id 0 done for token 19
+2023-05-27 06:24:20,295 - INFO - Request id 1 done for token 19
+2023-05-27 06:24:20,439 - INFO - Request id 2 done for token 19
+2023-05-27 06:24:20,581 - INFO - Request id 3 done for token 19
+2023-05-27 06:24:20,727 - INFO - Request id 0 done for token 20
+2023-05-27 06:24:20,870 - INFO - Request id 1 done for token 20
+2023-05-27 06:24:21,015 - INFO - Request id 2 done for token 20
+2023-05-27 06:24:21,158 - INFO - Request id 3 done for token 20
+2023-05-27 06:24:21,303 - INFO - Request id 0 done for token 21
+2023-05-27 06:24:21,446 - INFO - Request id 1 done for token 21
+2023-05-27 06:24:21,592 - INFO - Request id 2 done for token 21
+2023-05-27 06:24:21,736 - INFO - Request id 3 done for token 21
+2023-05-27 06:24:21,879 - INFO - Request id 0 done for token 22
+2023-05-27 06:24:22,021 - INFO - Request id 1 done for token 22
+2023-05-27 06:24:22,165 - INFO - Request id 2 done for token 22
+2023-05-27 06:24:22,311 - INFO - Request id 3 done for token 22
+2023-05-27 06:24:22,453 - INFO - Request id 0 done for token 23
+2023-05-27 06:24:22,601 - INFO - Request id 1 done for token 23
+2023-05-27 06:24:22,745 - INFO - Request id 2 done for token 23
+2023-05-27 06:24:22,890 - INFO - Request id 3 done for token 23
+2023-05-27 06:24:23,034 - INFO - Request id 0 done for token 24
+2023-05-27 06:24:23,177 - INFO - Request id 1 done for token 24
+2023-05-27 06:24:23,320 - INFO - Request id 2 done for token 24
+2023-05-27 06:24:23,468 - INFO - Request id 3 done for token 24
+2023-05-27 06:24:23,612 - INFO - Request id 0 done for token 25
+2023-05-27 06:24:23,755 - INFO - Request id 1 done for token 25
+2023-05-27 06:24:23,897 - INFO - Request id 2 done for token 25
+2023-05-27 06:24:24,046 - INFO - Request id 3 done for token 25
+2023-05-27 06:24:24,193 - INFO - Request id 0 done for token 26
+2023-05-27 06:24:24,336 - INFO - Request id 1 done for token 26
+2023-05-27 06:24:24,479 - INFO - Request id 2 done for token 26
+2023-05-27 06:24:24,625 - INFO - Request id 3 done for token 26
+2023-05-27 06:24:24,771 - INFO - Request id 0 done for token 27
+2023-05-27 06:24:24,915 - INFO - Request id 1 done for token 27
+2023-05-27 06:24:25,058 - INFO - Request id 2 done for token 27
+2023-05-27 06:24:25,206 - INFO - Request id 3 done for token 27
+2023-05-27 06:24:25,350 - INFO - Request id 0 done for token 28
+2023-05-27 06:24:25,497 - INFO - Request id 1 done for token 28
+2023-05-27 06:24:25,639 - INFO - Request id 2 done for token 28
+2023-05-27 06:24:25,785 - INFO - Request id 3 done for token 28
+2023-05-27 06:24:25,929 - INFO - Request id 0 done for token 29
+2023-05-27 06:24:26,075 - INFO - Request id 1 done for token 29
+2023-05-27 06:24:26,218 - INFO - Request id 2 done for token 29
+2023-05-27 06:24:26,364 - INFO - Request id 3 done for token 29
+2023-05-27 06:24:26,507 - INFO - Request id 0 done for token 30
+2023-05-27 06:24:26,653 - INFO - Request id 1 done for token 30
+2023-05-27 06:24:26,796 - INFO - Request id 2 done for token 30
+2023-05-27 06:24:26,939 - INFO - Request id 3 done for token 30
+2023-05-27 06:24:27,082 - INFO - Request id 0 done for token 31
+2023-05-27 06:24:27,227 - INFO - Request id 1 done for token 31
+2023-05-27 06:24:27,372 - INFO - Request id 2 done for token 31
+2023-05-27 06:24:27,519 - INFO - Request id 3 done for token 31
+2023-05-27 06:24:27,661 - INFO - Request id 0 done for token 32
+2023-05-27 06:24:27,808 - INFO - Request id 1 done for token 32
+2023-05-27 06:24:27,953 - INFO - Request id 2 done for token 32
+2023-05-27 06:24:28,098 - INFO - Request id 3 done for token 32
+2023-05-27 06:24:28,241 - INFO - Request id 0 done for token 33
+2023-05-27 06:24:28,383 - INFO - Request id 1 done for token 33
+2023-05-27 06:24:28,528 - INFO - Request id 2 done for token 33
+2023-05-27 06:24:28,671 - INFO - Request id 3 done for token 33
+2023-05-27 06:24:28,820 - INFO - Request id 0 done for token 34
+2023-05-27 06:24:28,965 - INFO - Request id 1 done for token 34
+2023-05-27 06:24:29,110 - INFO - Request id 2 done for token 34
+2023-05-27 06:24:29,252 - INFO - Request id 3 done for token 34
+2023-05-27 06:24:29,399 - INFO - Request id 0 done for token 35
+2023-05-27 06:24:29,545 - INFO - Request id 1 done for token 35
+2023-05-27 06:24:29,688 - INFO - Request id 2 done for token 35
+2023-05-27 06:24:29,832 - INFO - Request id 3 done for token 35
+2023-05-27 06:24:29,974 - INFO - Request id 0 done for token 36
+2023-05-27 06:24:30,121 - INFO - Request id 1 done for token 36
+2023-05-27 06:24:30,267 - INFO - Request id 2 done for token 36
+2023-05-27 06:24:30,411 - INFO - Request id 3 done for token 36
+2023-05-27 06:24:30,556 - INFO - Request id 0 done for token 37
+2023-05-27 06:24:30,700 - INFO - Request id 1 done for token 37
+2023-05-27 06:24:30,845 - INFO - Request id 2 done for token 37
+2023-05-27 06:24:30,989 - INFO - Request id 3 done for token 37
+2023-05-27 06:24:31,134 - INFO - Request id 0 done for token 38
+2023-05-27 06:24:31,278 - INFO - Request id 1 done for token 38
+2023-05-27 06:24:31,424 - INFO - Request id 2 done for token 38
+2023-05-27 06:24:31,568 - INFO - Request id 3 done for token 38
+2023-05-27 06:24:31,714 - INFO - Request id 0 done for token 39
+2023-05-27 06:24:31,859 - INFO - Request id 1 done for token 39
+2023-05-27 06:24:32,005 - INFO - Request id 2 done for token 39
+2023-05-27 06:24:32,148 - INFO - Request id 3 done for token 39
+2023-05-27 06:24:32,292 - INFO - Request id 0 done for token 40
+2023-05-27 06:24:32,437 - INFO - Request id 1 done for token 40
+2023-05-27 06:24:32,587 - INFO - Request id 2 done for token 40
+2023-05-27 06:24:32,730 - INFO - Request id 3 done for token 40
+2023-05-27 06:24:32,874 - INFO - Request id 0 done for token 41
+2023-05-27 06:24:33,018 - INFO - Request id 1 done for token 41
+2023-05-27 06:24:33,161 - INFO - Request id 2 done for token 41
+2023-05-27 06:24:33,304 - INFO - Request id 3 done for token 41
+2023-05-27 06:24:33,451 - INFO - Request id 0 done for token 42
+2023-05-27 06:24:33,598 - INFO - Request id 1 done for token 42
+2023-05-27 06:24:33,741 - INFO - Request id 2 done for token 42
+2023-05-27 06:24:33,885 - INFO - Request id 3 done for token 42
+2023-05-27 06:24:34,029 - INFO - Request id 0 done for token 43
+2023-05-27 06:24:34,177 - INFO - Request id 1 done for token 43
+2023-05-27 06:24:34,321 - INFO - Request id 2 done for token 43
+2023-05-27 06:24:34,467 - INFO - Request id 3 done for token 43
+2023-05-27 06:24:34,611 - INFO - Request id 0 done for token 44
+2023-05-27 06:24:34,754 - INFO - Request id 1 done for token 44
+2023-05-27 06:24:34,903 - INFO - Request id 2 done for token 44
+2023-05-27 06:24:35,047 - INFO - Request id 3 done for token 44
+2023-05-27 06:24:35,190 - INFO - Request id 0 done for token 45
+2023-05-27 06:24:35,334 - INFO - Request id 1 done for token 45
+2023-05-27 06:24:35,486 - INFO - Request id 2 done for token 45
+2023-05-27 06:24:35,629 - INFO - Request id 3 done for token 45
+2023-05-27 06:24:35,773 - INFO - Request id 0 done for token 46
+2023-05-27 06:24:35,917 - INFO - Request id 1 done for token 46
+2023-05-27 06:24:36,060 - INFO - Request id 2 done for token 46
+2023-05-27 06:24:36,206 - INFO - Request id 3 done for token 46
+2023-05-27 06:24:36,352 - INFO - Request id 0 done for token 47
+2023-05-27 06:24:36,501 - INFO - Request id 1 done for token 47
+2023-05-27 06:24:36,644 - INFO - Request id 2 done for token 47
+2023-05-27 06:24:36,788 - INFO - Request id 3 done for token 47
+2023-05-27 06:24:36,931 - INFO - Request id 0 done for token 48
+2023-05-27 06:24:37,074 - INFO - Request id 1 done for token 48
+2023-05-27 06:24:37,219 - INFO - Request id 2 done for token 48
+2023-05-27 06:24:37,364 - INFO - Request id 3 done for token 48
+2023-05-27 06:24:37,508 - INFO - Request id 0 done for token 49
+2023-05-27 06:24:37,653 - INFO - Request id 1 done for token 49
+2023-05-27 06:24:37,797 - INFO - Request id 2 done for token 49
+2023-05-27 06:24:37,947 - INFO - Request id 3 done for token 49
+2023-05-27 06:24:38,093 - INFO - Request id 0 done for token 50
+2023-05-27 06:24:38,236 - INFO - Request id 1 done for token 50
+2023-05-27 06:24:38,380 - INFO - Request id 2 done for token 50
+2023-05-27 06:24:38,525 - INFO - Request id 3 done for token 50
+2023-05-27 06:24:38,671 - INFO - Request id 0 done for token 51
+2023-05-27 06:24:38,818 - INFO - Request id 1 done for token 51
+2023-05-27 06:24:38,963 - INFO - Request id 2 done for token 51
+2023-05-27 06:24:39,108 - INFO - Request id 3 done for token 51
+2023-05-27 06:24:39,252 - INFO - Request id 0 done for token 52
+2023-05-27 06:24:39,397 - INFO - Request id 1 done for token 52
+2023-05-27 06:24:39,541 - INFO - Request id 2 done for token 52
+2023-05-27 06:24:39,687 - INFO - Request id 3 done for token 52
+2023-05-27 06:24:39,834 - INFO - Request id 0 done for token 53
+2023-05-27 06:24:39,979 - INFO - Request id 1 done for token 53
+2023-05-27 06:24:40,127 - INFO - Request id 2 done for token 53
+2023-05-27 06:24:40,272 - INFO - Request id 3 done for token 53
+2023-05-27 06:24:40,416 - INFO - Request id 0 done for token 54
+2023-05-27 06:24:40,560 - INFO - Request id 1 done for token 54
+2023-05-27 06:24:40,706 - INFO - Request id 2 done for token 54
+2023-05-27 06:24:40,852 - INFO - Request id 3 done for token 54
+2023-05-27 06:24:40,996 - INFO - Request id 0 done for token 55
+2023-05-27 06:24:41,143 - INFO - Request id 1 done for token 55
+2023-05-27 06:24:41,287 - INFO - Request id 2 done for token 55
+2023-05-27 06:24:41,433 - INFO - Request id 3 done for token 55
+2023-05-27 06:24:41,578 - INFO - Request id 0 done for token 56
+2023-05-27 06:24:41,722 - INFO - Request id 1 done for token 56
+2023-05-27 06:24:41,866 - INFO - Request id 2 done for token 56
+2023-05-27 06:24:42,013 - INFO - Request id 3 done for token 56
+2023-05-27 06:24:42,157 - INFO - Request id 0 done for token 57
+2023-05-27 06:24:42,304 - INFO - Request id 1 done for token 57
+2023-05-27 06:24:42,447 - INFO - Request id 2 done for token 57
+2023-05-27 06:24:42,595 - INFO - Request id 3 done for token 57
+2023-05-27 06:24:42,739 - INFO - Request id 0 done for token 58
+2023-05-27 06:24:42,886 - INFO - Request id 1 done for token 58
+2023-05-27 06:24:43,031 - INFO - Request id 2 done for token 58
+2023-05-27 06:24:43,178 - INFO - Request id 3 done for token 58
+2023-05-27 06:24:43,323 - INFO - Request id 0 done for token 59
+2023-05-27 06:24:43,468 - INFO - Request id 1 done for token 59
+2023-05-27 06:24:43,613 - INFO - Request id 2 done for token 59
+2023-05-27 06:24:43,760 - INFO - Request id 3 done for token 59
+2023-05-27 06:24:43,906 - INFO - Request id 0 done for token 60
+2023-05-27 06:24:44,050 - INFO - Request id 1 done for token 60
+2023-05-27 06:24:44,198 - INFO - Request id 2 done for token 60
+2023-05-27 06:24:44,342 - INFO - Request id 3 done for token 60
+2023-05-27 06:24:44,488 - INFO - Request id 0 done for token 61
+2023-05-27 06:24:44,633 - INFO - Request id 1 done for token 61
+2023-05-27 06:24:44,779 - INFO - Request id 2 done for token 61
+2023-05-27 06:24:44,923 - INFO - Request id 3 done for token 61
+2023-05-27 06:24:45,069 - INFO - Request id 0 done for token 62
+2023-05-27 06:24:45,213 - INFO - Request id 1 done for token 62
+2023-05-27 06:24:45,361 - INFO - Request id 2 done for token 62
+2023-05-27 06:24:45,507 - INFO - Request id 3 done for token 62
+2023-05-27 06:24:45,653 - INFO - Request id 0 done for token 63
+2023-05-27 06:24:45,801 - INFO - Request id 1 done for token 63
+2023-05-27 06:24:45,945 - INFO - Request id 2 done for token 63
+2023-05-27 06:24:46,090 - INFO - Request id 3 done for token 63
+2023-05-27 06:24:46,240 - INFO - Request id 0 done for token 64
+2023-05-27 06:24:46,385 - INFO - Request id 1 done for token 64
+2023-05-27 06:24:46,531 - INFO - Request id 2 done for token 64
+2023-05-27 06:24:46,676 - INFO - Request id 3 done for token 64
+2023-05-27 06:24:46,820 - INFO - Request id 0 done for token 65
+2023-05-27 06:24:46,967 - INFO - Request id 1 done for token 65
+2023-05-27 06:24:47,112 - INFO - Request id 2 done for token 65
+2023-05-27 06:24:47,256 - INFO - Request id 3 done for token 65
+2023-05-27 06:24:47,401 - INFO - Request id 0 done for token 66
+2023-05-27 06:24:47,545 - INFO - Request id 1 done for token 66
+2023-05-27 06:24:47,692 - INFO - Request id 2 done for token 66
+2023-05-27 06:24:47,837 - INFO - Request id 3 done for token 66
+2023-05-27 06:24:47,985 - INFO - Request id 0 done for token 67
+2023-05-27 06:24:48,129 - INFO - Request id 1 done for token 67
+2023-05-27 06:24:48,275 - INFO - Request id 2 done for token 67
+2023-05-27 06:24:48,419 - INFO - Request id 3 done for token 67
+2023-05-27 06:24:48,565 - INFO - Request id 0 done for token 68
+2023-05-27 06:24:48,712 - INFO - Request id 1 done for token 68
+2023-05-27 06:24:48,858 - INFO - Request id 2 done for token 68
+2023-05-27 06:24:49,002 - INFO - Request id 3 done for token 68
+2023-05-27 06:24:49,147 - INFO - Request id 0 done for token 69
+2023-05-27 06:24:49,291 - INFO - Request id 1 done for token 69
+2023-05-27 06:24:49,440 - INFO - Request id 2 done for token 69
+2023-05-27 06:24:49,586 - INFO - Request id 3 done for token 69
+2023-05-27 06:24:49,730 - INFO - Request id 0 done for token 70
+2023-05-27 06:24:49,875 - INFO - Request id 1 done for token 70
+2023-05-27 06:24:50,022 - INFO - Request id 2 done for token 70
+2023-05-27 06:24:50,167 - INFO - Request id 3 done for token 70
+2023-05-27 06:24:50,313 - INFO - Request id 0 done for token 71
+2023-05-27 06:24:50,458 - INFO - Request id 1 done for token 71
+2023-05-27 06:24:50,605 - INFO - Request id 2 done for token 71
+2023-05-27 06:24:50,753 - INFO - Request id 3 done for token 71
+2023-05-27 06:24:50,898 - INFO - Request id 0 done for token 72
+2023-05-27 06:24:51,045 - INFO - Request id 1 done for token 72
+2023-05-27 06:24:51,190 - INFO - Request id 2 done for token 72
+2023-05-27 06:24:51,335 - INFO - Request id 3 done for token 72
+2023-05-27 06:24:51,482 - INFO - Request id 0 done for token 73
+2023-05-27 06:24:51,628 - INFO - Request id 1 done for token 73
+2023-05-27 06:24:51,773 - INFO - Request id 2 done for token 73
+2023-05-27 06:24:51,918 - INFO - Request id 3 done for token 73
+2023-05-27 06:24:52,064 - INFO - Request id 0 done for token 74
+2023-05-27 06:24:52,211 - INFO - Request id 1 done for token 74
+2023-05-27 06:24:52,357 - INFO - Request id 2 done for token 74
+2023-05-27 06:24:52,502 - INFO - Request id 3 done for token 74
+2023-05-27 06:24:52,647 - INFO - Request id 0 done for token 75
+2023-05-27 06:24:52,797 - INFO - Request id 1 done for token 75
+2023-05-27 06:24:52,943 - INFO - Request id 2 done for token 75
+2023-05-27 06:24:53,088 - INFO - Request id 3 done for token 75
+2023-05-27 06:24:53,233 - INFO - Request id 0 done for token 76
+2023-05-27 06:24:53,380 - INFO - Request id 1 done for token 76
+2023-05-27 06:24:53,529 - INFO - Request id 2 done for token 76
+2023-05-27 06:24:53,674 - INFO - Request id 3 done for token 76
+2023-05-27 06:24:53,819 - INFO - Request id 0 done for token 77
+2023-05-27 06:24:53,965 - INFO - Request id 1 done for token 77
+2023-05-27 06:24:54,115 - INFO - Request id 2 done for token 77
+2023-05-27 06:24:54,260 - INFO - Request id 3 done for token 77
+2023-05-27 06:24:54,405 - INFO - Request id 0 done for token 78
+2023-05-27 06:24:54,551 - INFO - Request id 1 done for token 78
+2023-05-27 06:24:54,700 - INFO - Request id 2 done for token 78
+2023-05-27 06:24:54,845 - INFO - Request id 3 done for token 78
+2023-05-27 06:24:54,991 - INFO - Request id 0 done for token 79
+2023-05-27 06:24:55,136 - INFO - Request id 1 done for token 79
+2023-05-27 06:24:55,285 - INFO - Request id 2 done for token 79
+2023-05-27 06:24:55,430 - INFO - Request id 3 done for token 79
+2023-05-27 06:24:56,011 - INFO - Latency is 425.876019, throughput is 0.075139
+2023-05-27 06:24:56,011 - INFO - Token throughput is 6.011139
+2023-05-27 06:24:56,031 - INFO - handle_cmd: stop
+Exception in thread Thread-337:
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.10/threading.py", line 1016, in _bootstrap_inner
+    self.run()
+  File "/opt/conda/lib/python3.10/site-packages/qpipe/p2p/util.py", line 24, in run
+    self._req.wait()
+RuntimeError: [/opt/conda/conda-bld/pytorch_1678411187366/work/third_party/gloo/gloo/transport/tcp/pair.cc:598] Connection closed by peer [10.28.1.27]:26814

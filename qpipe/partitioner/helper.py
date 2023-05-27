@@ -187,14 +187,14 @@ def force_zero_3d(lat, z, prob):
     for i in range(lat_shape[0]):
         for j in range(lat_shape[1]):
             for b in range(lat_shape[2]):
-                if lat[i][j][b] > 999:
+                if lat[i][j][b] >= float('inf'):
                     prob += z[(i, j, b)] == 0
 
 def force_zero_2d(lat, z, prob):
     lat_shape = lat.shape
     for i in range(lat_shape[0]):
         for j in range(lat_shape[1]):
-            if lat[i][j] > 999:
+            if lat[i][j] >= float('inf'):
                 prob += z[(i, j)] == 0
 def force_zero(lat, z, prob):
     lat_shape = lat.shape
@@ -219,18 +219,28 @@ def decouple_result_group(group_size, plan):
 # produce latency prediction
 def lat_prediction(lat_cost_model, D_name, b, s, i, atten_bit, ffn_bit, use_profiler_prediction=True):
     stage_lat = 0
-    if not use_profiler_prediction:
-        atten_lat = lat_cost_model.predict_by_model_with_b_s_i_bit(D_name, 0, b, s, i, atten_bit)
-        ffn_lat = lat_cost_model.predict_by_model_with_b_s_i_bit(D_name, 1, b, s, i, ffn_bit)
+    if atten_bit == ffn_bit:
+        if not use_profiler_prediction:
+            lat = lat_cost_model.predict_same_bit_with_b_s_i_bit(D_name, b, s, i, atten_bit)
+        else:
+            lat = lat_cost_model.predict_same_bit_by_profiled_with_b_s_i_bit(D_name, b, s, i, atten_bit)
+        if lat is None:
+            stage_lat = float('inf')
+        else:
+            stage_lat = lat
     else:
-        atten_lat = lat_cost_model.predict_by_profiled_with_b_s_i_bit(D_name, 0, b, s, i, atten_bit)
-        ffn_lat = lat_cost_model.predict_by_profiled_with_b_s_i_bit(D_name, 1, b, s, i, ffn_bit)
+        if not use_profiler_prediction:
+            atten_lat = lat_cost_model.predict_by_model_with_b_s_i_bit(D_name, 0, b, s, i, atten_bit)
+            ffn_lat = lat_cost_model.predict_by_model_with_b_s_i_bit(D_name, 1, b, s, i, ffn_bit)
+        else:
+            atten_lat = lat_cost_model.predict_by_profiled_with_b_s_i_bit(D_name, 0, b, s, i, atten_bit)
+            ffn_lat = lat_cost_model.predict_by_profiled_with_b_s_i_bit(D_name, 1, b, s, i, ffn_bit)
 
-    if atten_lat is None:
-        atten_lat = 9999
-    if ffn_lat is None:
-        ffn_lat = 9999
-    stage_lat = (atten_lat + ffn_lat)
+        if atten_lat is None:
+            atten_lat = float('inf')
+        if ffn_lat is None:
+            ffn_lat = float('inf')
+        stage_lat = (atten_lat + ffn_lat)
     return stage_lat
 
 import numpy as np 
