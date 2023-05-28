@@ -37,9 +37,9 @@ import numpy as np
 # setup ilp configs
 args = common_argparser()
 unit = qpipe._globals.MEM_UNIT
-time_mult_times = qpipe._globals.TIME_MULT_TIMES
 
 def generate_uniform_partition(model_mem_estimator, T, max_device_mem, num_devices, num_hidden_layers, D, bz_pack, bit=8):
+    time_mult_times = qpipe._globals.TIME_MULT_TIMES
     (global_bz, prefill_bz, bz_decode_max)= bz_pack 
     bit_assignment = {}
     assign_uniform_bit(T, bit, bit_assignment)
@@ -52,8 +52,8 @@ def generate_uniform_partition(model_mem_estimator, T, max_device_mem, num_devic
     each_device_mem_availability = [get_single_device_mem_constraints(device_name) for d_rank, device_name in D.items()]
     post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
     temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size_with_bz(prefill_bz, bz_decode_max, unit='MB')[0] 
-    temp_emb_mem = model_mem_estimator.calculate_temp_embedding_tensor_size(unit='MB')[0]
-    each_device_mem_availability[0] -= (post_pre_mem + temp_tensor_mem)
+    temp_later_decode = model_mem_estimator.calculate_temp_tensor_size_next_i(unit='MB')[0]
+    each_device_mem_availability[0] -= (post_pre_mem + max(temp_tensor_mem, temp_later_decode * time_mult_times))
     # layer partitioned memory
     each_device_mem = mem_required // num_devices
     if each_device_mem > min(each_device_mem_availability):

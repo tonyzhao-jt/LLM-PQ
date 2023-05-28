@@ -49,8 +49,6 @@ import pulp
 import gurobipy as gp
 
 unit = qpipe._globals.MEM_UNIT
-time_mult_times = qpipe._globals.TIME_MULT_TIMES
-
 
 def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
     prob = pulp.LpProblem("max Latency Minimization Problem", pulp.LpMinimize)
@@ -110,6 +108,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
 
 
 def prepare_for_ilp(num_hidden_layers, D, available_bits, bz_pack, model_mem_estimator):
+    time_mult_times = qpipe._globals.TIME_MULT_TIMES
     global_bz, prefill_bz, bz_decode_max = bz_pack
     L = num_hidden_layers # in partition, regard as a whole
     # group_L
@@ -126,12 +125,11 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits, bz_pack, model_mem_est
     temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size_with_bz(prefill_bz, bz_decode_max, unit='MB')[0] 
     temp_later_decode = model_mem_estimator.calculate_temp_tensor_size_next_i(unit='MB')[0]
     M_d[0] -= post_pre_mem
-    M_d[0] -= time_mult_times * temp_tensor_mem # torch may not release the tensor immediately, modify the 2 to ensure won't oom
     if len(M_d) > 1:
         M_d[1:] -= temp_later_decode * time_mult_times
+    M_d[0] -= max(temp_tensor_mem, temp_later_decode * time_mult_times)
     M_d = np.floor(M_d).astype(int) # floor
     M = np.ceil(M).astype(int) # ceil
-
 
     # omega
     omega = assign_omega_uniform(group_L, BITs)

@@ -46,7 +46,6 @@ import pulp
 import gurobipy as gp
 
 unit = qpipe._globals.MEM_UNIT
-time_mult_times = qpipe._globals.TIME_MULT_TIMES
 slo_rate = qpipe._globals.SLO_RATE
 
 
@@ -112,6 +111,7 @@ def get_comm(D, comm_cost_model, comm_size):
 
 
 def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack):
+    time_mult_times = qpipe._globals.TIME_MULT_TIMES
     model_mem_estimator, comm_cost_model, lat_cost_model = cost_model_pack
     global_bz, prefill_bz, bz_decode_max = bz_pack
     L = num_hidden_layers # in partition, regard as a whole
@@ -135,9 +135,9 @@ def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack):
     temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size_with_bz(prefill_bz, bz_decode_max, unit='MB')[0] 
     temp_later_decode = model_mem_estimator.calculate_temp_tensor_size_next_i(unit='MB')[0]
     M_d[0] -= post_pre_mem
-    M_d[0] -= time_mult_times * temp_tensor_mem # torch may not release the tensor immediately, modify the 2 to ensure won't oom
     if len(M_d) > 1:
         M_d[1:] -= temp_later_decode * time_mult_times
+    M_d[0] -= max(temp_tensor_mem, temp_later_decode * time_mult_times)
     M_d = np.floor(M_d).astype(int) # floor
     M = np.ceil(M).astype(int) # ceil
 

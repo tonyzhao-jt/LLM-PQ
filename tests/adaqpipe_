@@ -14,12 +14,60 @@ python -m bitsandbytes
 
  and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
 ================================================================================
+
+===================================BUG REPORT===================================
+Welcome to bitsandbytes. For bug reports, please run
+
+python -m bitsandbytes
+
+ and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
+================================================================================
+
+===================================BUG REPORT===================================
+Welcome to bitsandbytes. For bug reports, please run
+
+python -m bitsandbytes
+
+ and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
+================================================================================
 bin /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117.so
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/usr/local/nvidia/lib'), PosixPath('/usr/local/nvidia/lib64')}
+  warn(msg)
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: /usr/local/nvidia/lib:/usr/local/nvidia/lib64 did not contain ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] as expected! Searching further paths...
+  warn(msg)
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_89lc93f9/none_sy9n9zh5/attempt_0/1/error.json')}
+  warn(msg)
+CUDA_SETUP: WARNING! libcudart.so not found in any environmental path. Searching in backup paths...
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: Found duplicate ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] files: {PosixPath('/usr/local/cuda/lib64/libcudart.so'), PosixPath('/usr/local/cuda/lib64/libcudart.so.11.0')}.. We'll flip a coin and try one of these, in order to fail forward.
+Either way, this might cause trouble in the future:
+If you get `CUDA error: invalid device function` errors, the above might be the cause and the solution is to make sure only one ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] in the paths that we search based on your env.
+  warn(msg)
+CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so
+CUDA SETUP: Highest compute capability among GPUs detected: 8.0
+CUDA SETUP: Detected CUDA version 117
+CUDA SETUP: Loading binary /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117.so...
+bin /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117.so
+bin /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117.so
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/usr/local/nvidia/lib'), PosixPath('/usr/local/nvidia/lib64')}
+  warn(msg)
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: /usr/local/nvidia/lib:/usr/local/nvidia/lib64 did not contain ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] as expected! Searching further paths...
+  warn(msg)
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_89lc93f9/none_sy9n9zh5/attempt_0/2/error.json')}
+  warn(msg)
+CUDA_SETUP: WARNING! libcudart.so not found in any environmental path. Searching in backup paths...
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: Found duplicate ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] files: {PosixPath('/usr/local/cuda/lib64/libcudart.so.11.0'), PosixPath('/usr/local/cuda/lib64/libcudart.so')}.. We'll flip a coin and try one of these, in order to fail forward.
+Either way, this might cause trouble in the future:
+If you get `CUDA error: invalid device function` errors, the above might be the cause and the solution is to make sure only one ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] in the paths that we search based on your env.
+  warn(msg)
+CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so.11.0
+CUDA SETUP: Highest compute capability among GPUs detected: 8.0
+CUDA SETUP: Detected CUDA version 117
+CUDA SETUP: Loading binary /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117.so...
 /opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/usr/local/nvidia/lib64'), PosixPath('/usr/local/nvidia/lib')}
   warn(msg)
 /opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: /usr/local/nvidia/lib:/usr/local/nvidia/lib64 did not contain ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] as expected! Searching further paths...
   warn(msg)
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_meewibod/none_ynmryhi6/attempt_0/0/error.json')}
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_89lc93f9/none_sy9n9zh5/attempt_0/3/error.json')}
   warn(msg)
 CUDA_SETUP: WARNING! libcudart.so not found in any environmental path. Searching in backup paths...
 /opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: Found duplicate ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] files: {PosixPath('/usr/local/cuda/lib64/libcudart.so.11.0'), PosixPath('/usr/local/cuda/lib64/libcudart.so')}.. We'll flip a coin and try one of these, in order to fail forward.
@@ -35,14 +83,14 @@ bin /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117
   warn(msg)
 /opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: /usr/local/nvidia/lib:/usr/local/nvidia/lib64 did not contain ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] as expected! Searching further paths...
   warn(msg)
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_meewibod/none_ynmryhi6/attempt_0/1/error.json')}
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: WARNING: The following directories listed in your path were found to be non-existent: {PosixPath('/tmp/torchelastic_89lc93f9/none_sy9n9zh5/attempt_0/0/error.json')}
   warn(msg)
 CUDA_SETUP: WARNING! libcudart.so not found in any environmental path. Searching in backup paths...
-/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: Found duplicate ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] files: {PosixPath('/usr/local/cuda/lib64/libcudart.so.11.0'), PosixPath('/usr/local/cuda/lib64/libcudart.so')}.. We'll flip a coin and try one of these, in order to fail forward.
+/opt/conda/lib/python3.10/site-packages/bitsandbytes/cuda_setup/main.py:145: UserWarning: Found duplicate ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] files: {PosixPath('/usr/local/cuda/lib64/libcudart.so'), PosixPath('/usr/local/cuda/lib64/libcudart.so.11.0')}.. We'll flip a coin and try one of these, in order to fail forward.
 Either way, this might cause trouble in the future:
 If you get `CUDA error: invalid device function` errors, the above might be the cause and the solution is to make sure only one ['libcudart.so', 'libcudart.so.11.0', 'libcudart.so.12.0'] in the paths that we search based on your env.
   warn(msg)
-CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so.11.0
+CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so
 CUDA SETUP: Highest compute capability among GPUs detected: 8.0
 CUDA SETUP: Detected CUDA version 117
 CUDA SETUP: Loading binary /opt/conda/lib/python3.10/site-packages/bitsandbytes/libbitsandbytes_cuda117.so...
@@ -51,26 +99,30 @@ usage: main_p2p.py [-h] [--model_size MODEL_SIZE] [--model_name MODEL_NAME]
                    [--max_tokens_to_generate MAX_TOKENS_TO_GENERATE]
                    [--num_tokens_to_generate NUM_TOKENS_TO_GENERATE] [--nccl]
                    [--warmup_tokens WARMUP_TOKENS] [--method METHOD]
+                   [--strat_file_name STRAT_FILE_NAME]
 main_p2p.py: error: argument --model_size: expected one argument
 usage: main_p2p.py [-h] [--model_size MODEL_SIZE] [--model_name MODEL_NAME]
                    [--bs_token BS_TOKEN] [--prompt_length PROMPT_LENGTH]
                    [--max_tokens_to_generate MAX_TOKENS_TO_GENERATE]
                    [--num_tokens_to_generate NUM_TOKENS_TO_GENERATE] [--nccl]
                    [--warmup_tokens WARMUP_TOKENS] [--method METHOD]
+                   [--strat_file_name STRAT_FILE_NAME]
 main_p2p.py: error: argument --model_size: expected one argument
-WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 176024 closing signal SIGTERM
-ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 2) local_rank: 1 (pid: 176025) of binary: /opt/conda/bin/python
-ERROR:torch.distributed.elastic.agent.server.api:Error waiting on exit barrier. Elapsed: 307.9760854244232 seconds
-Traceback (most recent call last):
-  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/elastic/agent/server/api.py", line 920, in _exit_barrier
-    store_util.barrier(
-  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/elastic/utils/store.py", line 78, in barrier
-    synchronize(store, data, rank, world_size, key_prefix, barrier_timeout)
-  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/elastic/utils/store.py", line 64, in synchronize
-    agent_data = get_all(store, rank, key_prefix, world_size)
-  File "/opt/conda/lib/python3.10/site-packages/torch/distributed/elastic/utils/store.py", line 34, in get_all
-    data = store.get(f"{prefix}{idx}")
-RuntimeError: Socket Timeout
+usage: main_p2p.py [-h] [--model_size MODEL_SIZE] [--model_name MODEL_NAME]
+                   [--bs_token BS_TOKEN] [--prompt_length PROMPT_LENGTH]
+                   [--max_tokens_to_generate MAX_TOKENS_TO_GENERATE]
+                   [--num_tokens_to_generate NUM_TOKENS_TO_GENERATE] [--nccl]
+                   [--warmup_tokens WARMUP_TOKENS] [--method METHOD]
+                   [--strat_file_name STRAT_FILE_NAME]
+main_p2p.py: error: argument --model_size: expected one argument
+usage: main_p2p.py [-h] [--model_size MODEL_SIZE] [--model_name MODEL_NAME]
+                   [--bs_token BS_TOKEN] [--prompt_length PROMPT_LENGTH]
+                   [--max_tokens_to_generate MAX_TOKENS_TO_GENERATE]
+                   [--num_tokens_to_generate NUM_TOKENS_TO_GENERATE] [--nccl]
+                   [--warmup_tokens WARMUP_TOKENS] [--method METHOD]
+                   [--strat_file_name STRAT_FILE_NAME]
+main_p2p.py: error: argument --model_size: expected one argument
+ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 2) local_rank: 0 (pid: 226024) of binary: /opt/conda/bin/python
 Traceback (most recent call last):
   File "/opt/conda/bin/torchrun", line 33, in <module>
     sys.exit(load_entry_point('torch==2.0.0', 'console_scripts', 'torchrun')())
@@ -89,14 +141,34 @@ torch.distributed.elastic.multiprocessing.errors.ChildFailedError:
 main_p2p.py FAILED
 ------------------------------------------------------------
 Failures:
-  <NO_OTHER_FAILURES>
+[1]:
+  time      : 2023-05-28_05:39:37
+  host      : net-g14
+  rank      : 1 (local_rank: 1)
+  exitcode  : 2 (pid: 226025)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[2]:
+  time      : 2023-05-28_05:39:37
+  host      : net-g14
+  rank      : 2 (local_rank: 2)
+  exitcode  : 2 (pid: 226026)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[3]:
+  time      : 2023-05-28_05:39:37
+  host      : net-g14
+  rank      : 3 (local_rank: 3)
+  exitcode  : 2 (pid: 226027)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
 ------------------------------------------------------------
 Root Cause (first observed failure):
 [0]:
-  time      : 2023-05-27_11:20:59
+  time      : 2023-05-28_05:39:37
   host      : net-g14
-  rank      : 1 (local_rank: 1)
-  exitcode  : 2 (pid: 176025)
+  rank      : 0 (local_rank: 0)
+  exitcode  : 2 (pid: 226024)
   error_file: <N/A>
   traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
 ============================================================

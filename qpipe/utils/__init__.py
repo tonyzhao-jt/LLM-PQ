@@ -8,4 +8,4 @@ from .save import save_with_pickle
 from .simple_partition import partition_a_into_b_bins, get_default_decode_bz
 from .tensor_handler import object_to_tensor
 from .bits_pair import get_available_bits_pair
-from .misc import get_factors
+from .misc import get_factors, roundup_power2_divisions

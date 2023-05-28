@@ -32,7 +32,6 @@ from qpipe.cost_model import (
 )
 
 import copy 
-time_mult_times = qpipe._globals.TIME_MULT_TIMES
 # for debug
 def check_minimum_bit_of_sols(sol):
     bit_assignment = sol['plan']['bit_assignment']
@@ -46,6 +45,7 @@ def check_minimum_bit_of_sols(sol):
 
 # first make sure the partition is within the memory budget
 def check_memory_budget_single_device(device_rank, device_name, layers_range, bit_assignment, model_mem_estimator, bs_pack):
+    time_mult_times = qpipe._globals.TIME_MULT_TIMES
     i, j = layers_range
     prefill_bz, bz_decode_max = bs_pack
     # k % 2 means shard
@@ -54,14 +54,15 @@ def check_memory_budget_single_device(device_rank, device_name, layers_range, bi
     device_mem = get_single_device_mem_constraints(device_name)
     temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size_with_bz(prefill_bz, bz_decode_max, unit='MB')[0] 
     temp_later_decode = model_mem_estimator.calculate_temp_tensor_size_next_i(unit='MB')[0]
-
     if device_rank == 0:
         post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
         device_mem = device_mem - post_pre_mem 
-        device_mem -= (time_mult_times * temp_tensor_mem)
+        device_mem -= max(time_mult_times * temp_later_decode, temp_tensor_mem)
     else:
-        device_mem -= (time_mult_times * temp_later_decode)
-    
+        device_mem -= time_mult_times * temp_later_decode
+
+    # print(time_mult_times * temp_tensor_mem)
+    # print(i_to_j_mem, device_mem)
     if i_to_j_mem > device_mem:
         print(f"memory budget exceeded for device {device_rank}, {i_to_j_mem} > {device_mem}")
         return False
