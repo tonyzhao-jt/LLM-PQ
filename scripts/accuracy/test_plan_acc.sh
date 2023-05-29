@@ -6,7 +6,7 @@ model_size="66b"
 device_info="Tesla_V100-SXM2-32GB_4"
 available_methods=('adabits' 'adaqpipe' 'pipeedge' 'uniform')
 folder_abs_path="/workspace/qpipe/scripts/accuracy/bit_for_gptq_test/"
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=3
 # create the corresponding files
 python3 convert_sol_to_gptq_bits.py --model-name ${model_name} --model-size ${model_size} \
         --device-info ${device_info}

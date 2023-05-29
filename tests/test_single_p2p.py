@@ -239,6 +239,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                 original_num_tokens_to_generate = num_tokens_to_generate
                 run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=warmup_tokens)
                 dist.barrier()
+                time.sleep(10)
                 module._reset_kv_status()
                 
                 dist.barrier()
@@ -250,6 +251,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                 stop_event.set()
             else:
                 dist.barrier()
+                time.sleep(10)
                 module._reset_kv_status()
                 dist.barrier()
                 stop_event.wait()
