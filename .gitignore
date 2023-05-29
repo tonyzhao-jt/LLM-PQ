@@ -10,7 +10,6 @@
 /build/
 .ipynb_checkpoints
 .Trash-0/
-*.pkl
 *.log
 *.csv
 *.lic
@@ -19,4 +18,6 @@
 trace.json
 profile.json
 *.trace.json
-result/*
+*.pkl
+!/result/
+!/result/*.pkl
