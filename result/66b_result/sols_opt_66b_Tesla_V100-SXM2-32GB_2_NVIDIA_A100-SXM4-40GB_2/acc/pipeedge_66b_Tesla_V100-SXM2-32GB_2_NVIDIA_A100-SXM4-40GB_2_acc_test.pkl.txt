@@ -1,0 +1,2701 @@
+CUDA extension not installed.
+Selected Tasks: ['piqa', 'lambada', 'arc_easy']
+
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]
+Loading checkpoint shards:   7%|▋         | 1/14 [00:04<00:53,  4.08s/it]
+Loading checkpoint shards:  14%|█▍        | 2/14 [00:08<00:49,  4.13s/it]
+Loading checkpoint shards:  21%|██▏       | 3/14 [00:12<00:45,  4.15s/it]
+Loading checkpoint shards:  29%|██▊       | 4/14 [00:16<00:41,  4.15s/it]
+Loading checkpoint shards:  36%|███▌      | 5/14 [00:20<00:36,  4.10s/it]
+Loading checkpoint shards:  43%|████▎     | 6/14 [00:24<00:32,  4.11s/it]
+Loading checkpoint shards:  50%|█████     | 7/14 [00:29<00:30,  4.34s/it]
+Loading checkpoint shards:  57%|█████▋    | 8/14 [00:34<00:27,  4.57s/it]
+Loading checkpoint shards:  64%|██████▍   | 9/14 [00:39<00:23,  4.69s/it]
+Loading checkpoint shards:  71%|███████▏  | 10/14 [00:44<00:19,  4.79s/it]
+Loading checkpoint shards:  79%|███████▊  | 11/14 [00:49<00:14,  4.83s/it]
+Loading checkpoint shards:  86%|████████▌ | 12/14 [00:54<00:09,  4.85s/it]
+Loading checkpoint shards:  93%|█████████▎| 13/14 [00:58<00:04,  4.73s/it]
+Loading checkpoint shards: 100%|██████████| 14/14 [01:02<00:00,  4.26s/it]
+Loading checkpoint shards: 100%|██████████| 14/14 [01:02<00:00,  4.43s/it]
+Found cached dataset json (/root/.cache/huggingface/datasets/allenai___json/allenai--c4-6fbe877195f42de5/0.0.0/e347ab1c932092252e717ff3f949105a4dd28b27e842dd53157d2f72e276c2e4)
+Found cached dataset json (/root/.cache/huggingface/datasets/allenai___json/allenai--c4-efc3d4f4606f44bd/0.0.0/e347ab1c932092252e717ff3f949105a4dd28b27e842dd53157d2f72e276c2e4)
+OPT vocab size:  50265
+Starting ...
+Starting ...
+Ready.
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+0 self_attn.k_proj
+Quantizing ...
+time 9.73
+error 185.82765197753906
+0 self_attn.v_proj
+Quantizing ...
+time 2.60
+error 158.66558837890625
+0 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 224.5800323486328
+0 self_attn.out_proj
+Quantizing ...
+time 2.60
+error 0.2086183726787567
+0 fc1
+Quantizing ...
+time 2.93
+error 88.99833679199219
+0 fc2
+Quantizing ...
+time 18.94
+error 1.336925745010376
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+1 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 60.25908660888672
+1 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 24.66748809814453
+1 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 53.0013313293457
+1 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 0.00396457826718688
+1 fc1
+Quantizing ...
+time 2.82
+error 65.3724136352539
+1 fc2
+Quantizing ...
+time 18.90
+error 0.2988555431365967
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+2 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 54.83477020263672
+2 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 22.454219818115234
+2 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 54.81510543823242
+2 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 0.0034876405261456966
+2 fc1
+Quantizing ...
+time 2.82
+error 56.6756706237793
+2 fc2
+Quantizing ...
+time 18.85
+error 0.20298951864242554
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+3 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 65.91063690185547
+3 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 21.53213119506836
+3 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 78.21928405761719
+3 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 0.0013151000021025538
+3 fc1
+Quantizing ...
+time 2.82
+error 54.47392272949219
+3 fc2
+Quantizing ...
+time 18.83
+error 0.11518123745918274
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+4 self_attn.k_proj
+Quantizing ...
+time 9.48
+error 76.25639343261719
+4 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 21.171249389648438
+4 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 102.51528930664062
+4 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 0.001348423771560192
+4 fc1
+Quantizing ...
+time 2.82
+error 54.85490798950195
+4 fc2
+Quantizing ...
+time 18.89
+error 0.12016776949167252
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+5 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 94.65626525878906
+5 self_attn.v_proj
+Quantizing ...
+time 2.51
+error 20.854984283447266
+5 self_attn.q_proj
+Quantizing ...
+time 2.52
+error 147.16119384765625
+5 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 0.00115189456846565
+5 fc1
+Quantizing ...
+time 2.79
+error 56.10917663574219
+5 fc2
+Quantizing ...
+time 18.82
+error 0.18607273697853088
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+6 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 96.03984069824219
+6 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 21.59754180908203
+6 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 132.44192504882812
+6 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 0.0011520781554281712
+6 fc1
+Quantizing ...
+time 2.83
+error 58.52285385131836
+6 fc2
+Quantizing ...
+time 18.86
+error 0.1665838360786438
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+7 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 118.02903747558594
+7 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 23.165283203125
+7 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 171.72178649902344
+7 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 0.0015696242917329073
+7 fc1
+Quantizing ...
+time 2.80
+error 61.652587890625
+7 fc2
+Quantizing ...
+time 18.81
+error 0.23043401539325714
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+8 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 124.02389526367188
+8 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 24.42010498046875
+8 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 166.88023376464844
+8 self_attn.out_proj
+Quantizing ...
+time 2.57
+error 0.0012617396423593163
+8 fc1
+Quantizing ...
+time 2.81
+error 64.72630310058594
+8 fc2
+Quantizing ...
+time 18.92
+error 0.21491490304470062
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+9 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 135.76287841796875
+9 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 25.50468635559082
+9 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 169.36026000976562
+9 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 0.0014882622053846717
+9 fc1
+Quantizing ...
+time 2.84
+error 69.79293823242188
+9 fc2
+Quantizing ...
+time 18.86
+error 0.14682964980602264
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+10 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 119.33369445800781
+10 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 27.774641036987305
+10 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 120.85160827636719
+10 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 0.0024101787712424994
+10 fc1
+Quantizing ...
+time 2.84
+error 76.47567749023438
+10 fc2
+Quantizing ...
+time 18.87
+error 0.19605021178722382
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+11 self_attn.k_proj
+Quantizing ...
+time 9.48
+error 142.33279418945312
+11 self_attn.v_proj
+Quantizing ...
+time 2.57
+error 29.23719024658203
+11 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 124.62384033203125
+11 self_attn.out_proj
+Quantizing ...
+time 2.57
+error 0.004472584463655949
+11 fc1
+Quantizing ...
+time 2.80
+error 82.52190399169922
+11 fc2
+Quantizing ...
+time 18.80
+error 0.1751992255449295
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+12 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 129.49826049804688
+12 self_attn.v_proj
+Quantizing ...
+time 2.57
+error 30.81310272216797
+12 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 92.15033721923828
+12 self_attn.out_proj
+Quantizing ...
+time 2.57
+error 0.005743034183979034
+12 fc1
+Quantizing ...
+time 2.80
+error 89.30879211425781
+12 fc2
+Quantizing ...
+time 18.83
+error 0.20969577133655548
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+13 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 138.13478088378906
+13 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 32.323394775390625
+13 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 86.09764099121094
+13 self_attn.out_proj
+Quantizing ...
+time 2.52
+error 0.008485399186611176
+13 fc1
+Quantizing ...
+time 2.80
+error 96.48698425292969
+13 fc2
+Quantizing ...
+time 18.84
+error 0.2482897937297821
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+14 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 129.16488647460938
+14 self_attn.v_proj
+Quantizing ...
+time 2.52
+error 33.41809844970703
+14 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 69.64747619628906
+14 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 0.010326635092496872
+14 fc1
+Quantizing ...
+time 2.81
+error 105.74571990966797
+14 fc2
+Quantizing ...
+time 18.85
+error 0.229378804564476
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+15 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 125.49887084960938
+15 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 33.982200622558594
+15 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 59.574893951416016
+15 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 0.02680300734937191
+15 fc1
+Quantizing ...
+time 2.81
+error 115.98174285888672
+15 fc2
+Quantizing ...
+time 18.79
+error 0.30347853899002075
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+16 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 130.46316528320312
+16 self_attn.v_proj
+Quantizing ...
+time 2.52
+error 34.825462341308594
+16 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 60.98893737792969
+16 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 0.028770923614501953
+16 fc1
+Quantizing ...
+time 2.80
+error 128.2530517578125
+16 fc2
+Quantizing ...
+time 18.80
+error 0.3373107314109802
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+17 self_attn.k_proj
+Quantizing ...
+time 9.43
+error 130.11700439453125
+17 self_attn.v_proj
+Quantizing ...
+time 2.51
+error 35.466190338134766
+17 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 60.377140045166016
+17 self_attn.out_proj
+Quantizing ...
+time 2.52
+error 0.051358867436647415
+17 fc1
+Quantizing ...
+time 2.81
+error 138.10247802734375
+17 fc2
+Quantizing ...
+time 18.76
+error 0.3923712372779846
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+18 self_attn.k_proj
+Quantizing ...
+time 9.43
+error 126.0275650024414
+18 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 37.337913513183594
+18 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 61.801300048828125
+18 self_attn.out_proj
+Quantizing ...
+time 2.51
+error 0.07382623851299286
+18 fc1
+Quantizing ...
+time 2.80
+error 152.3624267578125
+18 fc2
+Quantizing ...
+time 18.75
+error 0.5060888528823853
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+19 self_attn.k_proj
+Quantizing ...
+time 9.42
+error 156.10675048828125
+19 self_attn.v_proj
+Quantizing ...
+time 2.51
+error 39.3150634765625
+19 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 65.40591430664062
+19 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 0.07685454934835434
+19 fc1
+Quantizing ...
+time 2.82
+error 168.7087860107422
+19 fc2
+Quantizing ...
+time 18.76
+error 0.721988320350647
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+20 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 161.52703857421875
+20 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 42.469154357910156
+20 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 64.38877868652344
+20 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 0.10520581901073456
+20 fc1
+Quantizing ...
+time 2.81
+error 188.01168823242188
+20 fc2
+Quantizing ...
+time 18.79
+error 0.9336296319961548
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+21 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 175.9407958984375
+21 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 45.070579528808594
+21 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 68.99211883544922
+21 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 0.12033200263977051
+21 fc1
+Quantizing ...
+time 2.79
+error 205.33108520507812
+21 fc2
+Quantizing ...
+time 18.73
+error 1.0992263555526733
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+22 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 192.00540161132812
+22 self_attn.v_proj
+Quantizing ...
+time 2.50
+error 50.173370361328125
+22 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 75.89906311035156
+22 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 0.25005537271499634
+22 fc1
+Quantizing ...
+time 2.81
+error 225.56790161132812
+22 fc2
+Quantizing ...
+time 18.78
+error 1.4000244140625
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+23 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 201.78469848632812
+23 self_attn.v_proj
+Quantizing ...
+time 2.52
+error 54.36957931518555
+23 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 82.30120849609375
+23 self_attn.out_proj
+Quantizing ...
+time 2.52
+error 0.2655176520347595
+23 fc1
+Quantizing ...
+time 2.81
+error 250.58328247070312
+23 fc2
+Quantizing ...
+time 18.71
+error 1.6786954402923584
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+24 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 217.18707275390625
+24 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 61.1606559753418
+24 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 90.40792846679688
+24 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 0.37217891216278076
+24 fc1
+Quantizing ...
+time 2.83
+error 281.92791748046875
+24 fc2
+Quantizing ...
+time 18.83
+error 2.1201016902923584
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+25 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 255.13552856445312
+25 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 68.8032455444336
+25 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 110.40769958496094
+25 self_attn.out_proj
+Quantizing ...
+time 2.57
+error 0.6209884881973267
+25 fc1
+Quantizing ...
+time 2.82
+error 319.049072265625
+25 fc2
+Quantizing ...
+time 18.81
+error 2.660778522491455
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+26 self_attn.k_proj
+Quantizing ...
+time 9.44
+error 257.97552490234375
+26 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 74.94630432128906
+26 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 116.91336059570312
+26 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 1.0035367012023926
+26 fc1
+Quantizing ...
+time 2.82
+error 372.9647521972656
+26 fc2
+Quantizing ...
+time 18.76
+error 3.464958906173706
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+27 self_attn.k_proj
+Quantizing ...
+time 9.43
+error 263.2869873046875
+27 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 84.14720153808594
+27 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 134.6007843017578
+27 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 1.145684003829956
+27 fc1
+Quantizing ...
+time 2.81
+error 421.52557373046875
+27 fc2
+Quantizing ...
+time 18.72
+error 4.47097110748291
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+28 self_attn.k_proj
+Quantizing ...
+time 9.43
+error 285.2183837890625
+28 self_attn.v_proj
+Quantizing ...
+time 2.50
+error 94.09915161132812
+28 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 151.1127471923828
+28 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 1.8287888765335083
+28 fc1
+Quantizing ...
+time 2.80
+error 480.7308044433594
+28 fc2
+Quantizing ...
+time 18.70
+error 5.533602714538574
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+29 self_attn.k_proj
+Quantizing ...
+time 9.44
+error 279.7259826660156
+29 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 105.79399108886719
+29 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 165.54037475585938
+29 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 1.8084428310394287
+29 fc1
+Quantizing ...
+time 2.84
+error 536.479736328125
+29 fc2
+Quantizing ...
+time 18.72
+error 6.772639274597168
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+30 self_attn.k_proj
+Quantizing ...
+time 9.44
+error 274.8683776855469
+30 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 114.66627502441406
+30 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 174.1409912109375
+30 self_attn.out_proj
+Quantizing ...
+time 2.57
+error 2.503852605819702
+30 fc1
+Quantizing ...
+time 2.78
+error 589.5787963867188
+30 fc2
+Quantizing ...
+time 18.69
+error 8.274062156677246
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+31 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 291.10870361328125
+31 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 123.99400329589844
+31 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 191.165771484375
+31 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 3.5088908672332764
+31 fc1
+Quantizing ...
+time 2.80
+error 647.0225830078125
+31 fc2
+Quantizing ...
+time 18.76
+error 9.682031631469727
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+32 self_attn.k_proj
+Quantizing ...
+time 9.44
+error 317.15838623046875
+32 self_attn.v_proj
+Quantizing ...
+time 2.52
+error 134.81494140625
+32 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 200.70828247070312
+32 self_attn.out_proj
+Quantizing ...
+time 2.52
+error 4.198738098144531
+32 fc1
+Quantizing ...
+time 2.80
+error 704.5896606445312
+32 fc2
+Quantizing ...
+time 18.74
+error 12.404690742492676
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+33 self_attn.k_proj
+Quantizing ...
+time 9.44
+error 365.899169921875
+33 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 152.417724609375
+33 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 223.21974182128906
+33 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 5.812177658081055
+33 fc1
+Quantizing ...
+time 2.80
+error 782.6224365234375
+33 fc2
+Quantizing ...
+time 18.67
+error 16.505023956298828
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+34 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 396.82135009765625
+34 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 164.58804321289062
+34 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 241.60836791992188
+34 self_attn.out_proj
+Quantizing ...
+time 2.58
+error 7.407833099365234
+34 fc1
+Quantizing ...
+time 2.81
+error 874.259033203125
+34 fc2
+Quantizing ...
+time 18.68
+error 18.593982696533203
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+35 self_attn.k_proj
+Quantizing ...
+time 9.44
+error 404.43280029296875
+35 self_attn.v_proj
+Quantizing ...
+time 2.51
+error 187.47250366210938
+35 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 260.97650146484375
+35 self_attn.out_proj
+Quantizing ...
+time 2.52
+error 8.74120044708252
+35 fc1
+Quantizing ...
+time 2.81
+error 970.2721557617188
+35 fc2
+Quantizing ...
+time 18.72
+error 22.130184173583984
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+36 self_attn.k_proj
+Quantizing ...
+time 9.43
+error 432.0966491699219
+36 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 211.6013946533203
+36 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 280.281494140625
+36 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 8.461831092834473
+36 fc1
+Quantizing ...
+time 2.81
+error 1075.090087890625
+36 fc2
+Quantizing ...
+time 18.65
+error 28.699378967285156
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+37 self_attn.k_proj
+Quantizing ...
+time 9.44
+error 527.4710083007812
+37 self_attn.v_proj
+Quantizing ...
+time 2.52
+error 233.90731811523438
+37 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 300.83966064453125
+37 self_attn.out_proj
+Quantizing ...
+time 2.52
+error 12.664596557617188
+37 fc1
+Quantizing ...
+time 2.79
+error 1193.5943603515625
+37 fc2
+Quantizing ...
+time 18.68
+error 35.909400939941406
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+38 self_attn.k_proj
+Quantizing ...
+time 9.44
+error 500.9242248535156
+38 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 261.69140625
+38 self_attn.q_proj
+Quantizing ...
+time 2.59
+error 330.36114501953125
+38 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 14.73645305633545
+38 fc1
+Quantizing ...
+time 2.81
+error 1327.8072509765625
+38 fc2
+Quantizing ...
+time 18.76
+error 42.587669372558594
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+39 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 545.5740966796875
+39 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 286.89727783203125
+39 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 347.9868469238281
+39 self_attn.out_proj
+Quantizing ...
+time 2.57
+error 18.728343963623047
+39 fc1
+Quantizing ...
+time 2.80
+error 1462.77294921875
+39 fc2
+Quantizing ...
+time 18.79
+error 48.94901657104492
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+40 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 631.7289428710938
+40 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 310.1243896484375
+40 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 358.29425048828125
+40 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 21.093881607055664
+40 fc1
+Quantizing ...
+time 2.83
+error 1609.682861328125
+40 fc2
+Quantizing ...
+time 18.76
+error 55.914588928222656
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+41 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 615.2990112304688
+41 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 335.3573303222656
+41 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 381.4883728027344
+41 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 19.636333465576172
+41 fc1
+Quantizing ...
+time 2.82
+error 1764.0416259765625
+41 fc2
+Quantizing ...
+time 18.73
+error 65.15988159179688
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+42 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 611.83154296875
+42 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 366.447509765625
+42 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 400.33843994140625
+42 self_attn.out_proj
+Quantizing ...
+time 2.58
+error 21.070491790771484
+42 fc1
+Quantizing ...
+time 2.81
+error 1923.625
+42 fc2
+Quantizing ...
+time 18.71
+error 74.19580841064453
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+43 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 634.6864013671875
+43 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 414.526611328125
+43 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 432.34320068359375
+43 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 24.687715530395508
+43 fc1
+Quantizing ...
+time 2.78
+error 2107.322021484375
+43 fc2
+Quantizing ...
+time 18.72
+error 87.45506286621094
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+44 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 598.715087890625
+44 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 415.25115966796875
+44 self_attn.q_proj
+Quantizing ...
+time 2.52
+error 447.42822265625
+44 self_attn.out_proj
+Quantizing ...
+time 2.57
+error 19.03810691833496
+44 fc1
+Quantizing ...
+time 2.81
+error 2253.95947265625
+44 fc2
+Quantizing ...
+time 18.77
+error 93.40839385986328
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+45 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 632.4939575195312
+45 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 447.451904296875
+45 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 477.305419921875
+45 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 23.89855194091797
+45 fc1
+Quantizing ...
+time 2.81
+error 2375.85693359375
+45 fc2
+Quantizing ...
+time 18.75
+error 103.72335052490234
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+46 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 715.18212890625
+46 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 456.2142333984375
+46 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 489.745849609375
+46 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 28.205284118652344
+46 fc1
+Quantizing ...
+time 2.82
+error 2515.02490234375
+46 fc2
+Quantizing ...
+time 18.73
+error 110.09379577636719
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+47 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 684.7145385742188
+47 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 467.6108703613281
+47 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 489.112548828125
+47 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 26.909278869628906
+47 fc1
+Quantizing ...
+time 2.82
+error 2640.171630859375
+47 fc2
+Quantizing ...
+time 18.77
+error 117.93464660644531
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+48 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 674.2750244140625
+48 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 477.98468017578125
+48 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 508.49053955078125
+48 self_attn.out_proj
+Quantizing ...
+time 2.58
+error 29.482921600341797
+48 fc1
+Quantizing ...
+time 2.83
+error 2746.54443359375
+48 fc2
+Quantizing ...
+time 18.73
+error 128.56639099121094
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+49 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 733.2305908203125
+49 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 506.3979187011719
+49 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 526.3355712890625
+49 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 31.782718658447266
+49 fc1
+Quantizing ...
+time 2.79
+error 2853.0185546875
+49 fc2
+Quantizing ...
+time 18.77
+error 137.2067413330078
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+50 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 760.9036865234375
+50 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 511.039306640625
+50 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 523.41552734375
+50 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 37.22541427612305
+50 fc1
+Found cached dataset piqa (/root/.cache/huggingface/datasets/piqa/plain_text/1.1.0/6c611c1a9bf220943c4174e117d3b660859665baf1d43156230116185312d011)
+Quantizing ...
+time 2.83
+error 2957.310546875
+50 fc2
+Quantizing ...
+time 18.80
+error 145.38853454589844
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+51 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 695.9625244140625
+51 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 524.8656005859375
+51 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 538.3010864257812
+51 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 26.149734497070312
+51 fc1
+Quantizing ...
+time 2.81
+error 3063.52490234375
+51 fc2
+Quantizing ...
+time 18.76
+error 153.93197631835938
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+52 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 700.9052734375
+52 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 522.0070190429688
+52 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 547.2476806640625
+52 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 27.570974349975586
+52 fc1
+Quantizing ...
+time 2.81
+error 3131.96337890625
+52 fc2
+Quantizing ...
+time 18.79
+error 159.72723388671875
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+53 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 743.484375
+53 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 555.6415405273438
+53 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 551.2888793945312
+53 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 32.758155822753906
+53 fc1
+Quantizing ...
+time 2.82
+error 3191.141845703125
+53 fc2
+Quantizing ...
+time 18.73
+error 167.81192016601562
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+54 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 775.6156005859375
+54 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 528.0044555664062
+54 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 533.5491943359375
+54 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 22.18584442138672
+54 fc1
+Quantizing ...
+time 2.81
+error 3255.93701171875
+54 fc2
+Quantizing ...
+time 18.68
+error 175.08555603027344
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+55 self_attn.k_proj
+Quantizing ...
+time 9.44
+error 784.4091796875
+55 self_attn.v_proj
+Quantizing ...
+time 2.58
+error 547.5343017578125
+55 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 543.6025390625
+55 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 26.877918243408203
+55 fc1
+Quantizing ...
+time 2.81
+error 3273.555419921875
+55 fc2
+Quantizing ...
+time 18.76
+error 190.5231170654297
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+56 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 705.1436767578125
+56 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 540.3837280273438
+56 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 527.7351684570312
+56 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 22.46865463256836
+56 fc1
+Quantizing ...
+time 2.82
+error 3278.27001953125
+56 fc2
+Quantizing ...
+time 18.79
+error 199.36737060546875
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+57 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 975.39208984375
+57 self_attn.v_proj
+Quantizing ...
+time 2.51
+error 514.18505859375
+57 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 586.509033203125
+57 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 18.027690887451172
+57 fc1
+Quantizing ...
+time 2.81
+error 3279.917236328125
+57 fc2
+Quantizing ...
+time 18.69
+error 206.13079833984375
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+58 self_attn.k_proj
+Quantizing ...
+time 9.57
+error 916.982666015625
+58 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 494.7371826171875
+58 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 640.5030517578125
+58 self_attn.out_proj
+Quantizing ...
+time 2.58
+error 13.271448135375977
+58 fc1
+Quantizing ...
+time 2.84
+error 3250.0400390625
+58 fc2
+Quantizing ...
+time 18.83
+error 211.220703125
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+59 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 1037.11376953125
+59 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 489.1080322265625
+59 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 677.394775390625
+59 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 15.164668083190918
+59 fc1
+Quantizing ...
+time 2.83
+error 3202.23828125
+59 fc2
+Quantizing ...
+time 18.72
+error 213.21493530273438
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+60 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 1103.517333984375
+60 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 440.58514404296875
+60 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 700.0906982421875
+60 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 9.245848655700684
+60 fc1
+Quantizing ...
+time 2.84
+error 3119.902099609375
+60 fc2
+Quantizing ...
+time 18.78
+error 214.11663818359375
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+61 self_attn.k_proj
+Quantizing ...
+time 9.56
+error 1045.00537109375
+61 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 397.2970886230469
+61 self_attn.q_proj
+Quantizing ...
+time 2.51
+error 725.3244018554688
+61 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 5.989070892333984
+61 fc1
+Quantizing ...
+time 2.76
+error 3010.134521484375
+61 fc2
+Quantizing ...
+time 18.68
+error 204.20535278320312
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+62 self_attn.k_proj
+Quantizing ...
+time 9.42
+error 1375.953369140625
+62 self_attn.v_proj
+Quantizing ...
+time 2.52
+error 383.77880859375
+62 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 979.74365234375
+62 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 6.790389060974121
+62 fc1
+Quantizing ...
+time 2.81
+error 2856.1123046875
+62 fc2
+Quantizing ...
+time 18.70
+error 203.89569091796875
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+use rand bit 8
+63 self_attn.k_proj
+Quantizing ...
+time 9.48
+error 1374.5057373046875
+63 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 299.71417236328125
+63 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 1035.461669921875
+63 self_attn.out_proj
+Quantizing ...
+time 2.52
+error 4.221554279327393
+63 fc1
+Quantizing ...
+time 2.81
+error 2638.083984375
+63 fc2
+Quantizing ...
+time 18.73
+error 207.55337524414062
+5933.867722272873
+
+  0%|          | 0/3 [00:00<?, ?it/s]
+100%|██████████| 3/3 [00:00<00:00, 879.12it/s]
+No config specified, defaulting to: lambada/original
+Found cached dataset lambada (/root/.cache/huggingface/datasets/lambada/original/0.0.1/498a202581528ce3a46c5aefc15a81cc9d1d4954d6cc7605d420de473de60c35)
+
+  0%|          | 0/1 [00:00<?, ?it/s]
+100%|██████████| 1/1 [00:00<00:00, 1517.48it/s]
+Found cached dataset ai2_arc (/root/.cache/huggingface/datasets/ai2_arc/ARC-Easy/1.0.0/1569c2591ea2683779581d9fb467203d9aa95543bb9b75dcfde5da92529fd7f6)
+
+  0%|          | 0/3 [00:00<?, ?it/s]
+100%|██████████| 3/3 [00:00<00:00, 1013.69it/s]
+Running loglikelihood requests
+
+  0%|          | 0/18323 [00:00<?, ?it/s]
+  6%|▋         | 1187/18323 [00:00<00:01, 11866.02it/s]
+ 13%|█▎        | 2378/18323 [00:00<00:01, 11890.74it/s]
+ 20%|█▉        | 3618/18323 [00:00<00:01, 12122.97it/s]
+ 27%|██▋       | 4869/18323 [00:00<00:01, 12274.34it/s]
+ 33%|███▎      | 6129/18323 [00:00<00:00, 12390.37it/s]
+ 40%|████      | 7410/18323 [00:00<00:00, 12531.33it/s]
+ 48%|████▊     | 8707/18323 [00:00<00:00, 12673.03it/s]
+ 55%|█████▍    | 9996/18323 [00:00<00:00, 12741.96it/s]
+ 62%|██████▏   | 11295/18323 [00:00<00:00, 12819.15it/s]
+ 69%|██████▊   | 12577/18323 [00:01<00:00, 12332.17it/s]
+ 76%|███████▌  | 13863/18323 [00:01<00:00, 12487.53it/s]
+ 83%|████████▎ | 15177/18323 [00:01<00:00, 12680.43it/s]
+ 90%|█████████ | 16492/18323 [00:01<00:00, 12819.37it/s]
+ 97%|█████████▋| 17827/18323 [00:01<00:00, 12976.34it/s]
+100%|██████████| 18323/18323 [00:01<00:00, 12632.65it/s]
+Evaluating ...
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+
+Last Layer:   0%|          | 0/18323 [00:00<?, ?it/s]
+Last Layer:   0%|          | 11/18323 [00:00<02:54, 104.96it/s]
+Last Layer:   0%|          | 24/18323 [00:00<02:35, 117.59it/s]
+Last Layer:   0%|          | 40/18323 [00:00<02:17, 133.34it/s]
+Last Layer:   0%|          | 56/18323 [00:00<02:08, 142.66it/s]
+Last Layer:   0%|          | 73/18323 [00:00<02:01, 150.73it/s]
+Last Layer:   0%|          | 89/18323 [00:00<01:59, 152.59it/s]
+Last Layer:   1%|          | 108/18323 [00:00<01:52, 162.13it/s]
+Last Layer:   1%|          | 127/18323 [00:00<01:47, 169.16it/s]
+Last Layer:   1%|          | 144/18323 [00:00<01:48, 168.08it/s]
+Last Layer:   1%|          | 163/18323 [00:01<01:44, 174.43it/s]
+Last Layer:   1%|          | 182/18323 [00:01<01:41, 179.06it/s]
+Last Layer:   1%|          | 200/18323 [00:01<01:42, 177.44it/s]
+Last Layer:   1%|          | 218/18323 [00:01<01:43, 174.55it/s]
+Last Layer:   1%|▏         | 238/18323 [00:01<01:40, 179.52it/s]
+Last Layer:   1%|▏         | 258/18323 [00:01<01:38, 184.27it/s]
+Last Layer:   2%|▏         | 278/18323 [00:01<01:35, 188.21it/s]
+Last Layer:   2%|▏         | 299/18323 [00:01<01:33, 192.25it/s]
+Last Layer:   2%|▏         | 319/18323 [00:01<01:35, 188.06it/s]
+Last Layer:   2%|▏         | 340/18323 [00:01<01:33, 192.51it/s]
+Last Layer:   2%|▏         | 361/18323 [00:02<01:31, 196.26it/s]
+Last Layer:   2%|▏         | 382/18323 [00:02<01:29, 199.58it/s]
+Last Layer:   2%|▏         | 402/18323 [00:02<01:32, 194.37it/s]
+Last Layer:   2%|▏         | 424/18323 [00:02<01:29, 199.26it/s]
+Last Layer:   2%|▏         | 446/18323 [00:02<01:28, 203.04it/s]
+Last Layer:   3%|▎         | 468/18323 [00:02<01:26, 205.86it/s]
+Last Layer:   3%|▎         | 490/18323 [00:02<01:25, 207.83it/s]
+Last Layer:   3%|▎         | 511/18323 [00:02<01:28, 201.62it/s]
+Last Layer:   3%|▎         | 533/18323 [00:02<01:26, 205.73it/s]
+Last Layer:   3%|▎         | 555/18323 [00:03<01:25, 208.75it/s]
+Last Layer:   3%|▎         | 577/18323 [00:03<01:24, 210.78it/s]
+Last Layer:   3%|▎         | 599/18323 [00:03<01:23, 212.50it/s]
+Last Layer:   3%|▎         | 621/18323 [00:03<01:25, 206.54it/s]
+Last Layer:   4%|▎         | 643/18323 [00:03<01:24, 210.08it/s]
+Last Layer:   4%|▎         | 665/18323 [00:03<01:23, 212.46it/s]
+Last Layer:   4%|▎         | 687/18323 [00:03<01:25, 206.49it/s]
+Last Layer:   4%|▍         | 710/18323 [00:03<01:23, 210.96it/s]
+Last Layer:   4%|▍         | 733/18323 [00:03<01:22, 214.19it/s]
+Last Layer:   4%|▍         | 756/18323 [00:03<01:21, 216.43it/s]
+Last Layer:   4%|▍         | 779/18323 [00:04<01:20, 218.44it/s]
+Last Layer:   4%|▍         | 802/18323 [00:04<01:19, 219.04it/s]
+Last Layer:   4%|▍         | 824/18323 [00:04<01:21, 214.31it/s]
+Last Layer:   5%|▍         | 847/18323 [00:04<01:20, 217.50it/s]
+Last Layer:   5%|▍         | 870/18323 [00:04<01:19, 219.73it/s]
+Last Layer:   5%|▍         | 893/18323 [00:04<01:18, 220.83it/s]
+Last Layer:   5%|▍         | 916/18323 [00:04<01:18, 221.56it/s]
+Last Layer:   5%|▌         | 939/18323 [00:04<01:19, 218.63it/s]
+Last Layer:   5%|▌         | 962/18323 [00:04<01:18, 221.42it/s]
+Last Layer:   5%|▌         | 986/18323 [00:04<01:17, 224.07it/s]
+Last Layer:   6%|▌         | 1009/18323 [00:05<01:17, 223.30it/s]
+Last Layer:   6%|▌         | 1032/18323 [00:05<01:18, 220.23it/s]
+Last Layer:   6%|▌         | 1056/18323 [00:05<01:17, 223.68it/s]
+Last Layer:   6%|▌         | 1079/18323 [00:05<01:20, 215.39it/s]
+Last Layer:   6%|▌         | 1103/18323 [00:05<01:18, 220.08it/s]
+Last Layer:   6%|▌         | 1127/18323 [00:05<01:16, 223.38it/s]
+Last Layer:   6%|▋         | 1150/18323 [00:05<01:16, 225.20it/s]
+Last Layer:   6%|▋         | 1173/18323 [00:05<01:15, 226.41it/s]
+Last Layer:   7%|▋         | 1197/18323 [00:05<01:14, 228.36it/s]
+Last Layer:   7%|▋         | 1221/18323 [00:06<01:14, 229.24it/s]
+Last Layer:   7%|▋         | 1244/18323 [00:06<01:14, 228.92it/s]
+Last Layer:   7%|▋         | 1267/18323 [00:06<01:14, 228.70it/s]
+Last Layer:   7%|▋         | 1291/18323 [00:06<01:14, 229.49it/s]
+Last Layer:   7%|▋         | 1315/18323 [00:06<01:13, 230.26it/s]
+Last Layer:   7%|▋         | 1339/18323 [00:06<01:13, 230.82it/s]
+Last Layer:   7%|▋         | 1363/18323 [00:06<01:13, 230.75it/s]
+Last Layer:   8%|▊         | 1387/18323 [00:06<01:13, 231.09it/s]
+Last Layer:   8%|▊         | 1411/18323 [00:06<01:13, 231.04it/s]
+Last Layer:   8%|▊         | 1435/18323 [00:06<01:13, 230.93it/s]
+Last Layer:   8%|▊         | 1459/18323 [00:07<01:13, 230.93it/s]
+Last Layer:   8%|▊         | 1483/18323 [00:07<01:12, 231.13it/s]
+Last Layer:   8%|▊         | 1507/18323 [00:07<01:12, 231.77it/s]
+Last Layer:   8%|▊         | 1532/18323 [00:07<01:12, 233.00it/s]
+Last Layer:   8%|▊         | 1556/18323 [00:07<01:11, 234.77it/s]
+Last Layer:   9%|▊         | 1580/18323 [00:07<01:11, 233.64it/s]
+Last Layer:   9%|▉         | 1604/18323 [00:07<01:11, 233.26it/s]
+Last Layer:   9%|▉         | 1628/18323 [00:07<01:11, 233.01it/s]
+Last Layer:   9%|▉         | 1652/18323 [00:07<01:11, 233.36it/s]
+Last Layer:   9%|▉         | 1676/18323 [00:08<01:11, 233.43it/s]
+Last Layer:   9%|▉         | 1700/18323 [00:08<01:11, 233.38it/s]
+Last Layer:   9%|▉         | 1724/18323 [00:08<01:11, 233.07it/s]
+Last Layer:  10%|▉         | 1748/18323 [00:08<01:10, 234.28it/s]
+Last Layer:  10%|▉         | 1772/18323 [00:08<01:10, 235.53it/s]
+Last Layer:  10%|▉         | 1797/18323 [00:08<01:09, 237.45it/s]
+Last Layer:  10%|▉         | 1822/18323 [00:08<01:09, 238.52it/s]
+Last Layer:  10%|█         | 1846/18323 [00:08<01:09, 238.69it/s]
+Last Layer:  10%|█         | 1871/18323 [00:08<01:08, 239.29it/s]
+Last Layer:  10%|█         | 1896/18323 [00:08<01:08, 240.03it/s]
+Last Layer:  10%|█         | 1921/18323 [00:09<01:08, 241.00it/s]
+Last Layer:  11%|█         | 1946/18323 [00:09<01:07, 241.75it/s]
+Last Layer:  11%|█         | 1971/18323 [00:09<01:07, 242.56it/s]
+Last Layer:  11%|█         | 1996/18323 [00:09<01:07, 242.75it/s]
+Last Layer:  11%|█         | 2021/18323 [00:09<01:07, 242.85it/s]
+Last Layer:  11%|█         | 2046/18323 [00:09<01:06, 243.83it/s]
+Last Layer:  11%|█▏        | 2071/18323 [00:09<01:06, 244.30it/s]
+Last Layer:  11%|█▏        | 2096/18323 [00:09<01:06, 244.86it/s]
+Last Layer:  12%|█▏        | 2121/18323 [00:09<01:06, 245.37it/s]
+Last Layer:  12%|█▏        | 2146/18323 [00:09<01:05, 245.33it/s]
+Last Layer:  12%|█▏        | 2171/18323 [00:10<01:05, 245.70it/s]
+Last Layer:  12%|█▏        | 2196/18323 [00:10<01:05, 245.55it/s]
+Last Layer:  12%|█▏        | 2221/18323 [00:10<01:05, 245.86it/s]
+Last Layer:  12%|█▏        | 2246/18323 [00:10<01:05, 246.57it/s]
+Last Layer:  12%|█▏        | 2271/18323 [00:10<01:05, 245.62it/s]
+Last Layer:  13%|█▎        | 2296/18323 [00:10<01:05, 245.98it/s]
+Last Layer:  13%|█▎        | 2321/18323 [00:10<01:04, 246.95it/s]
+Last Layer:  13%|█▎        | 2346/18323 [00:10<01:04, 247.34it/s]
+Last Layer:  13%|█▎        | 2371/18323 [00:10<01:04, 247.86it/s]
+Last Layer:  13%|█▎        | 2396/18323 [00:10<01:04, 247.98it/s]
+Last Layer:  13%|█▎        | 2421/18323 [00:11<01:04, 248.35it/s]
+Last Layer:  13%|█▎        | 2447/18323 [00:11<01:03, 249.22it/s]
+Last Layer:  13%|█▎        | 2473/18323 [00:11<01:03, 250.57it/s]
+Last Layer:  14%|█▎        | 2499/18323 [00:11<01:03, 250.75it/s]
+Last Layer:  14%|█▍        | 2525/18323 [00:11<01:03, 250.08it/s]
+Last Layer:  14%|█▍        | 2551/18323 [00:11<01:03, 250.09it/s]
+Last Layer:  14%|█▍        | 2577/18323 [00:11<01:03, 249.74it/s]
+Last Layer:  14%|█▍        | 2603/18323 [00:11<01:02, 250.47it/s]
+Last Layer:  14%|█▍        | 2629/18323 [00:11<01:03, 247.98it/s]
+Last Layer:  14%|█▍        | 2655/18323 [00:11<01:02, 250.28it/s]
+Last Layer:  15%|█▍        | 2681/18323 [00:12<01:02, 251.59it/s]
+Last Layer:  15%|█▍        | 2707/18323 [00:12<01:01, 251.95it/s]
+Last Layer:  15%|█▍        | 2733/18323 [00:12<01:01, 252.16it/s]
+Last Layer:  15%|█▌        | 2759/18323 [00:12<01:01, 252.28it/s]
+Last Layer:  15%|█▌        | 2785/18323 [00:12<01:01, 252.32it/s]
+Last Layer:  15%|█▌        | 2811/18323 [00:12<01:01, 252.89it/s]
+Last Layer:  15%|█▌        | 2837/18323 [00:12<01:01, 253.25it/s]
+Last Layer:  16%|█▌        | 2863/18323 [00:12<01:00, 253.76it/s]
+Last Layer:  16%|█▌        | 2889/18323 [00:12<01:00, 253.99it/s]
+Last Layer:  16%|█▌        | 2915/18323 [00:13<01:00, 255.23it/s]
+Last Layer:  16%|█▌        | 2941/18323 [00:13<01:00, 254.63it/s]
+Last Layer:  16%|█▌        | 2967/18323 [00:13<01:00, 253.75it/s]
+Last Layer:  16%|█▋        | 2993/18323 [00:13<01:00, 254.05it/s]
+Last Layer:  16%|█▋        | 3019/18323 [00:13<00:59, 255.12it/s]
+Last Layer:  17%|█▋        | 3045/18323 [00:13<00:59, 255.55it/s]
+Last Layer:  17%|█▋        | 3071/18323 [00:13<00:59, 255.90it/s]
+Last Layer:  17%|█▋        | 3097/18323 [00:13<00:59, 256.28it/s]
+Last Layer:  17%|█▋        | 3123/18323 [00:13<00:59, 256.56it/s]
+Last Layer:  17%|█▋        | 3149/18323 [00:13<00:59, 257.07it/s]
+Last Layer:  17%|█▋        | 3175/18323 [00:14<00:58, 257.70it/s]
+Last Layer:  17%|█▋        | 3201/18323 [00:14<00:58, 257.88it/s]
+Last Layer:  18%|█▊        | 3227/18323 [00:14<00:58, 257.20it/s]
+Last Layer:  18%|█▊        | 3253/18323 [00:14<00:58, 257.52it/s]
+Last Layer:  18%|█▊        | 3279/18323 [00:14<00:58, 258.18it/s]
+Last Layer:  18%|█▊        | 3305/18323 [00:14<00:58, 258.69it/s]
+Last Layer:  18%|█▊        | 3332/18323 [00:14<00:57, 260.13it/s]
+Last Layer:  18%|█▊        | 3359/18323 [00:14<00:57, 259.35it/s]
+Last Layer:  18%|█▊        | 3386/18323 [00:14<00:57, 259.86it/s]
+Last Layer:  19%|█▊        | 3413/18323 [00:14<00:57, 259.97it/s]
+Last Layer:  19%|█▉        | 3440/18323 [00:15<00:57, 260.39it/s]
+Last Layer:  19%|█▉        | 3467/18323 [00:15<00:56, 260.84it/s]
+Last Layer:  19%|█▉        | 3494/18323 [00:15<00:56, 261.73it/s]
+Last Layer:  19%|█▉        | 3521/18323 [00:15<00:56, 262.51it/s]
+Last Layer:  19%|█▉        | 3548/18323 [00:15<00:56, 262.91it/s]
+Last Layer:  20%|█▉        | 3575/18323 [00:15<00:56, 263.12it/s]
+Last Layer:  20%|█▉        | 3602/18323 [00:15<00:55, 263.30it/s]
+Last Layer:  20%|█▉        | 3629/18323 [00:15<00:55, 263.39it/s]
+Last Layer:  20%|█▉        | 3656/18323 [00:15<00:55, 263.37it/s]
+Last Layer:  20%|██        | 3683/18323 [00:15<00:55, 263.77it/s]
+Last Layer:  20%|██        | 3710/18323 [00:16<00:55, 264.68it/s]
+Last Layer:  20%|██        | 3737/18323 [00:16<00:54, 265.28it/s]
+Last Layer:  21%|██        | 3764/18323 [00:16<00:54, 265.05it/s]
+Last Layer:  21%|██        | 3791/18323 [00:16<00:54, 265.55it/s]
+Last Layer:  21%|██        | 3818/18323 [00:16<00:54, 265.63it/s]
+Last Layer:  21%|██        | 3845/18323 [00:16<00:54, 266.61it/s]
+Last Layer:  21%|██        | 3872/18323 [00:16<00:54, 265.88it/s]
+Last Layer:  21%|██▏       | 3899/18323 [00:16<00:54, 266.04it/s]
+Last Layer:  21%|██▏       | 3926/18323 [00:16<00:54, 266.06it/s]
+Last Layer:  22%|██▏       | 3953/18323 [00:16<00:53, 266.48it/s]
+Last Layer:  22%|██▏       | 3980/18323 [00:17<00:53, 266.48it/s]
+Last Layer:  22%|██▏       | 4007/18323 [00:17<00:53, 266.70it/s]
+Last Layer:  22%|██▏       | 4034/18323 [00:17<00:53, 266.67it/s]
+Last Layer:  22%|██▏       | 4061/18323 [00:17<00:53, 266.63it/s]
+Last Layer:  22%|██▏       | 4088/18323 [00:17<00:53, 266.65it/s]
+Last Layer:  22%|██▏       | 4115/18323 [00:17<00:53, 267.22it/s]
+Last Layer:  23%|██▎       | 4142/18323 [00:17<00:53, 267.13it/s]
+Last Layer:  23%|██▎       | 4170/18323 [00:17<00:52, 268.06it/s]
+Last Layer:  23%|██▎       | 4197/18323 [00:17<00:52, 268.18it/s]
+Last Layer:  23%|██▎       | 4224/18323 [00:17<00:52, 268.62it/s]
+Last Layer:  23%|██▎       | 4252/18323 [00:18<00:52, 269.19it/s]
+Last Layer:  23%|██▎       | 4280/18323 [00:18<00:51, 270.15it/s]
+Last Layer:  24%|██▎       | 4308/18323 [00:18<00:51, 270.19it/s]
+Last Layer:  24%|██▎       | 4336/18323 [00:18<00:51, 270.11it/s]
+Last Layer:  24%|██▍       | 4364/18323 [00:18<00:51, 270.90it/s]
+Last Layer:  24%|██▍       | 4392/18323 [00:18<00:51, 271.64it/s]
+Last Layer:  24%|██▍       | 4420/18323 [00:18<00:51, 272.23it/s]
+Last Layer:  24%|██▍       | 4448/18323 [00:18<00:50, 272.57it/s]
+Last Layer:  24%|██▍       | 4476/18323 [00:18<00:50, 273.03it/s]
+Last Layer:  25%|██▍       | 4504/18323 [00:19<00:50, 273.18it/s]
+Last Layer:  25%|██▍       | 4532/18323 [00:19<00:50, 273.35it/s]
+Last Layer:  25%|██▍       | 4560/18323 [00:19<00:50, 273.46it/s]
+Last Layer:  25%|██▌       | 4588/18323 [00:19<00:50, 273.60it/s]
+Last Layer:  25%|██▌       | 4616/18323 [00:19<00:50, 272.50it/s]
+Last Layer:  25%|██▌       | 4644/18323 [00:19<00:50, 273.48it/s]
+Last Layer:  25%|██▌       | 4672/18323 [00:19<00:49, 274.47it/s]
+Last Layer:  26%|██▌       | 4700/18323 [00:19<00:49, 274.85it/s]
+Last Layer:  26%|██▌       | 4728/18323 [00:19<00:49, 275.65it/s]
+Last Layer:  26%|██▌       | 4756/18323 [00:19<00:49, 276.20it/s]
+Last Layer:  26%|██▌       | 4785/18323 [00:20<00:48, 276.65it/s]
+Last Layer:  26%|██▋       | 4814/18323 [00:20<00:48, 278.31it/s]
+Last Layer:  26%|██▋       | 4843/18323 [00:20<00:48, 278.96it/s]
+Last Layer:  27%|██▋       | 4871/18323 [00:20<00:48, 279.16it/s]
+Last Layer:  27%|██▋       | 4899/18323 [00:20<00:48, 278.67it/s]
+Last Layer:  27%|██▋       | 4927/18323 [00:20<00:48, 277.09it/s]
+Last Layer:  27%|██▋       | 4955/18323 [00:20<00:48, 277.22it/s]
+Last Layer:  27%|██▋       | 4983/18323 [00:20<00:48, 277.65it/s]
+Last Layer:  27%|██▋       | 5012/18323 [00:20<00:47, 278.93it/s]
+Last Layer:  28%|██▊       | 5041/18323 [00:20<00:47, 280.39it/s]
+Last Layer:  28%|██▊       | 5070/18323 [00:21<00:47, 280.39it/s]
+Last Layer:  28%|██▊       | 5099/18323 [00:21<00:47, 280.59it/s]
+Last Layer:  28%|██▊       | 5128/18323 [00:21<00:46, 281.00it/s]
+Last Layer:  28%|██▊       | 5157/18323 [00:21<00:46, 281.27it/s]
+Last Layer:  28%|██▊       | 5186/18323 [00:21<00:46, 281.63it/s]
+Last Layer:  28%|██▊       | 5215/18323 [00:21<00:46, 282.96it/s]
+Last Layer:  29%|██▊       | 5244/18323 [00:21<00:46, 283.85it/s]
+Last Layer:  29%|██▉       | 5273/18323 [00:21<00:46, 283.06it/s]
+Last Layer:  29%|██▉       | 5302/18323 [00:21<00:45, 283.52it/s]
+Last Layer:  29%|██▉       | 5332/18323 [00:21<00:45, 284.53it/s]
+Last Layer:  29%|██▉       | 5362/18323 [00:22<00:45, 286.25it/s]
+Last Layer:  29%|██▉       | 5392/18323 [00:22<00:44, 287.48it/s]
+Last Layer:  30%|██▉       | 5422/18323 [00:22<00:44, 288.45it/s]
+Last Layer:  30%|██▉       | 5452/18323 [00:22<00:44, 289.36it/s]
+Last Layer:  30%|██▉       | 5481/18323 [00:22<00:44, 289.52it/s]
+Last Layer:  30%|███       | 5510/18323 [00:22<00:44, 289.09it/s]
+Last Layer:  30%|███       | 5540/18323 [00:22<00:44, 290.36it/s]
+Last Layer:  30%|███       | 5570/18323 [00:22<00:43, 291.22it/s]
+Last Layer:  31%|███       | 5600/18323 [00:22<00:43, 291.69it/s]
+Last Layer:  31%|███       | 5630/18323 [00:23<00:43, 292.13it/s]
+Last Layer:  31%|███       | 5660/18323 [00:23<00:43, 292.46it/s]
+Last Layer:  31%|███       | 5690/18323 [00:23<00:43, 292.42it/s]
+Last Layer:  31%|███       | 5720/18323 [00:23<00:42, 293.40it/s]
+Last Layer:  31%|███▏      | 5750/18323 [00:23<00:42, 293.65it/s]
+Last Layer:  32%|███▏      | 5780/18323 [00:23<00:42, 294.83it/s]
+Last Layer:  32%|███▏      | 5811/18323 [00:23<00:42, 296.77it/s]
+Last Layer:  32%|███▏      | 5842/18323 [00:23<00:41, 298.35it/s]
+Last Layer:  32%|███▏      | 5873/18323 [00:23<00:41, 299.56it/s]
+Last Layer:  32%|███▏      | 5904/18323 [00:23<00:41, 301.83it/s]
+Last Layer:  32%|███▏      | 5935/18323 [00:24<00:42, 293.06it/s]
+Last Layer:  33%|███▎      | 5967/18323 [00:24<00:41, 298.20it/s]
+Last Layer:  33%|███▎      | 5999/18323 [00:24<00:40, 301.83it/s]
+Last Layer:  33%|███▎      | 6031/18323 [00:24<00:40, 305.08it/s]
+Last Layer:  33%|███▎      | 6063/18323 [00:24<00:39, 306.81it/s]
+Last Layer:  33%|███▎      | 6095/18323 [00:24<00:39, 308.12it/s]
+Last Layer:  33%|███▎      | 6127/18323 [00:24<00:39, 310.01it/s]
+Last Layer:  34%|███▎      | 6159/18323 [00:24<00:39, 311.85it/s]
+Last Layer:  34%|███▍      | 6191/18323 [00:24<00:38, 313.44it/s]
+Last Layer:  34%|███▍      | 6224/18323 [00:24<00:38, 316.31it/s]
+Last Layer:  34%|███▍      | 6256/18323 [00:25<00:38, 317.33it/s]
+Last Layer:  34%|███▍      | 6289/18323 [00:25<00:37, 318.60it/s]
+Last Layer:  35%|███▍      | 6322/18323 [00:25<00:37, 319.96it/s]
+Last Layer:  35%|███▍      | 6354/18323 [00:25<00:38, 314.57it/s]
+Last Layer:  35%|███▍      | 6386/18323 [00:25<00:40, 297.18it/s]
+Last Layer:  35%|███▌      | 6416/18323 [00:25<00:43, 273.44it/s]
+Last Layer:  35%|███▌      | 6444/18323 [00:25<00:44, 267.77it/s]
+Last Layer:  35%|███▌      | 6472/18323 [00:25<00:44, 264.52it/s]
+Last Layer:  35%|███▌      | 6499/18323 [00:25<00:44, 263.22it/s]
+Last Layer:  36%|███▌      | 6528/18323 [00:26<00:43, 269.90it/s]
+Last Layer:  36%|███▌      | 6557/18323 [00:26<00:42, 274.52it/s]
+Last Layer:  36%|███▌      | 6585/18323 [00:26<00:44, 262.76it/s]
+Last Layer:  36%|███▌      | 6617/18323 [00:26<00:42, 276.94it/s]
+Last Layer:  36%|███▋      | 6649/18323 [00:26<00:40, 288.56it/s]
+Last Layer:  36%|███▋      | 6681/18323 [00:26<00:39, 296.24it/s]
+Last Layer:  37%|███▋      | 6714/18323 [00:26<00:38, 304.01it/s]
+Last Layer:  37%|███▋      | 6748/18323 [00:26<00:36, 313.83it/s]
+Last Layer:  37%|███▋      | 6782/18323 [00:26<00:35, 320.87it/s]
+Last Layer:  37%|███▋      | 6816/18323 [00:26<00:35, 325.15it/s]
+Last Layer:  37%|███▋      | 6851/18323 [00:27<00:34, 330.06it/s]
+Last Layer:  38%|███▊      | 6886/18323 [00:27<00:34, 333.69it/s]
+Last Layer:  38%|███▊      | 6920/18323 [00:27<00:34, 333.16it/s]
+Last Layer:  38%|███▊      | 6954/18323 [00:27<00:34, 331.63it/s]
+Last Layer:  38%|███▊      | 6990/18323 [00:27<00:33, 338.53it/s]
+Last Layer:  38%|███▊      | 7026/18323 [00:27<00:32, 342.76it/s]
+Last Layer:  39%|███▊      | 7063/18323 [00:27<00:32, 348.60it/s]
+Last Layer:  39%|███▊      | 7098/18323 [00:27<00:34, 323.06it/s]
+Last Layer:  39%|███▉      | 7131/18323 [00:27<00:36, 307.44it/s]
+Last Layer:  39%|███▉      | 7163/18323 [00:28<00:37, 299.36it/s]
+Last Layer:  39%|███▉      | 7194/18323 [00:28<00:37, 297.57it/s]
+Last Layer:  39%|███▉      | 7224/18323 [00:28<00:37, 297.85it/s]
+Last Layer:  40%|███▉      | 7254/18323 [00:28<00:37, 298.33it/s]
+Last Layer:  40%|███▉      | 7285/18323 [00:28<00:36, 299.65it/s]
+Last Layer:  40%|███▉      | 7316/18323 [00:28<00:37, 295.35it/s]
+Last Layer:  40%|████      | 7348/18323 [00:28<00:36, 302.09it/s]
+Last Layer:  40%|████      | 7379/18323 [00:28<00:36, 295.88it/s]
+Last Layer:  40%|████      | 7411/18323 [00:28<00:36, 300.27it/s]
+Last Layer:  41%|████      | 7443/18323 [00:28<00:35, 304.00it/s]
+Last Layer:  41%|████      | 7475/18323 [00:29<00:35, 307.65it/s]
+Last Layer:  41%|████      | 7506/18323 [00:29<00:35, 306.85it/s]
+Last Layer:  41%|████      | 7538/18323 [00:29<00:34, 308.20it/s]
+Last Layer:  41%|████▏     | 7570/18323 [00:29<00:34, 308.80it/s]
+Last Layer:  41%|████▏     | 7602/18323 [00:29<00:34, 310.60it/s]
+Last Layer:  42%|████▏     | 7635/18323 [00:29<00:33, 315.98it/s]
+Last Layer:  42%|████▏     | 7673/18323 [00:29<00:31, 333.99it/s]
+Last Layer:  42%|████▏     | 7711/18323 [00:29<00:30, 345.57it/s]
+Last Layer:  42%|████▏     | 7750/18323 [00:29<00:29, 357.26it/s]
+Last Layer:  43%|████▎     | 7790/18323 [00:30<00:28, 369.55it/s]
+Last Layer:  43%|████▎     | 7829/18323 [00:30<00:28, 373.56it/s]
+Last Layer:  43%|████▎     | 7869/18323 [00:30<00:27, 379.08it/s]
+Last Layer:  43%|████▎     | 7908/18323 [00:30<00:27, 380.97it/s]
+Last Layer:  43%|████▎     | 7950/18323 [00:30<00:26, 391.54it/s]
+Last Layer:  44%|████▎     | 7991/18323 [00:30<00:26, 394.43it/s]
+Last Layer:  44%|████▍     | 8031/18323 [00:30<00:26, 390.76it/s]
+Last Layer:  44%|████▍     | 8071/18323 [00:30<00:26, 391.05it/s]
+Last Layer:  44%|████▍     | 8112/18323 [00:30<00:25, 394.58it/s]
+Last Layer:  44%|████▍     | 8152/18323 [00:30<00:26, 389.50it/s]
+Last Layer:  45%|████▍     | 8193/18323 [00:31<00:25, 394.99it/s]
+Last Layer:  45%|████▍     | 8233/18323 [00:31<00:25, 389.74it/s]
+Last Layer:  45%|████▌     | 8275/18323 [00:31<00:25, 396.06it/s]
+Last Layer:  45%|████▌     | 8315/18323 [00:31<00:25, 385.85it/s]
+Last Layer:  46%|████▌     | 8354/18323 [00:31<00:25, 386.63it/s]
+Last Layer:  46%|████▌     | 8394/18323 [00:31<00:25, 387.99it/s]
+Last Layer:  46%|████▌     | 8433/18323 [00:31<00:25, 384.33it/s]
+Last Layer:  46%|████▌     | 8473/18323 [00:31<00:25, 387.56it/s]
+Last Layer:  46%|████▋     | 8512/18323 [00:31<00:25, 384.85it/s]
+Last Layer:  47%|████▋     | 8554/18323 [00:31<00:24, 395.09it/s]
+Last Layer:  47%|████▋     | 8594/18323 [00:32<00:24, 391.09it/s]
+Last Layer:  47%|████▋     | 8636/18323 [00:32<00:24, 397.57it/s]
+Last Layer:  47%|████▋     | 8678/18323 [00:32<00:23, 402.96it/s]
+Last Layer:  48%|████▊     | 8719/18323 [00:32<00:24, 398.54it/s]
+Last Layer:  48%|████▊     | 8761/18323 [00:32<00:23, 404.61it/s]
+Last Layer:  48%|████▊     | 8802/18323 [00:32<00:23, 402.42it/s]
+Last Layer:  48%|████▊     | 8845/18323 [00:32<00:23, 407.97it/s]
+Last Layer:  48%|████▊     | 8886/18323 [00:32<00:23, 406.07it/s]
+Last Layer:  49%|████▊     | 8928/18323 [00:32<00:23, 407.44it/s]
+Last Layer:  49%|████▉     | 8971/18323 [00:32<00:22, 413.65it/s]
+Last Layer:  49%|████▉     | 9013/18323 [00:33<00:22, 414.21it/s]
+Last Layer:  49%|████▉     | 9056/18323 [00:33<00:22, 416.00it/s]
+Last Layer:  50%|████▉     | 9098/18323 [00:33<00:22, 413.84it/s]
+Last Layer:  50%|████▉     | 9142/18323 [00:33<00:21, 420.05it/s]
+Last Layer:  50%|█████     | 9185/18323 [00:33<00:22, 413.64it/s]
+Last Layer:  50%|█████     | 9229/18323 [00:33<00:21, 421.35it/s]
+Last Layer:  51%|█████     | 9272/18323 [00:33<00:21, 423.61it/s]
+Last Layer:  51%|█████     | 9315/18323 [00:33<00:21, 421.32it/s]
+Last Layer:  51%|█████     | 9358/18323 [00:33<00:21, 422.93it/s]
+Last Layer:  51%|█████▏    | 9401/18323 [00:34<00:21, 421.22it/s]
+Last Layer:  52%|█████▏    | 9446/18323 [00:34<00:20, 427.66it/s]
+Last Layer:  52%|█████▏    | 9489/18323 [00:34<00:20, 423.87it/s]
+Last Layer:  52%|█████▏    | 9535/18323 [00:34<00:20, 432.02it/s]
+Last Layer:  52%|█████▏    | 9580/18323 [00:34<00:20, 436.03it/s]
+Last Layer:  53%|█████▎    | 9624/18323 [00:34<00:20, 432.11it/s]
+Last Layer:  53%|█████▎    | 9669/18323 [00:34<00:19, 435.95it/s]
+Last Layer:  53%|█████▎    | 9713/18323 [00:34<00:19, 432.11it/s]
+Last Layer:  53%|█████▎    | 9760/18323 [00:34<00:19, 441.06it/s]
+Last Layer:  54%|█████▎    | 9805/18323 [00:34<00:19, 434.69it/s]
+Last Layer:  54%|█████▍    | 9852/18323 [00:35<00:19, 442.96it/s]
+Last Layer:  54%|█████▍    | 9897/18323 [00:35<00:19, 436.68it/s]
+Last Layer:  54%|█████▍    | 9943/18323 [00:35<00:19, 440.97it/s]
+Last Layer:  55%|█████▍    | 9990/18323 [00:35<00:18, 449.15it/s]
+Last Layer:  55%|█████▍    | 10035/18323 [00:35<00:18, 441.88it/s]
+Last Layer:  55%|█████▌    | 10083/18323 [00:35<00:18, 450.62it/s]
+Last Layer:  55%|█████▌    | 10129/18323 [00:35<00:18, 442.61it/s]
+Last Layer:  56%|█████▌    | 10174/18323 [00:35<00:18, 444.69it/s]
+Last Layer:  56%|█████▌    | 10219/18323 [00:35<00:18, 433.14it/s]
+Last Layer:  56%|█████▌    | 10265/18323 [00:35<00:18, 439.28it/s]
+Last Layer:  56%|█████▋    | 10312/18323 [00:36<00:18, 437.78it/s]
+Last Layer:  57%|█████▋    | 10359/18323 [00:36<00:17, 444.49it/s]
+Last Layer:  57%|█████▋    | 10406/18323 [00:36<00:17, 450.80it/s]
+Last Layer:  57%|█████▋    | 10452/18323 [00:36<00:17, 449.58it/s]
+Last Layer:  57%|█████▋    | 10499/18323 [00:36<00:17, 452.96it/s]
+Last Layer:  58%|█████▊    | 10545/18323 [00:36<00:17, 450.57it/s]
+Last Layer:  58%|█████▊    | 10593/18323 [00:36<00:16, 457.46it/s]
+Last Layer:  58%|█████▊    | 10639/18323 [00:36<00:16, 454.61it/s]
+Last Layer:  58%|█████▊    | 10688/18323 [00:36<00:16, 463.53it/s]
+Last Layer:  59%|█████▊    | 10735/18323 [00:36<00:16, 465.42it/s]
+Last Layer:  59%|█████▉    | 10782/18323 [00:37<00:16, 461.89it/s]
+Last Layer:  59%|█████▉    | 10830/18323 [00:37<00:16, 466.75it/s]
+Last Layer:  59%|█████▉    | 10877/18323 [00:37<00:16, 455.86it/s]
+Last Layer:  60%|█████▉    | 10924/18323 [00:37<00:16, 459.00it/s]
+Last Layer:  60%|█████▉    | 10970/18323 [00:37<00:16, 450.61it/s]
+Last Layer:  60%|██████    | 11018/18323 [00:37<00:15, 457.53it/s]
+Last Layer:  60%|██████    | 11068/18323 [00:37<00:15, 467.51it/s]
+Last Layer:  61%|██████    | 11117/18323 [00:37<00:15, 471.62it/s]
+Last Layer:  61%|██████    | 11165/18323 [00:37<00:15, 465.28it/s]
+Last Layer:  61%|██████    | 11214/18323 [00:38<00:15, 472.42it/s]
+Last Layer:  61%|██████▏   | 11264/18323 [00:38<00:14, 478.61it/s]
+Last Layer:  62%|██████▏   | 11312/18323 [00:38<00:14, 473.90it/s]
+Last Layer:  62%|██████▏   | 11362/18323 [00:38<00:14, 480.89it/s]
+Last Layer:  62%|██████▏   | 11412/18323 [00:38<00:14, 484.32it/s]
+Last Layer:  63%|██████▎   | 11463/18323 [00:38<00:13, 491.19it/s]
+Last Layer:  63%|██████▎   | 11513/18323 [00:38<00:14, 480.46it/s]
+Last Layer:  63%|██████▎   | 11564/18323 [00:38<00:13, 487.52it/s]
+Last Layer:  63%|██████▎   | 11615/18323 [00:38<00:13, 492.90it/s]
+Last Layer:  64%|██████▎   | 11667/18323 [00:38<00:13, 499.35it/s]
+Last Layer:  64%|██████▍   | 11717/18323 [00:39<00:13, 489.62it/s]
+Last Layer:  64%|██████▍   | 11769/18323 [00:39<00:13, 496.22it/s]
+Last Layer:  65%|██████▍   | 11820/18323 [00:39<00:13, 498.87it/s]
+Last Layer:  65%|██████▍   | 11870/18323 [00:39<00:13, 490.50it/s]
+Last Layer:  65%|██████▌   | 11923/18323 [00:39<00:12, 500.04it/s]
+Last Layer:  65%|██████▌   | 11974/18323 [00:39<00:12, 501.43it/s]
+Last Layer:  66%|██████▌   | 12026/18323 [00:39<00:12, 506.82it/s]
+Last Layer:  66%|██████▌   | 12077/18323 [00:39<00:12, 498.85it/s]
+Last Layer:  66%|██████▌   | 12129/18323 [00:39<00:12, 504.42it/s]
+Last Layer:  66%|██████▋   | 12182/18323 [00:39<00:12, 509.10it/s]
+Last Layer:  67%|██████▋   | 12233/18323 [00:40<00:12, 501.75it/s]
+Last Layer:  67%|██████▋   | 12285/18323 [00:40<00:11, 505.80it/s]
+Last Layer:  67%|██████▋   | 12338/18323 [00:40<00:11, 512.37it/s]
+Last Layer:  68%|██████▊   | 12391/18323 [00:40<00:11, 514.92it/s]
+Last Layer:  68%|██████▊   | 12443/18323 [00:40<00:11, 504.48it/s]
+Last Layer:  68%|██████▊   | 12497/18323 [00:40<00:11, 513.89it/s]
+Last Layer:  68%|██████▊   | 12549/18323 [00:40<00:11, 514.79it/s]
+Last Layer:  69%|██████▉   | 12601/18323 [00:40<00:11, 505.59it/s]
+Last Layer:  69%|██████▉   | 12655/18323 [00:40<00:11, 513.68it/s]
+Last Layer:  69%|██████▉   | 12710/18323 [00:41<00:10, 523.01it/s]
+Last Layer:  70%|██████▉   | 12764/18323 [00:41<00:10, 525.37it/s]
+Last Layer:  70%|██████▉   | 12817/18323 [00:41<00:10, 515.41it/s]
+Last Layer:  70%|███████   | 12872/18323 [00:41<00:10, 523.85it/s]
+Last Layer:  71%|███████   | 12928/18323 [00:41<00:10, 532.76it/s]
+Last Layer:  71%|███████   | 12982/18323 [00:41<00:10, 521.25it/s]
+Last Layer:  71%|███████   | 13038/18323 [00:41<00:09, 529.77it/s]
+Last Layer:  71%|███████▏  | 13093/18323 [00:41<00:09, 535.42it/s]
+Last Layer:  72%|███████▏  | 13148/18323 [00:41<00:09, 539.18it/s]
+Last Layer:  72%|███████▏  | 13202/18323 [00:41<00:09, 524.16it/s]
+Last Layer:  72%|███████▏  | 13257/18323 [00:42<00:09, 531.15it/s]
+Last Layer:  73%|███████▎  | 13313/18323 [00:42<00:09, 538.57it/s]
+Last Layer:  73%|███████▎  | 13367/18323 [00:42<00:09, 525.23it/s]
+Last Layer:  73%|███████▎  | 13423/18323 [00:42<00:09, 534.63it/s]
+Last Layer:  74%|███████▎  | 13480/18323 [00:42<00:08, 544.38it/s]
+Last Layer:  74%|███████▍  | 13536/18323 [00:42<00:08, 548.76it/s]
+Last Layer:  74%|███████▍  | 13592/18323 [00:42<00:08, 551.69it/s]
+Last Layer:  74%|███████▍  | 13648/18323 [00:42<00:08, 534.41it/s]
+Last Layer:  75%|███████▍  | 13705/18323 [00:42<00:08, 544.25it/s]
+Last Layer:  75%|███████▌  | 13761/18323 [00:42<00:08, 548.68it/s]
+Last Layer:  75%|███████▌  | 13819/18323 [00:43<00:08, 555.26it/s]
+Last Layer:  76%|███████▌  | 13877/18323 [00:43<00:07, 561.41it/s]
+Last Layer:  76%|███████▌  | 13934/18323 [00:43<00:08, 542.54it/s]
+Last Layer:  76%|███████▋  | 13991/18323 [00:43<00:07, 549.54it/s]
+Last Layer:  77%|███████▋  | 14048/18323 [00:43<00:07, 553.75it/s]
+Last Layer:  77%|███████▋  | 14106/18323 [00:43<00:07, 560.74it/s]
+Last Layer:  77%|███████▋  | 14163/18323 [00:43<00:07, 559.48it/s]
+Last Layer:  78%|███████▊  | 14220/18323 [00:43<00:07, 541.56it/s]
+Last Layer:  78%|███████▊  | 14276/18323 [00:43<00:07, 544.55it/s]
+Last Layer:  78%|███████▊  | 14333/18323 [00:43<00:07, 551.30it/s]
+Last Layer:  79%|███████▊  | 14389/18323 [00:44<00:07, 535.75it/s]
+Last Layer:  79%|███████▉  | 14447/18323 [00:44<00:07, 547.83it/s]
+Last Layer:  79%|███████▉  | 14505/18323 [00:44<00:06, 556.75it/s]
+Last Layer:  79%|███████▉  | 14564/18323 [00:44<00:06, 565.61it/s]
+Last Layer:  80%|███████▉  | 14622/18323 [00:44<00:06, 569.70it/s]
+Last Layer:  80%|████████  | 14680/18323 [00:44<00:06, 554.25it/s]
+Last Layer:  80%|████████  | 14739/18323 [00:44<00:06, 562.06it/s]
+Last Layer:  81%|████████  | 14798/18323 [00:44<00:06, 567.67it/s]
+Last Layer:  81%|████████  | 14855/18323 [00:44<00:06, 568.14it/s]
+Last Layer:  81%|████████▏ | 14912/18323 [00:45<00:06, 549.38it/s]
+Last Layer:  82%|████████▏ | 14973/18323 [00:45<00:05, 565.53it/s]
+Last Layer:  82%|████████▏ | 15032/18323 [00:45<00:05, 571.80it/s]
+Last Layer:  82%|████████▏ | 15093/18323 [00:45<00:05, 580.62it/s]
+Last Layer:  83%|████████▎ | 15152/18323 [00:45<00:05, 562.06it/s]
+Last Layer:  83%|████████▎ | 15212/18323 [00:45<00:05, 571.85it/s]
+Last Layer:  83%|████████▎ | 15272/18323 [00:45<00:05, 579.32it/s]
+Last Layer:  84%|████████▎ | 15332/18323 [00:45<00:05, 584.65it/s]
+Last Layer:  84%|████████▍ | 15394/18323 [00:45<00:04, 592.47it/s]
+Last Layer:  84%|████████▍ | 15454/18323 [00:45<00:05, 564.97it/s]
+Last Layer:  85%|████████▍ | 15511/18323 [00:46<00:07, 358.76it/s]
+Last Layer:  85%|████████▍ | 15574/18323 [00:46<00:06, 413.39it/s]
+Last Layer:  85%|████████▌ | 15627/18323 [00:46<00:06, 439.68it/s]
+Last Layer:  86%|████████▌ | 15681/18323 [00:46<00:05, 462.27it/s]
+Last Layer:  86%|████████▌ | 15736/18323 [00:46<00:05, 483.08it/s]
+Last Layer:  86%|████████▌ | 15797/18323 [00:46<00:04, 515.85it/s]
+Last Layer:  87%|████████▋ | 15860/18323 [00:46<00:04, 546.35it/s]
+Last Layer:  87%|████████▋ | 15918/18323 [00:46<00:04, 547.56it/s]
+Last Layer:  87%|████████▋ | 15982/18323 [00:47<00:04, 572.55it/s]
+Last Layer:  88%|████████▊ | 16046/18323 [00:47<00:03, 589.68it/s]
+Last Layer:  88%|████████▊ | 16106/18323 [00:47<00:03, 576.05it/s]
+Last Layer:  88%|████████▊ | 16170/18323 [00:47<00:03, 592.65it/s]
+Last Layer:  89%|████████▊ | 16233/18323 [00:47<00:03, 603.31it/s]
+Last Layer:  89%|████████▉ | 16295/18323 [00:47<00:03, 607.00it/s]
+Last Layer:  89%|████████▉ | 16357/18323 [00:47<00:03, 607.89it/s]
+Last Layer:  90%|████████▉ | 16419/18323 [00:47<00:03, 609.43it/s]
+Last Layer:  90%|████████▉ | 16489/18323 [00:47<00:02, 635.34it/s]
+Last Layer:  90%|█████████ | 16557/18323 [00:47<00:02, 646.31it/s]
+Last Layer:  91%|█████████ | 16622/18323 [00:48<00:02, 644.34it/s]
+Last Layer:  91%|█████████ | 16687/18323 [00:48<00:02, 645.91it/s]
+Last Layer:  91%|█████████▏| 16752/18323 [00:48<00:02, 601.01it/s]
+Last Layer:  92%|█████████▏| 16813/18323 [00:48<00:02, 590.90it/s]
+Last Layer:  92%|█████████▏| 16873/18323 [00:48<00:02, 585.16it/s]
+Last Layer:  92%|█████████▏| 16938/18323 [00:48<00:02, 601.75it/s]
+Last Layer:  93%|█████████▎| 16999/18323 [00:48<00:02, 577.47it/s]
+Last Layer:  93%|█████████▎| 17059/18323 [00:48<00:02, 582.30it/s]
+Last Layer:  93%|█████████▎| 17118/18323 [00:49<00:03, 306.11it/s]
+Last Layer:  94%|█████████▎| 17164/18323 [00:49<00:04, 286.04it/s]
+Last Layer:  94%|█████████▍| 17203/18323 [00:49<00:04, 279.44it/s]
+Last Layer:  94%|█████████▍| 17264/18323 [00:49<00:03, 341.92it/s]
+Last Layer:  95%|█████████▍| 17324/18323 [00:49<00:02, 396.01it/s]
+Last Layer:  95%|█████████▍| 17383/18323 [00:49<00:02, 440.22it/s]
+Last Layer:  95%|█████████▌| 17438/18323 [00:50<00:01, 467.22it/s]
+Last Layer:  95%|█████████▌| 17498/18323 [00:50<00:01, 500.89it/s]
+Last Layer:  96%|█████████▌| 17559/18323 [00:50<00:01, 529.66it/s]
+Last Layer:  96%|█████████▌| 17619/18323 [00:50<00:01, 548.95it/s]
+Last Layer:  96%|█████████▋| 17679/18323 [00:50<00:01, 563.12it/s]
+Last Layer:  97%|█████████▋| 17740/18323 [00:50<00:01, 574.16it/s]
+Last Layer:  97%|█████████▋| 17803/18323 [00:50<00:00, 588.60it/s]
+Last Layer:  98%|█████████▊| 17865/18323 [00:50<00:00, 596.53it/s]
+Last Layer:  98%|█████████▊| 17926/18323 [00:50<00:00, 599.90it/s]
+Last Layer:  98%|█████████▊| 17989/18323 [00:50<00:00, 607.97it/s]
+Last Layer:  99%|█████████▊| 18053/18323 [00:51<00:00, 615.81it/s]
+Last Layer:  99%|█████████▉| 18128/18323 [00:51<00:00, 654.74it/s]
+Last Layer:  99%|█████████▉| 18207/18323 [00:51<00:00, 694.03it/s]
+Last Layer: 100%|█████████▉| 18294/18323 [00:51<00:00, 745.59it/s]
+Last Layer: 100%|██████████| 18323/18323 [00:51<00:00, 356.71it/s]
+
+  0%|          | 0/18323 [00:00<?, ?it/s]
+  0%|          | 1/18323 [00:00<47:48,  6.39it/s]
+  0%|          | 42/18323 [00:00<01:32, 198.24it/s]
+  1%|          | 128/18323 [00:00<00:39, 462.06it/s]
+  1%|          | 217/18323 [00:00<00:29, 617.10it/s]
+  2%|▏         | 328/18323 [00:00<00:22, 784.96it/s]
+  3%|▎         | 459/18323 [00:00<00:18, 955.51it/s]
+  3%|▎         | 593/18323 [00:00<00:16, 1076.69it/s]
+  4%|▍         | 704/18323 [00:00<00:16, 1086.41it/s]
+  5%|▍         | 832/18323 [00:00<00:15, 1145.55it/s]
+  5%|▌         | 980/18323 [00:01<00:13, 1246.31it/s]
+  6%|▌         | 1130/18323 [00:01<00:13, 1314.01it/s]
+  7%|▋         | 1273/18323 [00:01<00:12, 1347.28it/s]
+  8%|▊         | 1415/18323 [00:01<00:12, 1367.33it/s]
+  9%|▊         | 1558/18323 [00:01<00:12, 1385.39it/s]
+  9%|▉         | 1713/18323 [00:01<00:11, 1433.29it/s]
+ 10%|█         | 1859/18323 [00:01<00:11, 1439.95it/s]
+ 11%|█         | 2007/18323 [00:01<00:11, 1451.48it/s]
+ 12%|█▏        | 2170/18323 [00:01<00:10, 1502.73it/s]
+ 13%|█▎        | 2334/18323 [00:01<00:10, 1542.09it/s]
+ 14%|█▎        | 2494/18323 [00:02<00:10, 1558.01it/s]
+ 15%|█▍        | 2659/18323 [00:02<00:09, 1583.37it/s]
+ 15%|█▌        | 2818/18323 [00:02<00:09, 1554.09it/s]
+ 16%|█▋        | 2986/18323 [00:02<00:09, 1590.08it/s]
+ 17%|█▋        | 3146/18323 [00:02<00:09, 1547.54it/s]
+ 18%|█▊        | 3305/18323 [00:02<00:09, 1559.34it/s]
+ 19%|█▉        | 3462/18323 [00:02<00:09, 1560.06it/s]
+ 20%|█▉        | 3629/18323 [00:02<00:09, 1590.14it/s]
+ 21%|██        | 3792/18323 [00:02<00:09, 1600.88it/s]
+ 22%|██▏       | 3953/18323 [00:02<00:08, 1597.26it/s]
+ 22%|██▏       | 4115/18323 [00:03<00:08, 1603.28it/s]
+ 23%|██▎       | 4276/18323 [00:03<00:08, 1604.51it/s]
+ 24%|██▍       | 4441/18323 [00:03<00:08, 1615.56it/s]
+ 25%|██▌       | 4603/18323 [00:03<00:08, 1613.05it/s]
+ 26%|██▌       | 4771/18323 [00:03<00:08, 1630.25it/s]
+ 27%|██▋       | 4936/18323 [00:03<00:08, 1635.59it/s]
+ 28%|██▊       | 5100/18323 [00:03<00:08, 1623.07it/s]
+ 29%|██▊       | 5264/18323 [00:03<00:08, 1625.71it/s]
+ 30%|██▉       | 5427/18323 [00:03<00:07, 1619.56it/s]
+ 31%|███       | 5590/18323 [00:03<00:07, 1621.09it/s]
+ 31%|███▏      | 5753/18323 [00:04<00:07, 1612.88it/s]
+ 32%|███▏      | 5915/18323 [00:04<00:07, 1588.16it/s]
+ 33%|███▎      | 6074/18323 [00:04<00:07, 1574.45it/s]
+ 34%|███▍      | 6232/18323 [00:04<00:07, 1539.65it/s]
+ 35%|███▍      | 6387/18323 [00:04<00:07, 1516.43it/s]
+ 36%|███▌      | 6539/18323 [00:04<00:07, 1506.22it/s]
+ 37%|███▋      | 6690/18323 [00:04<00:07, 1493.11it/s]
+ 37%|███▋      | 6840/18323 [00:04<00:07, 1484.47it/s]
+ 38%|███▊      | 6991/18323 [00:04<00:07, 1491.11it/s]
+ 39%|███▉      | 7141/18323 [00:05<00:07, 1483.59it/s]
+ 40%|███▉      | 7291/18323 [00:05<00:07, 1488.10it/s]
+ 41%|████      | 7440/18323 [00:05<00:07, 1487.95it/s]
+ 41%|████▏     | 7591/18323 [00:05<00:07, 1492.19it/s]
+ 42%|████▏     | 7741/18323 [00:05<00:07, 1492.89it/s]
+ 43%|████▎     | 7894/18323 [00:05<00:06, 1502.05it/s]
+ 44%|████▍     | 8045/18323 [00:05<00:06, 1484.02it/s]
+ 45%|████▍     | 8199/18323 [00:05<00:06, 1500.02it/s]
+ 46%|████▌     | 8351/18323 [00:05<00:06, 1503.11it/s]
+ 46%|████▋     | 8502/18323 [00:05<00:06, 1495.70it/s]
+ 47%|████▋     | 8652/18323 [00:06<00:06, 1496.58it/s]
+ 48%|████▊     | 8803/18323 [00:06<00:06, 1499.68it/s]
+ 49%|████▉     | 8953/18323 [00:06<00:06, 1495.50it/s]
+ 50%|████▉     | 9104/18323 [00:06<00:06, 1499.65it/s]
+ 51%|█████     | 9257/18323 [00:06<00:06, 1506.80it/s]
+ 51%|█████▏    | 9409/18323 [00:06<00:05, 1508.14it/s]
+ 52%|█████▏    | 9561/18323 [00:06<00:05, 1509.75it/s]
+ 53%|█████▎    | 9712/18323 [00:06<00:05, 1505.75it/s]
+ 54%|█████▍    | 9863/18323 [00:06<00:05, 1504.45it/s]
+ 55%|█████▍    | 10017/18323 [00:06<00:05, 1512.40it/s]
+ 55%|█████▌    | 10169/18323 [00:07<00:05, 1508.18it/s]
+ 56%|█████▋    | 10320/18323 [00:07<00:05, 1488.07it/s]
+ 57%|█████▋    | 10470/18323 [00:07<00:05, 1491.34it/s]
+ 58%|█████▊    | 10624/18323 [00:07<00:05, 1503.03it/s]
+ 59%|█████▉    | 10775/18323 [00:07<00:05, 1497.74it/s]
+ 60%|█████▉    | 10930/18323 [00:07<00:04, 1511.07it/s]
+ 60%|██████    | 11082/18323 [00:07<00:04, 1507.86it/s]
+ 61%|██████▏   | 11233/18323 [00:07<00:04, 1497.93it/s]
+ 62%|██████▏   | 11383/18323 [00:07<00:04, 1412.22it/s]
+ 63%|██████▎   | 11526/18323 [00:07<00:04, 1411.47it/s]
+ 64%|██████▎   | 11671/18323 [00:08<00:04, 1420.19it/s]
+ 64%|██████▍   | 11814/18323 [00:08<00:04, 1411.42it/s]
+ 65%|██████▌   | 11959/18323 [00:08<00:04, 1420.53it/s]
+ 66%|██████▌   | 12107/18323 [00:08<00:04, 1437.32it/s]
+ 67%|██████▋   | 12251/18323 [00:08<00:04, 1427.39it/s]
+ 68%|██████▊   | 12396/18323 [00:08<00:04, 1433.49it/s]
+ 68%|██████▊   | 12541/18323 [00:08<00:04, 1437.74it/s]
+ 69%|██████▉   | 12685/18323 [00:08<00:03, 1423.17it/s]
+ 70%|███████   | 12828/18323 [00:08<00:03, 1423.50it/s]
+ 71%|███████   | 12972/18323 [00:08<00:03, 1425.96it/s]
+ 72%|███████▏  | 13117/18323 [00:09<00:03, 1430.59it/s]
+ 72%|███████▏  | 13265/18323 [00:09<00:03, 1442.80it/s]
+ 73%|███████▎  | 13413/18323 [00:09<00:03, 1452.74it/s]
+ 74%|███████▍  | 13560/18323 [00:09<00:03, 1455.33it/s]
+ 75%|███████▍  | 13708/18323 [00:09<00:03, 1462.20it/s]
+ 76%|███████▌  | 13858/18323 [00:09<00:03, 1471.84it/s]
+ 76%|███████▋  | 14006/18323 [00:09<00:02, 1459.10it/s]
+ 77%|███████▋  | 14152/18323 [00:09<00:02, 1457.07it/s]
+ 78%|███████▊  | 14302/18323 [00:09<00:02, 1466.96it/s]
+ 79%|███████▉  | 14449/18323 [00:09<00:02, 1463.98it/s]
+ 80%|███████▉  | 14596/18323 [00:10<00:02, 1456.18it/s]
+ 80%|████████  | 14743/18323 [00:10<00:02, 1457.67it/s]
+ 81%|████████▏ | 14895/18323 [00:10<00:02, 1473.57it/s]
+ 82%|████████▏ | 15043/18323 [00:10<00:02, 1467.68it/s]
+ 83%|████████▎ | 15190/18323 [00:10<00:02, 1467.89it/s]
+ 84%|████████▎ | 15340/18323 [00:10<00:02, 1474.35it/s]
+ 85%|████████▍ | 15488/18323 [00:10<00:01, 1468.72it/s]
+ 85%|████████▌ | 15637/18323 [00:10<00:01, 1472.84it/s]
+ 86%|████████▌ | 15788/18323 [00:10<00:01, 1483.86it/s]
+ 87%|████████▋ | 15937/18323 [00:11<00:01, 1476.78it/s]
+ 88%|████████▊ | 16086/18323 [00:11<00:01, 1478.19it/s]
+ 89%|████████▊ | 16240/18323 [00:11<00:01, 1494.99it/s]
+ 89%|████████▉ | 16390/18323 [00:11<00:01, 1491.57it/s]
+ 90%|█████████ | 16540/18323 [00:11<00:01, 1470.84it/s]
+ 91%|█████████ | 16692/18323 [00:11<00:01, 1484.53it/s]
+ 92%|█████████▏| 16841/18323 [00:11<00:00, 1486.03it/s]
+ 93%|█████████▎| 16991/18323 [00:11<00:00, 1488.85it/s]
+ 94%|█████████▎| 17147/18323 [00:11<00:00, 1507.75it/s]
+ 94%|█████████▍| 17298/18323 [00:11<00:00, 1505.89it/s]
+ 95%|█████████▌| 17453/18323 [00:12<00:00, 1517.59it/s]
+ 96%|█████████▌| 17605/18323 [00:12<00:00, 1510.45it/s]
+ 97%|█████████▋| 17757/18323 [00:12<00:00, 1501.66it/s]
+ 98%|█████████▊| 17908/18323 [00:12<00:00, 1501.20it/s]
+ 99%|█████████▊| 18059/18323 [00:12<00:00, 1478.24it/s]
+ 99%|█████████▉| 18208/18323 [00:12<00:00, 1480.03it/s]
+100%|██████████| 18323/18323 [00:12<00:00, 1453.47it/s]
+{
+  "results": {
+    "piqa": {
+      "acc": 0.7878128400435256,
+      "acc_norm": 0.7976060935799782
+    },
+    "lambada": {
+      "ppl": 3.259051711168949,
+      "acc": 0.7492722685814089
+    },
+    "arc_easy": {
+      "acc": 0.7171717171717171,
+      "acc_norm": 0.6734006734006734
+    }
+  },
+  "versions": {
+    "piqa": 0,
+    "lambada": 0,
+    "arc_easy": 0
+  },
+  "config": {
+    "model": "facebook/opt-66b",
+    "num_fewshot": 0,
+    "batch_size": 1,
+    "bootstrap_iters": 1000
+  }
+}
+facebook/opt-66bnum_fewshot: 0, batch_size: 1
+{'config': {'batch_size': 1,
+            'bootstrap_iters': 1000,
+            'model': 'facebook/opt-66b',
+            'num_fewshot': 0},
+ 'results': {'arc_easy': {'acc': 0.7171717171717171,
+                          'acc_norm': 0.6734006734006734},
+             'lambada': {'acc': 0.7492722685814089, 'ppl': 3.259051711168949},
+             'piqa': {'acc': 0.7878128400435256,
+                      'acc_norm': 0.7976060935799782}},
+ 'versions': {'arc_easy': 0, 'lambada': 0, 'piqa': 0}}

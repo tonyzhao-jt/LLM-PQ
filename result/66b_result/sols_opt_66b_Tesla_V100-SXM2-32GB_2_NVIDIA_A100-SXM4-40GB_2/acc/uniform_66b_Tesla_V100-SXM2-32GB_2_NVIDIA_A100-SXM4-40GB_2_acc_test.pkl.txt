@@ -1,0 +1,1939 @@
+CUDA extension not installed.
+Selected Tasks: ['arc_easy', 'lambada', 'piqa']
+Loading checkpoint shards:   0%|          | 0/14 [00:00<?, ?it/s]Loading checkpoint shards:   7%|▋         | 1/14 [00:10<02:12, 10.20s/it]Loading checkpoint shards:  14%|█▍        | 2/14 [00:14<01:22,  6.85s/it]Loading checkpoint shards:  21%|██▏       | 3/14 [00:18<01:02,  5.65s/it]Loading checkpoint shards:  29%|██▊       | 4/14 [00:22<00:50,  5.01s/it]Loading checkpoint shards:  36%|███▌      | 5/14 [00:27<00:42,  4.70s/it]Loading checkpoint shards:  43%|████▎     | 6/14 [00:31<00:36,  4.52s/it]Loading checkpoint shards:  50%|█████     | 7/14 [00:35<00:30,  4.41s/it]Loading checkpoint shards:  57%|█████▋    | 8/14 [00:39<00:25,  4.30s/it]Loading checkpoint shards:  64%|██████▍   | 9/14 [00:49<00:30,  6.02s/it]Loading checkpoint shards:  71%|███████▏  | 10/14 [01:13<00:46, 11.63s/it]Loading checkpoint shards:  79%|███████▊  | 11/14 [01:38<00:47, 15.75s/it]Loading checkpoint shards:  86%|████████▌ | 12/14 [01:49<00:28, 14.40s/it]Loading checkpoint shards:  93%|█████████▎| 13/14 [02:14<00:17, 17.52s/it]Loading checkpoint shards: 100%|██████████| 14/14 [02:25<00:00, 15.48s/it]Loading checkpoint shards: 100%|██████████| 14/14 [02:25<00:00, 10.39s/it]
+Found cached dataset json (/root/.cache/huggingface/datasets/allenai___json/allenai--c4-6fbe877195f42de5/0.0.0/e347ab1c932092252e717ff3f949105a4dd28b27e842dd53157d2f72e276c2e4)
+Found cached dataset json (/root/.cache/huggingface/datasets/allenai___json/allenai--c4-efc3d4f4606f44bd/0.0.0/e347ab1c932092252e717ff3f949105a4dd28b27e842dd53157d2f72e276c2e4)
+OPT vocab size:  50265
+Starting ...
+Starting ...
+Ready.
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+0 self_attn.k_proj
+Quantizing ...
+time 10.20
+error 53807.71875
+0 self_attn.v_proj
+Quantizing ...
+time 2.57
+error 45829.453125
+0 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 65022.9921875
+0 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 60.61373519897461
+0 fc1
+Quantizing ...
+time 2.84
+error 25688.61328125
+0 fc2
+Quantizing ...
+time 18.90
+error 385.9842834472656
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+1 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 17486.08203125
+1 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 5683.162109375
+1 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 15647.7822265625
+1 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 1.1754034757614136
+1 fc1
+Quantizing ...
+time 2.84
+error 18995.6796875
+1 fc2
+Quantizing ...
+time 18.94
+error 247.5901641845703
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+2 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 14331.7451171875
+2 self_attn.v_proj
+Quantizing ...
+time 2.52
+error 5428.5185546875
+2 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 14883.2119140625
+2 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 2.5208840370178223
+2 fc1
+Quantizing ...
+time 2.81
+error 16168.240234375
+2 fc2
+Quantizing ...
+time 18.91
+error 43.40521240234375
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+3 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 19057.435546875
+3 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 5377.9033203125
+3 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 24474.6640625
+3 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 0.4426664113998413
+3 fc1
+Quantizing ...
+time 2.80
+error 15537.931640625
+3 fc2
+Quantizing ...
+time 18.87
+error 31.18797492980957
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+4 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 22291.94140625
+4 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 5316.7001953125
+4 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 32412.87109375
+4 self_attn.out_proj
+Quantizing ...
+time 2.52
+error 0.49733036756515503
+4 fc1
+Quantizing ...
+time 2.82
+error 15715.1015625
+4 fc2
+Quantizing ...
+time 18.87
+error 28.75460433959961
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+5 self_attn.k_proj
+Quantizing ...
+time 9.44
+error 27904.798828125
+5 self_attn.v_proj
+Quantizing ...
+time 2.52
+error 5593.736328125
+5 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 48739.71484375
+5 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 0.45296192169189453
+5 fc1
+Quantizing ...
+time 2.82
+error 16107.66796875
+5 fc2
+Quantizing ...
+time 18.85
+error 47.971527099609375
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+6 self_attn.k_proj
+Quantizing ...
+time 9.44
+error 28731.72265625
+6 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 5643.1591796875
+6 self_attn.q_proj
+Quantizing ...
+time 2.52
+error 43169.625
+6 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 0.5079321265220642
+6 fc1
+Quantizing ...
+time 2.80
+error 16835.267578125
+6 fc2
+Quantizing ...
+time 18.80
+error 47.05975341796875
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+7 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 35710.390625
+7 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 5848.2255859375
+7 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 56299.69140625
+7 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 0.639011800289154
+7 fc1
+Quantizing ...
+time 2.80
+error 17619.67578125
+7 fc2
+Quantizing ...
+time 18.82
+error 62.28844451904297
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+8 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 35032.0859375
+8 self_attn.v_proj
+Quantizing ...
+time 2.52
+error 5871.427734375
+8 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 49697.65625
+8 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 0.5684752464294434
+8 fc1
+Quantizing ...
+time 2.79
+error 18385.359375
+8 fc2
+Quantizing ...
+time 18.85
+error 62.10723876953125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+9 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 36801.99609375
+9 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 6046.2197265625
+9 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 51211.890625
+9 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 0.6420131325721741
+9 fc1
+Quantizing ...
+time 2.81
+error 19890.03125
+9 fc2
+Quantizing ...
+time 18.82
+error 43.911376953125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+10 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 31486.46484375
+10 self_attn.v_proj
+Quantizing ...
+time 2.52
+error 6382.4892578125
+10 self_attn.q_proj
+Quantizing ...
+time 2.61
+error 35435.1953125
+10 self_attn.out_proj
+Quantizing ...
+time 2.64
+error 1.0347771644592285
+10 fc1
+Quantizing ...
+time 2.99
+error 21750.203125
+10 fc2
+Quantizing ...
+time 19.03
+error 56.48603820800781
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+11 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 37057.5
+11 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 6797.32177734375
+11 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 32377.611328125
+11 self_attn.out_proj
+Quantizing ...
+time 2.52
+error 1.5898751020431519
+11 fc1
+Quantizing ...
+time 2.80
+error 23324.56640625
+11 fc2
+Quantizing ...
+time 18.79
+error 50.201534271240234
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+12 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 32754.28515625
+12 self_attn.v_proj
+Quantizing ...
+time 2.51
+error 7049.697265625
+12 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 24010.58984375
+12 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 2.1118807792663574
+12 fc1
+Quantizing ...
+time 2.80
+error 25270.421875
+12 fc2
+Quantizing ...
+time 18.81
+error 61.219017028808594
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+13 self_attn.k_proj
+Quantizing ...
+time 9.44
+error 34574.734375
+13 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 7437.92578125
+13 self_attn.q_proj
+Quantizing ...
+time 2.52
+error 22334.482421875
+13 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 2.9919352531433105
+13 fc1
+Quantizing ...
+time 2.81
+error 27474.283203125
+13 fc2
+Quantizing ...
+time 18.76
+error 71.9822998046875
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+14 self_attn.k_proj
+Quantizing ...
+time 9.43
+error 32733.587890625
+14 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 7825.7568359375
+14 self_attn.q_proj
+Quantizing ...
+time 2.52
+error 17938.337890625
+14 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 3.8318090438842773
+14 fc1
+Quantizing ...
+time 2.85
+error 30278.7421875
+14 fc2
+Quantizing ...
+time 18.81
+error 66.55242919921875
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+15 self_attn.k_proj
+Quantizing ...
+time 9.43
+error 32158.1484375
+15 self_attn.v_proj
+Quantizing ...
+time 2.51
+error 8250.818359375
+15 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 15538.6513671875
+15 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 8.66352367401123
+15 fc1
+Quantizing ...
+time 2.80
+error 33352.52734375
+15 fc2
+Quantizing ...
+time 18.76
+error 89.03056335449219
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+16 self_attn.k_proj
+Quantizing ...
+time 9.44
+error 34091.4375
+16 self_attn.v_proj
+Quantizing ...
+time 2.51
+error 8544.6513671875
+16 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 16187.48046875
+16 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 10.173168182373047
+16 fc1
+Quantizing ...
+time 2.83
+error 36965.4375
+16 fc2
+Quantizing ...
+time 18.77
+error 99.04491424560547
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+17 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 34816.2265625
+17 self_attn.v_proj
+Quantizing ...
+time 2.52
+error 8845.486328125
+17 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 16099.427734375
+17 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 17.255077362060547
+17 fc1
+Quantizing ...
+time 2.79
+error 39793.21875
+17 fc2
+Quantizing ...
+time 18.82
+error 115.76132202148438
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+18 self_attn.k_proj
+Quantizing ...
+time 9.44
+error 34015.3359375
+18 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 9351.33984375
+18 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 16652.12890625
+18 self_attn.out_proj
+Quantizing ...
+time 2.58
+error 24.913204193115234
+18 fc1
+Quantizing ...
+time 2.81
+error 43783.0078125
+18 fc2
+Quantizing ...
+time 18.95
+error 155.1307830810547
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+19 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 42811.109375
+19 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 9916.474609375
+19 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 17441.1953125
+19 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 25.54926300048828
+19 fc1
+Quantizing ...
+time 2.81
+error 48649.5390625
+19 fc2
+Quantizing ...
+time 18.84
+error 223.8782958984375
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+20 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 44392.4921875
+20 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 10572.390625
+20 self_attn.q_proj
+Quantizing ...
+time 2.58
+error 17105.78125
+20 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 36.096046447753906
+20 fc1
+Quantizing ...
+time 2.82
+error 53886.91796875
+20 fc2
+Quantizing ...
+time 18.86
+error 283.36676025390625
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+21 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 48372.4296875
+21 self_attn.v_proj
+Quantizing ...
+time 2.57
+error 11272.8642578125
+21 self_attn.q_proj
+Quantizing ...
+time 2.58
+error 17955.77734375
+21 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 37.94258499145508
+21 fc1
+Quantizing ...
+time 2.81
+error 58602.59375
+21 fc2
+Quantizing ...
+time 18.78
+error 335.86102294921875
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+22 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 53710.4921875
+22 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 12594.0859375
+22 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 20097.7265625
+22 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 77.25849914550781
+22 fc1
+Quantizing ...
+time 2.80
+error 64991.66796875
+22 fc2
+Quantizing ...
+time 18.80
+error 432.09881591796875
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+23 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 56887.125
+23 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 13549.3095703125
+23 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 21716.10546875
+23 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 84.34580993652344
+23 fc1
+Quantizing ...
+time 2.81
+error 72279.125
+23 fc2
+Quantizing ...
+time 18.83
+error 511.7784423828125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+24 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 60593.4140625
+24 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 15289.4970703125
+24 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 23924.724609375
+24 self_attn.out_proj
+Quantizing ...
+time 2.57
+error 115.0997314453125
+24 fc1
+Quantizing ...
+time 2.83
+error 81176.5234375
+24 fc2
+Quantizing ...
+time 18.83
+error 637.593017578125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+25 self_attn.k_proj
+Quantizing ...
+time 9.49
+error 69129.9921875
+25 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 16867.154296875
+25 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 28548.298828125
+25 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 194.7064208984375
+25 fc1
+Quantizing ...
+time 2.80
+error 91934.421875
+25 fc2
+Quantizing ...
+time 18.83
+error 802.1959228515625
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+26 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 69784.0078125
+26 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 18318.0703125
+26 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 30546.58203125
+26 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 297.1492004394531
+26 fc1
+Quantizing ...
+time 2.85
+error 107521.046875
+26 fc2
+Quantizing ...
+time 18.75
+error 1055.05859375
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+27 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 69616.2734375
+27 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 20386.697265625
+27 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 34704.25
+27 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 339.8163146972656
+27 fc1
+Quantizing ...
+time 2.81
+error 121090.15625
+27 fc2
+Quantizing ...
+time 18.79
+error 1324.090087890625
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+28 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 75714.984375
+28 self_attn.v_proj
+Quantizing ...
+time 2.53
+error 22637.45703125
+28 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 38918.7421875
+28 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 535.2198486328125
+28 fc1
+Quantizing ...
+time 2.81
+error 137176.375
+28 fc2
+Quantizing ...
+time 18.86
+error 1632.854248046875
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+29 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 72609.125
+29 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 25349.7578125
+29 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 42672.453125
+29 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 517.340576171875
+29 fc1
+Quantizing ...
+time 2.83
+error 154439.265625
+29 fc2
+Quantizing ...
+time 18.79
+error 2018.9853515625
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+30 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 73242.046875
+30 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 28617.15625
+30 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 45473.90625
+30 self_attn.out_proj
+Quantizing ...
+time 2.57
+error 748.5291748046875
+30 fc1
+Quantizing ...
+time 2.82
+error 169988.171875
+30 fc2
+Quantizing ...
+time 18.75
+error 2386.36767578125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+31 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 76139.8125
+31 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 30884.9375
+31 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 49900.2265625
+31 self_attn.out_proj
+Quantizing ...
+time 2.57
+error 996.1211547851562
+31 fc1
+Quantizing ...
+time 2.80
+error 184729.71875
+31 fc2
+Quantizing ...
+time 18.81
+error 2790.33203125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+32 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 82491.59375
+32 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 33185.6015625
+32 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 51464.7578125
+32 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 1158.806884765625
+32 fc1
+Quantizing ...
+time 2.81
+error 202049.765625
+32 fc2
+Quantizing ...
+time 18.82
+error 3653.794921875
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+33 self_attn.k_proj
+Quantizing ...
+time 9.49
+error 95240.828125
+33 self_attn.v_proj
+Quantizing ...
+time 2.57
+error 38033.07421875
+33 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 57411.78515625
+33 self_attn.out_proj
+Quantizing ...
+time 2.59
+error 1654.01220703125
+33 fc1
+Quantizing ...
+time 2.78
+error 222471.8125
+33 fc2
+Quantizing ...
+time 18.84
+error 4859.56982421875
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+34 self_attn.k_proj
+Quantizing ...
+time 9.49
+error 101234.90625
+34 self_attn.v_proj
+Quantizing ...
+time 2.58
+error 40724.89453125
+34 self_attn.q_proj
+Quantizing ...
+time 2.59
+error 61621.4375
+34 self_attn.out_proj
+Quantizing ...
+time 2.58
+error 2093.735107421875
+34 fc1
+Quantizing ...
+time 2.83
+error 248605.171875
+34 fc2
+Quantizing ...
+time 18.77
+error 5395.3720703125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+35 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 104657.625
+35 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 47050.3828125
+35 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 67653.703125
+35 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 2656.362060546875
+35 fc1
+Quantizing ...
+time 2.83
+error 273796.0625
+35 fc2
+Quantizing ...
+time 18.88
+error 6354.35595703125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+36 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 111705.46875
+36 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 53294.125
+36 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 72863.015625
+36 self_attn.out_proj
+Quantizing ...
+time 2.58
+error 2545.07421875
+36 fc1
+Quantizing ...
+time 2.84
+error 302636.34375
+36 fc2
+Quantizing ...
+time 18.78
+error 8350.416015625
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+37 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 136379.75
+37 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 59309.9453125
+37 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 78196.3203125
+37 self_attn.out_proj
+Quantizing ...
+time 2.57
+error 3688.892822265625
+37 fc1
+Quantizing ...
+time 2.79
+error 338597.0
+37 fc2
+Quantizing ...
+time 18.85
+error 10432.55078125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+38 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 132600.71875
+38 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 67737.6484375
+38 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 87295.109375
+38 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 4138.388671875
+38 fc1
+Quantizing ...
+time 2.83
+error 376057.375
+38 fc2
+Quantizing ...
+time 18.77
+error 12277.134765625
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+39 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 146921.40625
+39 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 75733.625
+39 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 93498.8125
+39 self_attn.out_proj
+Quantizing ...
+time 2.59
+error 5218.3701171875
+39 fc1
+Quantizing ...
+time 2.83
+error 415452.875
+39 fc2
+Quantizing ...
+time 18.81
+error 13918.900390625
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+40 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 170910.890625
+40 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 82087.515625
+40 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 96713.234375
+40 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 6089.87158203125
+40 fc1
+Quantizing ...
+time 2.84
+error 458304.15625
+40 fc2
+Quantizing ...
+time 18.84
+error 15945.642578125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+41 self_attn.k_proj
+Quantizing ...
+time 9.49
+error 167970.265625
+41 self_attn.v_proj
+Quantizing ...
+time 2.58
+error 90245.765625
+41 self_attn.q_proj
+Quantizing ...
+time 2.59
+error 103955.0078125
+41 self_attn.out_proj
+Quantizing ...
+time 2.58
+error 5660.357421875
+41 fc1
+Quantizing ...
+time 2.82
+error 503397.71875
+41 fc2
+Quantizing ...
+time 18.82
+error 18161.0078125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+42 self_attn.k_proj
+Quantizing ...
+time 9.49
+error 167616.578125
+42 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 99288.578125
+42 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 109389.4375
+42 self_attn.out_proj
+Quantizing ...
+time 2.59
+error 6130.2646484375
+42 fc1
+Quantizing ...
+time 2.84
+error 550936.5
+42 fc2
+Quantizing ...
+time 18.82
+error 21105.25
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+43 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 175554.625
+43 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 113450.2421875
+43 self_attn.q_proj
+Quantizing ...
+time 2.58
+error 119414.8125
+43 self_attn.out_proj
+Quantizing ...
+time 2.60
+error 7290.9482421875
+43 fc1
+Quantizing ...
+time 2.87
+error 604703.5
+43 fc2
+Quantizing ...
+time 18.92
+error 24616.37890625
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+44 self_attn.k_proj
+Quantizing ...
+time 9.48
+error 166831.0625
+44 self_attn.v_proj
+Quantizing ...
+time 2.57
+error 114683.859375
+44 self_attn.q_proj
+Quantizing ...
+time 2.58
+error 124435.71875
+44 self_attn.out_proj
+Quantizing ...
+time 2.60
+error 5525.267578125
+44 fc1
+Quantizing ...
+time 2.87
+error 648687.375
+44 fc2
+Quantizing ...
+time 18.91
+error 26624.638671875
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+45 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 178487.578125
+45 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 125017.96875
+45 self_attn.q_proj
+Quantizing ...
+time 2.53
+error 134139.703125
+45 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 6970.740234375
+45 fc1
+Quantizing ...
+time 2.84
+error 684235.5
+45 fc2
+Quantizing ...
+time 18.81
+error 29371.90625
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+46 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 202601.453125
+46 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 128744.6796875
+46 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 138593.765625
+46 self_attn.out_proj
+Quantizing ...
+time 2.58
+error 8092.66259765625
+46 fc1
+Quantizing ...
+time 2.83
+error 727070.5
+46 fc2
+Quantizing ...
+time 18.84
+error 31213.24609375
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+47 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 194739.28125
+47 self_attn.v_proj
+Quantizing ...
+time 2.57
+error 132360.234375
+47 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 138946.40625
+47 self_attn.out_proj
+Quantizing ...
+time 2.57
+error 8021.81884765625
+47 fc1
+Quantizing ...
+time 2.83
+error 762803.75
+47 fc2
+Quantizing ...
+time 18.79
+error 33543.125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+48 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 192862.5
+48 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 135728.28125
+48 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 145194.46875
+48 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 8732.0986328125
+48 fc1
+Quantizing ...
+time 2.83
+error 793110.875
+48 fc2
+Quantizing ...
+time 18.76
+error 36633.703125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+49 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 210095.921875
+49 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 144503.796875
+49 self_attn.q_proj
+Quantizing ...
+time 2.58
+error 150603.0625
+49 self_attn.out_proj
+Quantizing ...
+time 2.59
+error 9406.794921875
+49 fc1
+Quantizing ...
+time 2.83
+error 825920.375
+49 fc2
+Quantizing ...
+time 18.73
+error 39825.46484375
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+50 self_attn.k_proj
+Quantizing ...
+time 9.48
+error 217122.125
+50 self_attn.v_proj
+Quantizing ...
+time 2.77
+error 145796.515625
+50 self_attn.q_proj
+Quantizing ...
+time 2.60
+error 149741.125
+50 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 11229.080078125
+50 fc1
+Quantizing ...
+time 2.84
+error 853193.875
+50 fc2
+Quantizing ...
+time 18.85
+error 42054.5
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+51 self_attn.k_proj
+Quantizing ...
+time 9.48
+error 199025.4375
+51 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 149921.09375
+51 self_attn.q_proj
+Quantizing ...
+time 2.58
+error 153731.1875
+51 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 7699.3779296875
+51 fc1
+Quantizing ...
+time 2.81
+error 883614.9375
+51 fc2
+Quantizing ...
+time 18.88
+error 44137.171875
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+52 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 200532.734375
+52 self_attn.v_proj
+Quantizing ...
+time 2.57
+error 149188.703125
+52 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 156455.40625
+52 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 8198.5234375
+52 fc1
+Quantizing ...
+time 2.82
+error 902325.6875
+52 fc2
+Quantizing ...
+time 18.86
+error 45734.30078125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+53 self_attn.k_proj
+Quantizing ...
+Found cached dataset ai2_arc (/root/.cache/huggingface/datasets/ai2_arc/ARC-Easy/1.0.0/1569c2591ea2683779581d9fb467203d9aa95543bb9b75dcfde5da92529fd7f6)
+time 9.47
+error 212464.609375
+53 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 158517.40625
+53 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 157532.6875
+53 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 9525.888671875
+53 fc1
+Quantizing ...
+time 2.85
+error 917898.375
+53 fc2
+Quantizing ...
+time 18.89
+error 47489.34375
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+54 self_attn.k_proj
+Quantizing ...
+time 9.49
+error 220939.53125
+54 self_attn.v_proj
+Quantizing ...
+time 2.57
+error 150197.34375
+54 self_attn.q_proj
+Quantizing ...
+time 2.57
+error 151938.546875
+54 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 6523.60888671875
+54 fc1
+Quantizing ...
+time 2.82
+error 935617.375
+54 fc2
+Quantizing ...
+time 18.81
+error 49340.48828125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+55 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 223080.78125
+55 self_attn.v_proj
+Quantizing ...
+time 2.52
+error 155551.0625
+55 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 154790.078125
+55 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 7603.3828125
+55 fc1
+Quantizing ...
+time 2.80
+error 939486.25
+55 fc2
+Quantizing ...
+time 18.74
+error 53729.2734375
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+56 self_attn.k_proj
+Quantizing ...
+time 9.48
+error 200691.03125
+56 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 153369.625
+56 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 150036.4375
+56 self_attn.out_proj
+Quantizing ...
+time 2.55
+error 6507.4765625
+56 fc1
+Quantizing ...
+time 2.80
+error 941331.625
+56 fc2
+Quantizing ...
+time 18.81
+error 56362.04296875
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+57 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 274240.25
+57 self_attn.v_proj
+Quantizing ...
+time 2.58
+error 146187.25
+57 self_attn.q_proj
+Quantizing ...
+time 2.58
+error 167307.71875
+57 self_attn.out_proj
+Quantizing ...
+time 2.54
+error 5213.8515625
+57 fc1
+Quantizing ...
+time 2.82
+error 941131.0
+57 fc2
+Quantizing ...
+time 18.75
+error 58653.58203125
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+58 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 256806.9375
+58 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 140418.171875
+58 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 184370.625
+58 self_attn.out_proj
+Quantizing ...
+time 2.57
+error 3878.7392578125
+58 fc1
+Quantizing ...
+time 2.81
+error 935807.4375
+58 fc2
+Quantizing ...
+time 18.79
+error 60542.30859375
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+59 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 290746.6875
+59 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 139217.09375
+59 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 195366.03125
+59 self_attn.out_proj
+Quantizing ...
+time 2.57
+error 4758.60693359375
+59 fc1
+Quantizing ...
+time 2.84
+error 921524.0625
+59 fc2
+Quantizing ...
+time 18.81
+error 61759.140625
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+60 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 308296.625
+60 self_attn.v_proj
+Quantizing ...
+time 2.55
+error 125435.9453125
+60 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 202861.484375
+60 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 2900.14111328125
+60 fc1
+Quantizing ...
+time 2.82
+error 897900.125
+60 fc2
+Quantizing ...
+time 18.80
+error 62216.3515625
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+61 self_attn.k_proj
+Quantizing ...
+time 9.46
+error 291275.625
+61 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 113176.078125
+61 self_attn.q_proj
+Quantizing ...
+time 2.55
+error 210278.3125
+61 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 1922.1719970703125
+61 fc1
+Quantizing ...
+time 2.80
+error 867182.3125
+61 fc2
+Quantizing ...
+time 18.77
+error 59746.62890625
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+62 self_attn.k_proj
+Quantizing ...
+time 9.45
+error 374855.75
+62 self_attn.v_proj
+Quantizing ...
+time 2.54
+error 109401.1328125
+62 self_attn.q_proj
+Quantizing ...
+time 2.56
+error 292106.53125
+62 self_attn.out_proj
+Quantizing ...
+time 2.53
+error 2277.01806640625
+62 fc1
+Quantizing ...
+time 2.84
+error 823277.5
+62 fc2
+Quantizing ...
+time 18.77
+error 60230.2734375
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+use rand bit 4
+63 self_attn.k_proj
+Quantizing ...
+time 9.47
+error 370872.9375
+63 self_attn.v_proj
+Quantizing ...
+time 2.56
+error 85294.9453125
+63 self_attn.q_proj
+Quantizing ...
+time 2.54
+error 305081.0625
+63 self_attn.out_proj
+Quantizing ...
+time 2.56
+error 1420.6170654296875
+63 fc1
+Quantizing ...
+time 2.79
+error 755268.25
+63 fc2
+Quantizing ...
+time 18.81
+error 60030.91015625
+5943.046549081802
+  0%|          | 0/3 [00:00<?, ?it/s]100%|██████████| 3/3 [00:00<00:00, 138.21it/s]
+No config specified, defaulting to: lambada/original
+Found cached dataset lambada (/root/.cache/huggingface/datasets/lambada/original/0.0.1/498a202581528ce3a46c5aefc15a81cc9d1d4954d6cc7605d420de473de60c35)
+  0%|          | 0/1 [00:00<?, ?it/s]100%|██████████| 1/1 [00:00<00:00, 152.57it/s]
+Found cached dataset piqa (/root/.cache/huggingface/datasets/piqa/plain_text/1.1.0/6c611c1a9bf220943c4174e117d3b660859665baf1d43156230116185312d011)
+  0%|          | 0/3 [00:00<?, ?it/s]100%|██████████| 3/3 [00:00<00:00, 63.44it/s]
+Running loglikelihood requests
+  0%|          | 0/18323 [00:00<?, ?it/s]  6%|▌         | 1063/18323 [00:00<00:01, 10625.50it/s] 12%|█▏        | 2148/18323 [00:00<00:01, 10753.43it/s] 18%|█▊        | 3249/18323 [00:00<00:01, 10865.05it/s] 24%|██▎       | 4341/18323 [00:00<00:01, 10885.37it/s] 30%|██▉       | 5440/18323 [00:00<00:01, 10922.34it/s] 36%|███▋      | 6643/18323 [00:00<00:01, 11297.86it/s] 43%|████▎     | 7869/18323 [00:00<00:00, 11611.50it/s] 50%|████▉     | 9093/18323 [00:00<00:00, 11808.73it/s] 56%|█████▌    | 10274/18323 [00:00<00:00, 11575.65it/s] 63%|██████▎   | 11505/18323 [00:01<00:00, 11798.20it/s] 70%|██████▉   | 12735/18323 [00:01<00:00, 11947.41it/s] 76%|███████▌  | 13962/18323 [00:01<00:00, 12044.34it/s] 83%|████████▎ | 15199/18323 [00:01<00:00, 12142.44it/s] 90%|████████▉ | 16444/18323 [00:01<00:00, 12234.82it/s] 97%|█████████▋| 17694/18323 [00:01<00:00, 12311.54it/s]100%|██████████| 18323/18323 [00:01<00:00, 11766.17it/s]

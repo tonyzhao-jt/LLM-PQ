@@ -15,9 +15,13 @@
 *.lic
 *.txt
 *.png
+*.pkl
 trace.json
 profile.json
 *.trace.json
 *.pkl
-!/result/
-!/result/*.pkl
+!result/
+!result/**/*.pkl
+!result/**/*.txt
+
+

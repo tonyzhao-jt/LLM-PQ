@@ -1,0 +1,578 @@
+
+===================================BUG REPORT===================================
+Welcome to bitsandbytes. For bug reports, please run
+
+python -m bitsandbytes
+
+ and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
+================================================================================
+
+===================================BUG REPORT===================================
+Welcome to bitsandbytes. For bug reports, please run
+
+python -m bitsandbytes
+
+ and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
+================================================================================
+
+===================================BUG REPORT===================================
+Welcome to bitsandbytes. For bug reports, please run
+
+python -m bitsandbytes
+
+ and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
+================================================================================
+bin /home/tiger/.local/lib/python3.9/site-packages/bitsandbytes/libbitsandbytes_cuda117.so
+CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so
+CUDA SETUP: Highest compute capability among GPUs detected: 7.5
+CUDA SETUP: Detected CUDA version 117
+CUDA SETUP: Loading binary /home/tiger/.local/lib/python3.9/site-packages/bitsandbytes/libbitsandbytes_cuda117.so...
+bin /home/tiger/.local/lib/python3.9/site-packages/bitsandbytes/libbitsandbytes_cuda117.so
+CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so.11.0
+CUDA SETUP: Highest compute capability among GPUs detected: 7.5
+CUDA SETUP: Detected CUDA version 117
+CUDA SETUP: Loading binary /home/tiger/.local/lib/python3.9/site-packages/bitsandbytes/libbitsandbytes_cuda117.so...
+bin /home/tiger/.local/lib/python3.9/site-packages/bitsandbytes/libbitsandbytes_cuda117.so
+CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so
+CUDA SETUP: Highest compute capability among GPUs detected: 7.5
+CUDA SETUP: Detected CUDA version 117
+CUDA SETUP: Loading binary /home/tiger/.local/lib/python3.9/site-packages/bitsandbytes/libbitsandbytes_cuda117.so...
+rank 2 is in stage 2
+rank 1 is in stage 1
+Pipeline Data Loaded, with prefill cnts:  4
+rank 0 is in stage 0
+create layer: 17|create layer: 8|create layer: 0|create layer: 18|create layer: 9|create layer: 1|create layer: 19|create layer: 10|create layer: 2|create layer: 11|create layer: 20|create layer: 3|create layer: 12|create layer: 21|create layer: 13|create layer: 4|create layer: 22|create layer: 14|create layer: 5|create layer: 23|create layer: 15|create layer: 6|create layer: 24|create layer: 16|create layer: 7|create layer: 25|Stage 0 module sharded
+Stage 0 kv initialized
+Stage 1 module sharded
+Stage 1 kv initialized
+create layer: 26|Stage 2 module sharded
+Stage 2 kv initialized
+rank_src: 1, rank_dst: 3, rank: 2, results_cb: None
+rank_src: 3, rank_dst: 1, rank: 0, results_cb: <function handle_results at 0x7f0e0620eaf0>
+rank_src: 0, rank_dst: 2, rank: 1, results_cb: None
+2023-05-27 11:35:29,362 - INFO - start pipe data
+n132-166-021:168664:170684 [0] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
+n132-166-021:168664:170684 [0] NCCL INFO Bootstrap : Using eth0:***REMOVED***<0>
+n132-166-021:168664:170684 [0] NCCL INFO NET/Plugin : Plugin load (libnccl-net.so) returned 2 : libnccl-net.so: cannot open shared object file: No such file or directory
+n132-166-021:168664:170684 [0] NCCL INFO NET/Plugin : No plugin found, using internal implementation
+n132-166-021:168664:170684 [0] NCCL INFO cudaDriverVersion 11070
+NCCL version 2.17.1+cuda11.7
+n132-166-021:168665:170689 [1] NCCL INFO cudaDriverVersion 11070
+n132-166-021:168665:170689 [1] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
+n132-166-021:168665:170689 [1] NCCL INFO Bootstrap : Using eth0:***REMOVED***<0>
+n132-166-021:168665:170689 [1] NCCL INFO NET/Plugin : Plugin load (libnccl-net.so) returned 2 : libnccl-net.so: cannot open shared object file: No such file or directory
+n132-166-021:168665:170689 [1] NCCL INFO NET/Plugin : No plugin found, using internal implementation
+n132-166-021:168665:170695 [1] NCCL INFO NCCL_IB_DISABLE set by environment to 0.
+n132-166-021:168665:170695 [1] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
+n132-166-021:168665:170695 [1] NCCL INFO NCCL_IB_HCA set to mlx5_2:1
+n132-166-021:168665:170695 [1] NCCL INFO NET/IB : Using [0]mlx5_2:1/RoCE [RO]; OOB eth0:***REMOVED***<0>
+n132-166-021:168665:170695 [1] NCCL INFO Using network IB
+n132-166-021:168664:170694 [0] NCCL INFO NCCL_IB_DISABLE set by environment to 0.
+n132-166-021:168664:170694 [0] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
+n132-166-021:168664:170694 [0] NCCL INFO NCCL_IB_HCA set to mlx5_2:1
+n132-166-021:168664:170694 [0] NCCL INFO NET/IB : Using [0]mlx5_2:1/RoCE [RO]; OOB eth0:***REMOVED***<0>
+n132-166-021:168664:170694 [0] NCCL INFO Using network IB
+n132-166-021:168665:170695 [1] NCCL INFO Setting affinity for GPU 1 to ff,ffff0000,00ffffff
+n132-166-021:168664:170694 [0] NCCL INFO Setting affinity for GPU 0 to ff,ffff0000,00ffffff
+n132-166-021:168664:170694 [0] NCCL INFO Channel 00/02 :    0   1
+n132-166-021:168664:170694 [0] NCCL INFO Channel 01/02 :    0   1
+n132-166-021:168664:170694 [0] NCCL INFO Trees [0] 1/-1/-1->0->-1 [1] 1/-1/-1->0->-1
+n132-166-021:168664:170694 [0] NCCL INFO P2P Chunksize set to 131072
+n132-166-021:168665:170695 [1] NCCL INFO Trees [0] -1/-1/-1->1->0 [1] -1/-1/-1->1->0
+n132-166-021:168665:170695 [1] NCCL INFO P2P Chunksize set to 131072
+n132-166-021:168665:170695 [1] NCCL INFO Channel 00/0 : 1[3e000] -> 0[3d000] via P2P/IPC
+n132-166-021:168665:170695 [1] NCCL INFO Channel 01/0 : 1[3e000] -> 0[3d000] via P2P/IPC
+n132-166-021:168664:170694 [0] NCCL INFO Channel 00/0 : 0[3d000] -> 1[3e000] via P2P/IPC
+n132-166-021:168664:170694 [0] NCCL INFO Channel 01/0 : 0[3d000] -> 1[3e000] via P2P/IPC
+n132-166-021:168665:170695 [1] NCCL INFO Connected all rings
+n132-166-021:168665:170695 [1] NCCL INFO Connected all trees
+n132-166-021:168665:170695 [1] NCCL INFO threadThresholds 8/8/64 | 16/8/64 | 512 | 512
+n132-166-021:168665:170695 [1] NCCL INFO 2 coll channels, 0 nvls channels, 2 p2p channels, 2 p2p channels per peer
+n132-166-021:168664:170694 [0] NCCL INFO Connected all rings
+n132-166-021:168664:170694 [0] NCCL INFO Connected all trees
+n132-166-021:168664:170694 [0] NCCL INFO threadThresholds 8/8/64 | 16/8/64 | 512 | 512
+n132-166-021:168664:170694 [0] NCCL INFO 2 coll channels, 0 nvls channels, 2 p2p channels, 2 p2p channels per peer
+n132-166-021:168664:170694 [0] NCCL INFO comm 0x7f0790013fb0 rank 0 nranks 2 cudaDev 0 busId 3d000 commId 0xd564fbd4cbb83a39 - Init COMPLETE
+n132-166-021:168665:170695 [1] NCCL INFO comm 0x7f9f80013c30 rank 1 nranks 2 cudaDev 1 busId 3e000 commId 0xd564fbd4cbb83a39 - Init COMPLETE
+n132-166-021:168664:170703 [0] NCCL INFO Channel 00/1 : 0[3d000] -> 1[3e000] via P2P/IPC
+n132-166-021:168664:170703 [0] NCCL INFO Channel 01/1 : 0[3d000] -> 1[3e000] via P2P/IPC
+NCCL version 2.17.1+cuda11.7
+n132-166-021:168666:170683 [2] NCCL INFO cudaDriverVersion 11070
+n132-166-021:168666:170683 [2] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
+n132-166-021:168666:170683 [2] NCCL INFO Bootstrap : Using eth0:***REMOVED***<0>
+n132-166-021:168666:170683 [2] NCCL INFO NET/Plugin : Plugin load (libnccl-net.so) returned 2 : libnccl-net.so: cannot open shared object file: No such file or directory
+n132-166-021:168666:170683 [2] NCCL INFO NET/Plugin : No plugin found, using internal implementation
+n132-166-021:168666:170708 [2] NCCL INFO NCCL_IB_DISABLE set by environment to 0.
+n132-166-021:168666:170708 [2] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
+n132-166-021:168666:170708 [2] NCCL INFO NCCL_IB_HCA set to mlx5_2:1
+n132-166-021:168666:170708 [2] NCCL INFO NET/IB : Using [0]mlx5_2:1/RoCE [RO]; OOB eth0:***REMOVED***<0>
+n132-166-021:168666:170708 [2] NCCL INFO Using network IB
+n132-166-021:168665:170707 [1] NCCL INFO Using network IB
+n132-166-021:168665:170707 [1] NCCL INFO Setting affinity for GPU 1 to ff,ffff0000,00ffffff
+n132-166-021:168666:170708 [2] NCCL INFO Setting affinity for GPU 2 to ff,ffff0000,00ffffff
+n132-166-021:168665:170707 [1] NCCL INFO Channel 00/02 :    0   1
+n132-166-021:168665:170707 [1] NCCL INFO Channel 01/02 :    0   1
+n132-166-021:168666:170708 [2] NCCL INFO Trees [0] -1/-1/-1->1->0 [1] -1/-1/-1->1->0
+n132-166-021:168665:170707 [1] NCCL INFO Trees [0] 1/-1/-1->0->-1 [1] 1/-1/-1->0->-1
+n132-166-021:168666:170708 [2] NCCL INFO P2P Chunksize set to 131072
+n132-166-021:168665:170707 [1] NCCL INFO P2P Chunksize set to 131072
+n132-166-021:168666:170708 [2] NCCL INFO Channel 00/0 : 1[40000] -> 0[3e000] via P2P/IPC
+n132-166-021:168666:170708 [2] NCCL INFO Channel 01/0 : 1[40000] -> 0[3e000] via P2P/IPC
+n132-166-021:168665:170707 [1] NCCL INFO Channel 00/0 : 0[3e000] -> 1[40000] via P2P/IPC
+n132-166-021:168665:170707 [1] NCCL INFO Channel 01/0 : 0[3e000] -> 1[40000] via P2P/IPC
+n132-166-021:168666:170708 [2] NCCL INFO Connected all rings
+n132-166-021:168666:170708 [2] NCCL INFO Connected all trees
+n132-166-021:168666:170708 [2] NCCL INFO threadThresholds 8/8/64 | 16/8/64 | 512 | 512
+n132-166-021:168666:170708 [2] NCCL INFO 2 coll channels, 0 nvls channels, 2 p2p channels, 2 p2p channels per peer
+n132-166-021:168665:170707 [1] NCCL INFO Connected all rings
+n132-166-021:168665:170707 [1] NCCL INFO Connected all trees
+n132-166-021:168665:170707 [1] NCCL INFO threadThresholds 8/8/64 | 16/8/64 | 512 | 512
+n132-166-021:168665:170707 [1] NCCL INFO 2 coll channels, 0 nvls channels, 2 p2p channels, 2 p2p channels per peer
+n132-166-021:168665:170707 [1] NCCL INFO comm 0x7f9f7c00fec0 rank 0 nranks 2 cudaDev 1 busId 3e000 commId 0xe7403d5ea23f0c25 - Init COMPLETE
+n132-166-021:168666:170708 [2] NCCL INFO comm 0x7fe82c013c70 rank 1 nranks 2 cudaDev 2 busId 40000 commId 0xe7403d5ea23f0c25 - Init COMPLETE
+n132-166-021:168665:170715 [1] NCCL INFO Channel 00/1 : 0[3e000] -> 1[40000] via P2P/IPC
+n132-166-021:168665:170715 [1] NCCL INFO Channel 01/1 : 0[3e000] -> 1[40000] via P2P/IPC
+NCCL version 2.17.1+cuda11.7
+n132-166-021:168666:170746 [2] NCCL INFO Using network IB
+n132-166-021:168666:170746 [2] NCCL INFO Setting affinity for GPU 2 to ff,ffff0000,00ffffff
+n132-166-021:168666:170746 [2] NCCL INFO Channel 00/02 :    0   1
+n132-166-021:168666:170746 [2] NCCL INFO Channel 01/02 :    0   1
+n132-166-021:168666:170746 [2] NCCL INFO Trees [0] 1/-1/-1->0->-1 [1] -1/-1/-1->0->1
+n132-166-021:168666:170746 [2] NCCL INFO P2P Chunksize set to 131072
+n132-166-021:168666:170746 [2] NCCL INFO Channel 00/0 : 1[88000] -> 0[40000] [receive] via NET/IB/0
+n132-166-021:168666:170746 [2] NCCL INFO Channel 01/0 : 1[88000] -> 0[40000] [receive] via NET/IB/0
+n132-166-021:168666:170746 [2] NCCL INFO Channel 00/0 : 0[40000] -> 1[88000] [send] via NET/IB/0
+n132-166-021:168666:170746 [2] NCCL INFO Channel 01/0 : 0[40000] -> 1[88000] [send] via NET/IB/0
+n132-166-021:168666:170747 [2] NCCL INFO NCCL_IB_GID_INDEX set by environment to 3.
+n132-166-021:168666:170747 [2] NCCL INFO NCCL_IB_TIMEOUT set by environment to 25.
+n132-166-021:168666:170747 [2] NCCL INFO NCCL_IB_RETRY_CNT set by environment to 7.
+n132-166-021:168666:170746 [2] NCCL INFO Connected all rings
+n132-166-021:168666:170746 [2] NCCL INFO Connected all trees
+n132-166-021:168666:170746 [2] NCCL INFO threadThresholds 8/8/64 | 16/8/64 | 512 | 512
+n132-166-021:168666:170746 [2] NCCL INFO 2 coll channels, 0 nvls channels, 2 p2p channels, 2 p2p channels per peer
+n132-166-021:168666:170746 [2] NCCL INFO comm 0x7fe828010220 rank 0 nranks 2 cudaDev 2 busId 40000 commId 0x41a39d710dd78925 - Init COMPLETE
+n132-166-021:168666:170749 [2] NCCL INFO Channel 00/1 : 0[40000] -> 1[88000] [send] via NET/IB/0/Shared
+n132-166-021:168666:170749 [2] NCCL INFO Channel 01/1 : 0[40000] -> 1[88000] [send] via NET/IB/0/Shared
+n132-166-021:168664:170753 [0] NCCL INFO Using network IB
+n132-166-021:168664:170753 [0] NCCL INFO Setting affinity for GPU 0 to ff,ffff0000,00ffffff
+n132-166-021:168664:170753 [0] NCCL INFO Channel 00/02 :    0   1
+n132-166-021:168664:170753 [0] NCCL INFO Channel 01/02 :    0   1
+n132-166-021:168664:170753 [0] NCCL INFO Trees [0] 1/-1/-1->0->-1 [1] -1/-1/-1->0->1
+n132-166-021:168664:170753 [0] NCCL INFO P2P Chunksize set to 131072
+n132-166-021:168664:170753 [0] NCCL INFO Channel 00/0 : 1[88000] -> 0[3d000] [receive] via NET/IB/0
+n132-166-021:168664:170753 [0] NCCL INFO Channel 01/0 : 1[88000] -> 0[3d000] [receive] via NET/IB/0
+n132-166-021:168664:170753 [0] NCCL INFO Channel 00/0 : 0[3d000] -> 1[88000] [send] via NET/IB/0
+n132-166-021:168664:170753 [0] NCCL INFO Channel 01/0 : 0[3d000] -> 1[88000] [send] via NET/IB/0
+n132-166-021:168664:170754 [0] NCCL INFO NCCL_IB_GID_INDEX set by environment to 3.
+n132-166-021:168664:170754 [0] NCCL INFO NCCL_IB_TIMEOUT set by environment to 25.
+n132-166-021:168664:170754 [0] NCCL INFO NCCL_IB_RETRY_CNT set by environment to 7.
+n132-166-021:168664:170753 [0] NCCL INFO Connected all rings
+n132-166-021:168664:170753 [0] NCCL INFO Connected all trees
+n132-166-021:168664:170753 [0] NCCL INFO threadThresholds 8/8/64 | 16/8/64 | 512 | 512
+n132-166-021:168664:170753 [0] NCCL INFO 2 coll channels, 0 nvls channels, 2 p2p channels, 2 p2p channels per peer
+n132-166-021:168664:170753 [0] NCCL INFO comm 0x7f079400f840 rank 0 nranks 2 cudaDev 0 busId 3d000 commId 0x795980190e20f95b - Init COMPLETE
+n132-166-021:168664:170756 [0] NCCL INFO Channel 00/1 : 1[88000] -> 0[3d000] [receive] via NET/IB/0/Shared
+n132-166-021:168664:170756 [0] NCCL INFO Channel 01/1 : 1[88000] -> 0[3d000] [receive] via NET/IB/0/Shared
+2023-05-27 11:35:43,751 - INFO - Request id 0 done for token 1
+2023-05-27 11:35:45,150 - INFO - Request id 1 done for token 1
+2023-05-27 11:35:47,437 - INFO - Request id 2 done for token 1
+2023-05-27 11:35:49,713 - INFO - Request id 3 done for token 1
+2023-05-27 11:35:50,505 - INFO - Latency is 21.143101, throughput is 1.513496
+2023-05-27 11:35:50,506 - INFO - Token throughput is 3.026992
+2023-05-27 11:36:00,518 - INFO - start pipe data
+2023-05-27 11:36:09,743 - INFO - Request id 0 done for token 1
+2023-05-27 11:36:12,442 - INFO - Request id 1 done for token 1
+2023-05-27 11:36:14,837 - INFO - Request id 2 done for token 1
+2023-05-27 11:36:17,329 - INFO - Request id 3 done for token 1
+2023-05-27 11:36:17,509 - INFO - Request id 0 done for token 2
+2023-05-27 11:36:17,647 - INFO - Request id 1 done for token 2
+2023-05-27 11:36:17,796 - INFO - Request id 2 done for token 2
+2023-05-27 11:36:18,132 - INFO - Request id 3 done for token 2
+2023-05-27 11:36:18,400 - INFO - Request id 0 done for token 3
+2023-05-27 11:36:18,581 - INFO - Request id 1 done for token 3
+2023-05-27 11:36:18,796 - INFO - Request id 2 done for token 3
+2023-05-27 11:36:19,013 - INFO - Request id 3 done for token 3
+2023-05-27 11:36:19,228 - INFO - Request id 0 done for token 4
+2023-05-27 11:36:19,440 - INFO - Request id 1 done for token 4
+2023-05-27 11:36:19,654 - INFO - Request id 2 done for token 4
+2023-05-27 11:36:19,873 - INFO - Request id 3 done for token 4
+2023-05-27 11:36:20,085 - INFO - Request id 0 done for token 5
+2023-05-27 11:36:20,298 - INFO - Request id 1 done for token 5
+2023-05-27 11:36:20,524 - INFO - Request id 2 done for token 5
+2023-05-27 11:36:20,733 - INFO - Request id 3 done for token 5
+2023-05-27 11:36:20,942 - INFO - Request id 0 done for token 6
+2023-05-27 11:36:21,158 - INFO - Request id 1 done for token 6
+2023-05-27 11:36:21,386 - INFO - Request id 2 done for token 6
+2023-05-27 11:36:21,585 - INFO - Request id 3 done for token 6
+2023-05-27 11:36:21,797 - INFO - Request id 0 done for token 7
+2023-05-27 11:36:22,013 - INFO - Request id 1 done for token 7
+2023-05-27 11:36:22,227 - INFO - Request id 2 done for token 7
+2023-05-27 11:36:22,442 - INFO - Request id 3 done for token 7
+2023-05-27 11:36:22,654 - INFO - Request id 0 done for token 8
+2023-05-27 11:36:22,870 - INFO - Request id 1 done for token 8
+2023-05-27 11:36:23,085 - INFO - Request id 2 done for token 8
+2023-05-27 11:36:23,302 - INFO - Request id 3 done for token 8
+2023-05-27 11:36:23,516 - INFO - Request id 0 done for token 9
+2023-05-27 11:36:23,745 - INFO - Request id 1 done for token 9
+2023-05-27 11:36:23,946 - INFO - Request id 2 done for token 9
+2023-05-27 11:36:24,167 - INFO - Request id 3 done for token 9
+2023-05-27 11:36:24,382 - INFO - Request id 0 done for token 10
+2023-05-27 11:36:24,602 - INFO - Request id 1 done for token 10
+2023-05-27 11:36:24,803 - INFO - Request id 2 done for token 10
+2023-05-27 11:36:25,017 - INFO - Request id 3 done for token 10
+2023-05-27 11:36:25,241 - INFO - Request id 0 done for token 11
+2023-05-27 11:36:25,446 - INFO - Request id 1 done for token 11
+2023-05-27 11:36:25,666 - INFO - Request id 2 done for token 11
+2023-05-27 11:36:25,884 - INFO - Request id 3 done for token 11
+2023-05-27 11:36:26,097 - INFO - Request id 0 done for token 12
+2023-05-27 11:36:26,308 - INFO - Request id 1 done for token 12
+2023-05-27 11:36:26,530 - INFO - Request id 2 done for token 12
+2023-05-27 11:36:26,739 - INFO - Request id 3 done for token 12
+2023-05-27 11:36:26,962 - INFO - Request id 0 done for token 13
+2023-05-27 11:36:27,173 - INFO - Request id 1 done for token 13
+2023-05-27 11:36:27,386 - INFO - Request id 2 done for token 13
+2023-05-27 11:36:27,600 - INFO - Request id 3 done for token 13
+2023-05-27 11:36:27,822 - INFO - Request id 0 done for token 14
+2023-05-27 11:36:28,031 - INFO - Request id 1 done for token 14
+2023-05-27 11:36:28,261 - INFO - Request id 2 done for token 14
+2023-05-27 11:36:28,468 - INFO - Request id 3 done for token 14
+2023-05-27 11:36:28,676 - INFO - Request id 0 done for token 15
+2023-05-27 11:36:28,890 - INFO - Request id 1 done for token 15
+2023-05-27 11:36:29,106 - INFO - Request id 2 done for token 15
+2023-05-27 11:36:29,320 - INFO - Request id 3 done for token 15
+2023-05-27 11:36:29,537 - INFO - Request id 0 done for token 16
+2023-05-27 11:36:29,751 - INFO - Request id 1 done for token 16
+2023-05-27 11:36:29,980 - INFO - Request id 2 done for token 16
+2023-05-27 11:36:30,187 - INFO - Request id 3 done for token 16
+2023-05-27 11:36:30,409 - INFO - Request id 0 done for token 17
+2023-05-27 11:36:30,617 - INFO - Request id 1 done for token 17
+2023-05-27 11:36:30,826 - INFO - Request id 2 done for token 17
+2023-05-27 11:36:31,042 - INFO - Request id 3 done for token 17
+2023-05-27 11:36:31,264 - INFO - Request id 0 done for token 18
+2023-05-27 11:36:31,464 - INFO - Request id 1 done for token 18
+2023-05-27 11:36:31,684 - INFO - Request id 2 done for token 18
+2023-05-27 11:36:31,899 - INFO - Request id 3 done for token 18
+2023-05-27 11:36:32,109 - INFO - Request id 0 done for token 19
+2023-05-27 11:36:32,336 - INFO - Request id 1 done for token 19
+2023-05-27 11:36:32,542 - INFO - Request id 2 done for token 19
+2023-05-27 11:36:32,759 - INFO - Request id 3 done for token 19
+2023-05-27 11:36:32,973 - INFO - Request id 0 done for token 20
+2023-05-27 11:36:33,190 - INFO - Request id 1 done for token 20
+2023-05-27 11:36:33,411 - INFO - Request id 2 done for token 20
+2023-05-27 11:36:33,629 - INFO - Request id 3 done for token 20
+2023-05-27 11:36:33,841 - INFO - Request id 0 done for token 21
+2023-05-27 11:36:34,062 - INFO - Request id 1 done for token 21
+2023-05-27 11:36:34,279 - INFO - Request id 2 done for token 21
+2023-05-27 11:36:34,503 - INFO - Request id 3 done for token 21
+2023-05-27 11:36:34,714 - INFO - Request id 0 done for token 22
+2023-05-27 11:36:34,936 - INFO - Request id 1 done for token 22
+2023-05-27 11:36:35,151 - INFO - Request id 2 done for token 22
+2023-05-27 11:36:35,369 - INFO - Request id 3 done for token 22
+2023-05-27 11:36:35,589 - INFO - Request id 0 done for token 23
+2023-05-27 11:36:35,818 - INFO - Request id 1 done for token 23
+2023-05-27 11:36:36,033 - INFO - Request id 2 done for token 23
+2023-05-27 11:36:36,250 - INFO - Request id 3 done for token 23
+2023-05-27 11:36:36,470 - INFO - Request id 0 done for token 24
+2023-05-27 11:36:36,687 - INFO - Request id 1 done for token 24
+2023-05-27 11:36:36,909 - INFO - Request id 2 done for token 24
+2023-05-27 11:36:37,118 - INFO - Request id 3 done for token 24
+2023-05-27 11:36:37,349 - INFO - Request id 0 done for token 25
+2023-05-27 11:36:37,553 - INFO - Request id 1 done for token 25
+2023-05-27 11:36:37,776 - INFO - Request id 2 done for token 25
+2023-05-27 11:36:37,983 - INFO - Request id 3 done for token 25
+2023-05-27 11:36:38,208 - INFO - Request id 0 done for token 26
+2023-05-27 11:36:38,419 - INFO - Request id 1 done for token 26
+2023-05-27 11:36:38,640 - INFO - Request id 2 done for token 26
+2023-05-27 11:36:38,861 - INFO - Request id 3 done for token 26
+2023-05-27 11:36:39,069 - INFO - Request id 0 done for token 27
+2023-05-27 11:36:39,315 - INFO - Request id 1 done for token 27
+2023-05-27 11:36:39,505 - INFO - Request id 2 done for token 27
+2023-05-27 11:36:39,732 - INFO - Request id 3 done for token 27
+2023-05-27 11:36:39,935 - INFO - Request id 0 done for token 28
+2023-05-27 11:36:40,166 - INFO - Request id 1 done for token 28
+2023-05-27 11:36:40,366 - INFO - Request id 2 done for token 28
+2023-05-27 11:36:40,588 - INFO - Request id 3 done for token 28
+2023-05-27 11:36:40,814 - INFO - Request id 0 done for token 29
+2023-05-27 11:36:41,026 - INFO - Request id 1 done for token 29
+2023-05-27 11:36:41,239 - INFO - Request id 2 done for token 29
+2023-05-27 11:36:41,457 - INFO - Request id 3 done for token 29
+2023-05-27 11:36:41,674 - INFO - Request id 0 done for token 30
+2023-05-27 11:36:41,903 - INFO - Request id 1 done for token 30
+2023-05-27 11:36:42,108 - INFO - Request id 2 done for token 30
+2023-05-27 11:36:42,326 - INFO - Request id 3 done for token 30
+2023-05-27 11:36:42,546 - INFO - Request id 0 done for token 31
+2023-05-27 11:36:42,771 - INFO - Request id 1 done for token 31
+2023-05-27 11:36:42,975 - INFO - Request id 2 done for token 31
+2023-05-27 11:36:43,198 - INFO - Request id 3 done for token 31
+2023-05-27 11:36:43,411 - INFO - Request id 0 done for token 32
+2023-05-27 11:36:43,630 - INFO - Request id 1 done for token 32
+2023-05-27 11:36:43,845 - INFO - Request id 2 done for token 32
+2023-05-27 11:36:44,067 - INFO - Request id 3 done for token 32
+2023-05-27 11:36:44,286 - INFO - Request id 0 done for token 33
+2023-05-27 11:36:44,502 - INFO - Request id 1 done for token 33
+2023-05-27 11:36:44,717 - INFO - Request id 2 done for token 33
+2023-05-27 11:36:44,951 - INFO - Request id 3 done for token 33
+2023-05-27 11:36:45,170 - INFO - Request id 0 done for token 34
+2023-05-27 11:36:45,371 - INFO - Request id 1 done for token 34
+2023-05-27 11:36:45,584 - INFO - Request id 2 done for token 34
+2023-05-27 11:36:45,805 - INFO - Request id 3 done for token 34
+2023-05-27 11:36:46,029 - INFO - Request id 0 done for token 35
+2023-05-27 11:36:46,237 - INFO - Request id 1 done for token 35
+2023-05-27 11:36:46,469 - INFO - Request id 2 done for token 35
+2023-05-27 11:36:46,675 - INFO - Request id 3 done for token 35
+2023-05-27 11:36:46,902 - INFO - Request id 0 done for token 36
+2023-05-27 11:36:47,108 - INFO - Request id 1 done for token 36
+2023-05-27 11:36:47,328 - INFO - Request id 2 done for token 36
+2023-05-27 11:36:47,543 - INFO - Request id 3 done for token 36
+2023-05-27 11:36:47,762 - INFO - Request id 0 done for token 37
+2023-05-27 11:36:47,985 - INFO - Request id 1 done for token 37
+2023-05-27 11:36:48,201 - INFO - Request id 2 done for token 37
+2023-05-27 11:36:48,428 - INFO - Request id 3 done for token 37
+2023-05-27 11:36:48,646 - INFO - Request id 0 done for token 38
+2023-05-27 11:36:48,870 - INFO - Request id 1 done for token 38
+2023-05-27 11:36:49,075 - INFO - Request id 2 done for token 38
+2023-05-27 11:36:49,289 - INFO - Request id 3 done for token 38
+2023-05-27 11:36:49,507 - INFO - Request id 0 done for token 39
+2023-05-27 11:36:49,726 - INFO - Request id 1 done for token 39
+2023-05-27 11:36:49,956 - INFO - Request id 2 done for token 39
+2023-05-27 11:36:50,174 - INFO - Request id 3 done for token 39
+2023-05-27 11:36:50,395 - INFO - Request id 0 done for token 40
+2023-05-27 11:36:50,596 - INFO - Request id 1 done for token 40
+2023-05-27 11:36:50,827 - INFO - Request id 2 done for token 40
+2023-05-27 11:36:51,028 - INFO - Request id 3 done for token 40
+2023-05-27 11:36:51,250 - INFO - Request id 0 done for token 41
+2023-05-27 11:36:51,468 - INFO - Request id 1 done for token 41
+2023-05-27 11:36:51,683 - INFO - Request id 2 done for token 41
+2023-05-27 11:36:51,898 - INFO - Request id 3 done for token 41
+2023-05-27 11:36:52,132 - INFO - Request id 0 done for token 42
+2023-05-27 11:36:52,335 - INFO - Request id 1 done for token 42
+2023-05-27 11:36:52,567 - INFO - Request id 2 done for token 42
+2023-05-27 11:36:52,771 - INFO - Request id 3 done for token 42
+2023-05-27 11:36:52,990 - INFO - Request id 0 done for token 43
+2023-05-27 11:36:53,208 - INFO - Request id 1 done for token 43
+2023-05-27 11:36:53,426 - INFO - Request id 2 done for token 43
+2023-05-27 11:36:53,646 - INFO - Request id 3 done for token 43
+2023-05-27 11:36:53,866 - INFO - Request id 0 done for token 44
+2023-05-27 11:36:54,083 - INFO - Request id 1 done for token 44
+2023-05-27 11:36:54,310 - INFO - Request id 2 done for token 44
+2023-05-27 11:36:54,528 - INFO - Request id 3 done for token 44
+2023-05-27 11:36:54,735 - INFO - Request id 0 done for token 45
+2023-05-27 11:36:54,958 - INFO - Request id 1 done for token 45
+2023-05-27 11:36:55,169 - INFO - Request id 2 done for token 45
+2023-05-27 11:36:55,386 - INFO - Request id 3 done for token 45
+2023-05-27 11:36:55,616 - INFO - Request id 0 done for token 46
+2023-05-27 11:36:55,822 - INFO - Request id 1 done for token 46
+2023-05-27 11:36:56,043 - INFO - Request id 2 done for token 46
+2023-05-27 11:36:56,263 - INFO - Request id 3 done for token 46
+2023-05-27 11:36:56,478 - INFO - Request id 0 done for token 47
+2023-05-27 11:36:56,714 - INFO - Request id 1 done for token 47
+2023-05-27 11:36:56,938 - INFO - Request id 2 done for token 47
+2023-05-27 11:36:57,143 - INFO - Request id 3 done for token 47
+2023-05-27 11:36:57,361 - INFO - Request id 0 done for token 48
+2023-05-27 11:36:57,578 - INFO - Request id 1 done for token 48
+2023-05-27 11:36:57,796 - INFO - Request id 2 done for token 48
+2023-05-27 11:36:58,025 - INFO - Request id 3 done for token 48
+2023-05-27 11:36:58,237 - INFO - Request id 0 done for token 49
+2023-05-27 11:36:58,453 - INFO - Request id 1 done for token 49
+2023-05-27 11:36:58,665 - INFO - Request id 2 done for token 49
+2023-05-27 11:36:58,881 - INFO - Request id 3 done for token 49
+2023-05-27 11:36:59,094 - INFO - Request id 0 done for token 50
+2023-05-27 11:36:59,324 - INFO - Request id 1 done for token 50
+2023-05-27 11:36:59,531 - INFO - Request id 2 done for token 50
+2023-05-27 11:36:59,746 - INFO - Request id 3 done for token 50
+2023-05-27 11:36:59,961 - INFO - Request id 0 done for token 51
+2023-05-27 11:37:00,192 - INFO - Request id 1 done for token 51
+2023-05-27 11:37:00,405 - INFO - Request id 2 done for token 51
+2023-05-27 11:37:00,622 - INFO - Request id 3 done for token 51
+2023-05-27 11:37:00,832 - INFO - Request id 0 done for token 52
+2023-05-27 11:37:01,050 - INFO - Request id 1 done for token 52
+2023-05-27 11:37:01,269 - INFO - Request id 2 done for token 52
+2023-05-27 11:37:01,489 - INFO - Request id 3 done for token 52
+2023-05-27 11:37:01,718 - INFO - Request id 0 done for token 53
+2023-05-27 11:37:01,933 - INFO - Request id 1 done for token 53
+2023-05-27 11:37:02,151 - INFO - Request id 2 done for token 53
+2023-05-27 11:37:02,372 - INFO - Request id 3 done for token 53
+2023-05-27 11:37:02,582 - INFO - Request id 0 done for token 54
+2023-05-27 11:37:02,798 - INFO - Request id 1 done for token 54
+2023-05-27 11:37:03,017 - INFO - Request id 2 done for token 54
+2023-05-27 11:37:03,236 - INFO - Request id 3 done for token 54
+2023-05-27 11:37:03,465 - INFO - Request id 0 done for token 55
+2023-05-27 11:37:03,684 - INFO - Request id 1 done for token 55
+2023-05-27 11:37:03,897 - INFO - Request id 2 done for token 55
+2023-05-27 11:37:04,117 - INFO - Request id 3 done for token 55
+2023-05-27 11:37:04,337 - INFO - Request id 0 done for token 56
+2023-05-27 11:37:04,559 - INFO - Request id 1 done for token 56
+2023-05-27 11:37:04,777 - INFO - Request id 2 done for token 56
+2023-05-27 11:37:04,991 - INFO - Request id 3 done for token 56
+2023-05-27 11:37:05,210 - INFO - Request id 0 done for token 57
+2023-05-27 11:37:05,441 - INFO - Request id 1 done for token 57
+2023-05-27 11:37:05,650 - INFO - Request id 2 done for token 57
+2023-05-27 11:37:05,870 - INFO - Request id 3 done for token 57
+2023-05-27 11:37:06,098 - INFO - Request id 0 done for token 58
+2023-05-27 11:37:06,309 - INFO - Request id 1 done for token 58
+2023-05-27 11:37:06,528 - INFO - Request id 2 done for token 58
+2023-05-27 11:37:06,744 - INFO - Request id 3 done for token 58
+2023-05-27 11:37:06,965 - INFO - Request id 0 done for token 59
+2023-05-27 11:37:07,193 - INFO - Request id 1 done for token 59
+2023-05-27 11:37:07,406 - INFO - Request id 2 done for token 59
+2023-05-27 11:37:07,630 - INFO - Request id 3 done for token 59
+2023-05-27 11:37:07,838 - INFO - Request id 0 done for token 60
+2023-05-27 11:37:08,059 - INFO - Request id 1 done for token 60
+2023-05-27 11:37:08,282 - INFO - Request id 2 done for token 60
+2023-05-27 11:37:08,505 - INFO - Request id 3 done for token 60
+2023-05-27 11:37:08,717 - INFO - Request id 0 done for token 61
+2023-05-27 11:37:08,934 - INFO - Request id 1 done for token 61
+2023-05-27 11:37:09,154 - INFO - Request id 2 done for token 61
+2023-05-27 11:37:09,381 - INFO - Request id 3 done for token 61
+2023-05-27 11:37:09,593 - INFO - Request id 0 done for token 62
+2023-05-27 11:37:09,811 - INFO - Request id 1 done for token 62
+2023-05-27 11:37:10,030 - INFO - Request id 2 done for token 62
+2023-05-27 11:37:10,252 - INFO - Request id 3 done for token 62
+2023-05-27 11:37:10,468 - INFO - Request id 0 done for token 63
+2023-05-27 11:37:10,705 - INFO - Request id 1 done for token 63
+2023-05-27 11:37:10,918 - INFO - Request id 2 done for token 63
+2023-05-27 11:37:11,129 - INFO - Request id 3 done for token 63
+2023-05-27 11:37:11,364 - INFO - Request id 0 done for token 64
+2023-05-27 11:37:11,566 - INFO - Request id 1 done for token 64
+2023-05-27 11:37:11,795 - INFO - Request id 2 done for token 64
+2023-05-27 11:37:12,016 - INFO - Request id 3 done for token 64
+2023-05-27 11:37:12,234 - INFO - Request id 0 done for token 65
+2023-05-27 11:37:12,437 - INFO - Request id 1 done for token 65
+2023-05-27 11:37:12,670 - INFO - Request id 2 done for token 65
+2023-05-27 11:37:12,881 - INFO - Request id 3 done for token 65
+2023-05-27 11:37:13,106 - INFO - Request id 0 done for token 66
+2023-05-27 11:37:13,312 - INFO - Request id 1 done for token 66
+2023-05-27 11:37:13,544 - INFO - Request id 2 done for token 66
+2023-05-27 11:37:13,751 - INFO - Request id 3 done for token 66
+2023-05-27 11:37:13,969 - INFO - Request id 0 done for token 67
+2023-05-27 11:37:14,192 - INFO - Request id 1 done for token 67
+2023-05-27 11:37:14,411 - INFO - Request id 2 done for token 67
+2023-05-27 11:37:14,630 - INFO - Request id 3 done for token 67
+2023-05-27 11:37:14,860 - INFO - Request id 0 done for token 68
+2023-05-27 11:37:15,071 - INFO - Request id 1 done for token 68
+2023-05-27 11:37:15,300 - INFO - Request id 2 done for token 68
+2023-05-27 11:37:15,517 - INFO - Request id 3 done for token 68
+2023-05-27 11:37:15,740 - INFO - Request id 0 done for token 69
+2023-05-27 11:37:15,949 - INFO - Request id 1 done for token 69
+2023-05-27 11:37:16,167 - INFO - Request id 2 done for token 69
+2023-05-27 11:37:16,387 - INFO - Request id 3 done for token 69
+2023-05-27 11:37:16,609 - INFO - Request id 0 done for token 70
+2023-05-27 11:37:16,839 - INFO - Request id 1 done for token 70
+2023-05-27 11:37:17,045 - INFO - Request id 2 done for token 70
+2023-05-27 11:37:17,280 - INFO - Request id 3 done for token 70
+2023-05-27 11:37:17,487 - INFO - Request id 0 done for token 71
+2023-05-27 11:37:17,719 - INFO - Request id 1 done for token 71
+2023-05-27 11:37:17,940 - INFO - Request id 2 done for token 71
+2023-05-27 11:37:18,160 - INFO - Request id 3 done for token 71
+2023-05-27 11:37:18,382 - INFO - Request id 0 done for token 72
+2023-05-27 11:37:18,588 - INFO - Request id 1 done for token 72
+2023-05-27 11:37:18,802 - INFO - Request id 2 done for token 72
+2023-05-27 11:37:19,018 - INFO - Request id 3 done for token 72
+2023-05-27 11:37:19,239 - INFO - Request id 0 done for token 73
+2023-05-27 11:37:19,469 - INFO - Request id 1 done for token 73
+2023-05-27 11:37:19,681 - INFO - Request id 2 done for token 73
+2023-05-27 11:37:19,899 - INFO - Request id 3 done for token 73
+2023-05-27 11:37:20,132 - INFO - Request id 0 done for token 74
+2023-05-27 11:37:20,349 - INFO - Request id 1 done for token 74
+2023-05-27 11:37:20,561 - INFO - Request id 2 done for token 74
+2023-05-27 11:37:20,779 - INFO - Request id 3 done for token 74
+2023-05-27 11:37:20,999 - INFO - Request id 0 done for token 75
+2023-05-27 11:37:21,234 - INFO - Request id 1 done for token 75
+2023-05-27 11:37:21,444 - INFO - Request id 2 done for token 75
+2023-05-27 11:37:21,658 - INFO - Request id 3 done for token 75
+2023-05-27 11:37:21,876 - INFO - Request id 0 done for token 76
+2023-05-27 11:37:22,109 - INFO - Request id 1 done for token 76
+2023-05-27 11:37:22,316 - INFO - Request id 2 done for token 76
+2023-05-27 11:37:22,539 - INFO - Request id 3 done for token 76
+2023-05-27 11:37:22,761 - INFO - Request id 0 done for token 77
+2023-05-27 11:37:22,976 - INFO - Request id 1 done for token 77
+2023-05-27 11:37:23,200 - INFO - Request id 2 done for token 77
+2023-05-27 11:37:23,423 - INFO - Request id 3 done for token 77
+2023-05-27 11:37:23,643 - INFO - Request id 0 done for token 78
+2023-05-27 11:37:23,860 - INFO - Request id 1 done for token 78
+2023-05-27 11:37:24,079 - INFO - Request id 2 done for token 78
+2023-05-27 11:37:24,300 - INFO - Request id 3 done for token 78
+2023-05-27 11:37:24,521 - INFO - Request id 0 done for token 79
+2023-05-27 11:37:24,741 - INFO - Request id 1 done for token 79
+2023-05-27 11:37:24,960 - INFO - Request id 2 done for token 79
+2023-05-27 11:37:25,183 - INFO - Request id 3 done for token 79
+2023-05-27 11:37:26,049 - INFO - Latency is 85.531173, throughput is 0.374133
+2023-05-27 11:37:26,050 - INFO - Token throughput is 29.930608
+2023-05-27 11:37:26,096 - INFO - handle_cmd: stop
+2023-05-27 11:37:26,105 - INFO - handle_cmd: stop
+╭─────────────────────────────── Traceback (most recent call last) ────────────────────────────────╮
+│ /opt/tiger/launch/qsync/QPipe/tests/main_p2p.py:328 in <module>                                  │
+│                                                                                                  │
+│   325 │   │   model_pre_and_post = model_pre_and_post.cuda()                                     │
+│   326 │                                                                                          │
+│   327 │   run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)        │
+│ ❱ 328 │   simple_queue_thread.join()                                                             │
+│   329 │   # from torch import profiler                                                           │
+│   330 │   # from torch.profiler import profile, record_function, ProfilerActivity                │
+│   331 │   # with profiler.profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], wi   │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+AttributeError: 'NoneType' object has no attribute 'join'
+╭─────────────────────────────── Traceback (most recent call last) ────────────────────────────────╮
+│ /opt/tiger/launch/qsync/QPipe/tests/main_p2p.py:328 in <module>                                  │
+│                                                                                                  │
+│   325 │   │   model_pre_and_post = model_pre_and_post.cuda()                                     │
+│   326 │                                                                                          │
+│   327 │   run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)        │
+│ ❱ 328 │   simple_queue_thread.join()                                                             │
+│   329 │   # from torch import profiler                                                           │
+│   330 │   # from torch.profiler import profile, record_function, ProfilerActivity                │
+│   331 │   # with profiler.profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], wi   │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+AttributeError: 'NoneType' object has no attribute 'join'
+n132-166-021:168665:170710 [1] NCCL INFO [Service thread] Connection closed by localRank 0
+n132-166-021:168666:170747 [2] NCCL INFO [Service thread] Connection closed by localRank 0
+n132-166-021:168665:168665 [1] NCCL INFO comm 0x7f9f7c00fec0 rank 0 nranks 2 cudaDev 1 busId 3e000 - Abort COMPLETE
+n132-166-021:168665:170698 [1] NCCL INFO [Service thread] Connection closed by localRank 1
+n132-166-021:168666:168666 [2] NCCL INFO comm 0x7fe828010220 rank 0 nranks 2 cudaDev 2 busId 40000 - Abort COMPLETE
+n132-166-021:168666:170711 [2] NCCL INFO [Service thread] Connection closed by localRank 1
+n132-166-021:168665:168665 [1] NCCL INFO comm 0x7f9f80013c30 rank 1 nranks 2 cudaDev 1 busId 3e000 - Abort COMPLETE
+n132-166-021:168666:168666 [2] NCCL INFO comm 0x7fe82c013c70 rank 1 nranks 2 cudaDev 2 busId 40000 - Abort COMPLETE
+Exception in thread Thread-337:
+Traceback (most recent call last):
+  File "/usr/lib/python3.9/threading.py", line 954, in _bootstrap_inner
+    self.run()
+  File "/home/tiger/.local/lib/python3.9/site-packages/qpipe/p2p/util.py", line 24, in run
+    self._req.wait()
+RuntimeError: [../third_party/gloo/gloo/transport/tcp/pair.cc:598] Connection closed by peer [10.128.99.84]:898
+WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 168664 closing signal SIGTERM
+ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 1) local_rank: 1 (pid: 168665) of binary: /usr/bin/python3
+Traceback (most recent call last):
+  File "/usr/local/bin/torchrun", line 8, in <module>
+    sys.exit(main())
+  File "/usr/local/lib/python3.9/dist-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 346, in wrapper
+    return f(*args, **kwargs)
+  File "/usr/local/lib/python3.9/dist-packages/torch/distributed/run.py", line 794, in main
+    run(args)
+  File "/usr/local/lib/python3.9/dist-packages/torch/distributed/run.py", line 785, in run
+    elastic_launch(
+  File "/usr/local/lib/python3.9/dist-packages/torch/distributed/launcher/api.py", line 134, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/usr/local/lib/python3.9/dist-packages/torch/distributed/launcher/api.py", line 250, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+main_p2p.py FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2023-05-27_11:37:32
+  host      : n132-166-021.byted.org
+  rank      : 2 (local_rank: 2)
+  exitcode  : 1 (pid: 168666)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2023-05-27_11:37:32
+  host      : n132-166-021.byted.org
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 168665)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================
