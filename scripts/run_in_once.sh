@@ -8,33 +8,6 @@ python3 algo_entry.py --model_size ${model_size} \
  --device_numbers "${device_numbers[@]}" \
  --model_name bloom \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --theta 0.0001 --global_bz 32 --debug
+ --time_mult_times 2 \
+ --theta 0.0001 --global_bz 32 --debug --group 1 --adapp_group_size 1 --ilp_time_limit 1000 --ilp_tolerance 0.01
 
-# notice theta need to be changed
-# for 13b
-# python3 algo_entry.py --model_size ${model_size} \
-#  --device_names "${device_names[@]}" \
-#  --device_numbers "${device_numbers[@]}" \
-#  --omega_file $OMEGA_FILE --ilp_seed 120 \
-#  --theta 0.001 --fit
-
-# for 30b
-# python3 algo_entry.py --model_size ${model_size} \
-#  --device_names "${device_names[@]}" \
-#  --device_numbers "${device_numbers[@]}" \
-#  --omega_file $OMEGA_FILE --ilp_seed 120 \
-#  --theta 0.05 --group 2
-
-# for 66b
-# python3 algo_entry.py --model_size ${model_size} \
-#  --device_names "${device_names[@]}" \
-#  --device_numbers "${device_numbers[@]}" \
-#  --omega_file $OMEGA_FILE --ilp_seed 120 \
-#  --theta 0.0001 --group_size 2
-
-# all device support tc
-# python3 algo_entry.py --model_size ${model_size} \
-#  --device_names "${device_names[@]}" \
-#  --device_numbers "${device_numbers[@]}" \
-#  --omega_file $OMEGA_FILE \
-#  --adabits_tc
