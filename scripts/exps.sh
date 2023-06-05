@@ -70,7 +70,7 @@ python3 algo_entry.py --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --theta 0.001 --global_bz 32 --group 4 --ilp_time_limit 200 --debug  --use_profiler_prediction
+ --theta 0.001 --global_bz 32 --group 1 --ilp_time_limit 200 --debug
 
 # case 7
 model_size=176b
@@ -196,6 +196,30 @@ python3 algo_entry.py --model_size ${model_size} \
  --ilp_tolerance 0.12
 
 
+# Latency Aware Tasks
+# case 1, 4, 7
+model_size=13b
+device_names=("Tesla_V100-SXM2-32GB") 
+device_numbers=(1)  # define device numbers as a list of integers
+OMEGA_FILE=/workspace/qpipe/scripts/accuracy/generated_ind/gen_opt_13b_ind.pkl
+
+python3 algo_entry.py --model_size ${model_size} \
+ --device_names "${device_names[@]}" \
+ --device_numbers "${device_numbers[@]}" \
+ --omega_file $OMEGA_FILE --ilp_seed 120 \
+ --theta 0.001 --fit --global_bz 32 --use_profiler_prediction --s 128 --n 200
+
+model_size=30b
+device_names=("Tesla_P100-PCIE-12GB" "Tesla_V100-SXM2-32GB") 
+device_numbers=(3 1)  # define device numbers as a list of integers
+OMEGA_FILE=/workspace/qpipe/scripts/accuracy/generated_ind/gen_opt_30b_ind.pkl
+
+python3 algo_entry.py --model_size ${model_size} \
+ --device_names "${device_names[@]}" \
+ --device_numbers "${device_numbers[@]}" \
+ --omega_file $OMEGA_FILE --ilp_seed 120 \
+ --theta 1 --global_bz 32 --group 1  --debug --ilp_time_limit 160  --s 128 --n 200 --ilp_tolerance 0.021
+
 
 # ablation for theta
 # case 4 and case 6
@@ -225,15 +249,20 @@ device_numbers=(2 2)  # define device numbers as a list of integers
 OMEGA_FILE=/workspace/qpipe/scripts/accuracy/generated_ind/gen_opt_66b_ind.pkl
 
 
+
 python3 algo_entry.py --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 --gamma 1 \
- --theta 0.001 --global_bz 32 --group 4 --ilp_time_limit 200 --debug  --use_profiler_prediction
+ --theta 0.001 --global_bz 32 --group 1 --ilp_time_limit 300 --debug --fit --ilp_tolerance 0.025
+
 
 python3 algo_entry.py --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 --gamma 0.6 \
- --theta 0.001 --global_bz 32 --group 4 --ilp_time_limit 200 --debug  --use_profiler_prediction
+ --theta 0.001 --global_bz 32 --group 1 --ilp_time_limit 300 --debug --fit --ilp_tolerance 0.03
+
+
+
 

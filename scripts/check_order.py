@@ -21,6 +21,7 @@ with open(abs_file_name, 'rb') as f:
     sols = pickle.load(f)
 
 test_method = args.test_method
+print(sols['n'], sols['mu_n'])
 sol = sols[test_method]
 D = sol['D']
 print(D)

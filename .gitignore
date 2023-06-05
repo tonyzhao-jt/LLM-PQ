@@ -23,5 +23,6 @@ profile.json
 !result/
 !result/**/*.pkl
 !result/**/*.txt
+*.pdf
 
 

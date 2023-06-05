@@ -12,7 +12,7 @@ from . import util
 
 import qpipe
 from qpipe.utils import to_device
-
+import copy 
 
 class ConditionQueue(queue.Queue):
     """A Queue with a public `condition: threading.Condition` variable for synchronization."""

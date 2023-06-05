@@ -241,6 +241,10 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                 dist.barrier()
                 time.sleep(10)
                 module._reset_kv_status()
+                run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=warmup_tokens)
+                dist.barrier()
+                time.sleep(10)
+                module._reset_kv_status()
                 
                 dist.barrier()
                 run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=original_num_tokens_to_generate)
@@ -250,6 +254,10 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                 simple_queue_thread.join()
                 stop_event.set()
             else:
+                dist.barrier()
+                time.sleep(10)
+                module._reset_kv_status()
+
                 dist.barrier()
                 time.sleep(10)
                 module._reset_kv_status()
@@ -276,7 +284,7 @@ def parse_args():
 if __name__ == '__main__':
     # set env
     os.environ['SET_DECODERS_META'] = "1"
-    os.environ['PERF_MODE'] = "1"
+    os.environ['PERF_MODE'] = "0"
     args = parse_args()
     # test case
     model_name = args.model_name
@@ -289,38 +297,54 @@ if __name__ == '__main__':
     caliber.load_fake_calib_data(f'fake_calib_{model_name}_{model_size}.pkl')
   
     sharding_strategy = {
-        0: {},
+        0: {
+        },
         1: {
             0: {'shard': [0, 1], 'bits': [16, 16]},
             1: {'shard': [0, 1], 'bits': [16, 16]},
-            2: {'shard': [0, 1], 'bits': [8, 16]},
+            2: {'shard': [0, 1], 'bits': [16, 16]},
             3: {'shard': [0, 1], 'bits': [16, 16]},
-            4: {'shard': [0, 1], 'bits': ['8:tc', '8:tc']},
-            5: {'shard': [0, 1], 'bits': ['8:tc-li', 8]},
-            6: {'shard': [0, 1], 'bits': ['8:tc', '8:tc']},
-            7: {'shard': [0, 1], 'bits': ['8:tc-li', 16]},
-            8: {'shard': [0], 'bits': [16]},
+            4: {'shard': [0, 1], 'bits': [16, 16]},
+            5: {'shard': [0, 1], 'bits': [16, 16]},
+            6: {'shard': [0, 1], 'bits': [16, 16]},
+            7: {'shard': [0, 1], 'bits': [16, 16]},
+            8: {'shard': [0, 1], 'bits': [16, 16]},
+            9: {'shard': [0,1], 'bits': [16, 16]},
+            10: {'shard': [0,1], 'bits': [16, 16]},
+            11: {'shard': [0,1], 'bits': [16, 16]},
+            # 350M
+            12: {'shard': [0,1], 'bits': [16, 16]},
+            13: {'shard': [0,1], 'bits': [16, 16]},
+            14: {'shard': [0,1], 'bits': [16, 16]},
+            15: {'shard': [0,1], 'bits': [16, 16]},
+            16: {'shard': [0,1], 'bits': [16, 16]},
+            17: {'shard': [0,1], 'bits': [16, 16]},
         },
         2: {
-            8: {'shard': [1], 'bits': [16]},
-            9: {'shard': [0,1], 'bits': ['8:tc-li', 8]},
-            10: {'shard': [0,1], 'bits': [8, 16]},
-            11: {'shard': [0,1], 'bits': [2, 16]},
-            # 350M
-            12: {'shard': [0,1], 'bits': ['8:tc-li', 16]},
-            13: {'shard': [0,1], 'bits': ['8:tc-li', 4]},
-            14: {'shard': [0,1], 'bits': [8, 16]},
-            15: {'shard': [0,1], 'bits': ['8:tc-li', 16]},
-            16: {'shard': [0,1], 'bits': ['8:tc-li', 8]},
-            17: {'shard': [0,1], 'bits': [16, 8]},
+            18: {'shard': [0,1], 'bits': [16, 16]},
+            19: {'shard': [0,1], 'bits': [16, 16]},
+            20: {'shard': [0,1], 'bits': [16, 16]},
+            21: {'shard': [0,1], 'bits': [16, 16]},
+            22: {'shard': [0,1], 'bits': [16, 16]}, 
+            23: {'shard': [0,1], 'bits': [16, 16]},
+            24: {'shard': [0,1], 'bits': [16, 16]},
+            25: {'shard': [0,1], 'bits': [16, 16]},
+            26: {'shard': [0,1], 'bits': [16, 16]},
+            27: {'shard': [0,1], 'bits': [16, 16]},
+            28: {'shard': [0,1], 'bits': [16, 16]}, 
+            29: {'shard': [0,1], 'bits': [16, 16]},
+            30: {'shard': [0,1], 'bits': [16, 16]}, 
+            31: {'shard': [0,1], 'bits': [16, 16]},
         },
         3:{
-            18: {'shard': [0,1], 'bits': [16, '8:tc-li']},
-            19: {'shard': [0,1], 'bits': ['8:tc-li', 16]},
-            20: {'shard': [0,1], 'bits': [8, '8:tc-li']},
-            21: {'shard': [0,1], 'bits': [4, '8:tc-li']},
-            22: {'shard': [0,1], 'bits': ['8:tc-li', 16]}, 
-            23: {'shard': [0,1], 'bits': [16,'8:tc-li']},
+            32: {'shard': [0,1], 'bits': [16, 16]},
+            33: {'shard': [0,1], 'bits': [16, 16]},
+            34: {'shard': [0,1], 'bits': [16, 16]},
+            35: {'shard': [0,1], 'bits': [16, 16]},
+            36: {'shard': [0,1], 'bits': [16, 16]},
+            37: {'shard': [0,1], 'bits': [16, 16]},
+            38: {'shard': [0,1], 'bits': [16, 16]},
+            39: {'shard': [0,1], 'bits': [16, 16]},
         }
     }
 
@@ -331,8 +355,8 @@ if __name__ == '__main__':
     prompt_length = args.prompt_length
     bs_token = args.bs_token # how many sentence in a batch
 
-    prefill_bs = 1
-    decoder_bss = [8,8, 8, 8]
+    prefill_bs = 32
+    decoder_bss = [32]
     chunk_size = len(decoder_bss)
     ds_scheduler = DSScheduler(prefill_bs, decoder_bss)
 

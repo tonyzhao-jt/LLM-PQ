@@ -276,7 +276,7 @@ def parse_args():
 if __name__ == '__main__':
     # set env
     os.environ['SET_DECODERS_META'] = "1"
-    os.environ['PERF_MODE'] = "1"
+    os.environ['PERF_MODE'] = "0"
     args = parse_args()
     # test case
     model_name = args.model_name
@@ -304,11 +304,12 @@ if __name__ == '__main__':
     prefill_bs = sol['prefill_bz']
     decoder_bss = sol['bz_decode_bss']
 
-    # control the token generation
-    max_tokens_to_generate = args.max_tokens_to_generate
-    warmup_tokens = args.warmup_tokens
-    prompt_length = args.prompt_length
 
+    # control the token generation
+    warmup_tokens = args.warmup_tokens
+    prompt_length = args.prompt_length if sols.get('prompt_length') is None else sols['prompt_length']
+
+    print("prompt_length", prompt_length)
     chunk_size = len(decoder_bss)
     ds_scheduler = DSScheduler(prefill_bs, decoder_bss)
 

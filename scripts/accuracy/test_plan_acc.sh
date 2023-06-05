@@ -1,17 +1,17 @@
 model_storage_path='/data/llms/'
 export TRANSFORMERS_CACHE=$model_storage_path
 root_path="/workspace/qpipe"
-model_size="30b"
+model_size="66b"
 model_name="bloom"
 model_prefix="bigscience/bloom-"
 pretrained_config="bigscience/bloom"
-# model_name="opt"
-# model_prefix="facebook/opt-"
-# pretrained_config="facebook/opt-30b"
-# device_info="Tesla_T4_4_10"
-available_methods=('adaqpipe' )
+model_name="opt"
+model_prefix="facebook/opt-"
+pretrained_config="facebook/opt-66b"
+device_info="Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2"
+available_methods=('adaqpipe' 'adabits' 'pipeedge' 'uniform')
 folder_abs_path="${root_path}/scripts/accuracy/bit_for_gptq_test/"
-export CUDA_VISIBLE_DEVICES=7
+export CUDA_VISIBLE_DEVICES=1
 # create the corresponding files
 python3 convert_sol_to_gptq_bits.py --model-name ${model_name} --model-size ${model_size} \
         --device-info ${device_info}
