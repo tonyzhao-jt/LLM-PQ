@@ -15,6 +15,6 @@ for bit in 8
 do
     # python3 main.py facebook/opt-13b c4 --wbits ${bit} --task piqa
     # python3 main.py facebook/opt-30b c4 --wbits ${bit} --task piqa
-    CUDA_VISIBLE_DEVICES=0 python3 main.py facebook/opt-66b c4 --wbits ${bit} --task piqa
+    python3 main.py facebook/opt-66b c4 --wbits ${bit} --task piqa
     # CUDA_VISIBLE_DEVICES=0 python3 main.py facebook/bloom c4 --wbits ${bit} --task piqa
 done
