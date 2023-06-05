@@ -1,13 +1,11 @@
-model_size=176b
-device_names=("NVIDIA_A100-SXM4-80GB") 
-device_numbers=(4)  # define device numbers as a list of integers
-OMEGA_FILE=/workspace/qpipe/scripts/accuracy/generated_ind/gen_bloom_176b_ind.pkl
+model_size=66b
+device_names=("Tesla_V100-SXM2-32GB" "NVIDIA_A100-SXM4-40GB") 
+device_numbers=(2 2)  # define device numbers as a list of integers
+OMEGA_FILE=/workspace/qpipe/scripts/accuracy/generated_ind/gen_opt_66b_ind.pkl
+
 
 python3 algo_entry.py --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
- --model_name bloom \
- --omega_file $OMEGA_FILE --ilp_seed 120 \
- --time_mult_times 2 \
- --theta 0.0001 --global_bz 32 --debug --group 1 --adapp_group_size 1 --ilp_time_limit 1000 --ilp_tolerance 0.01
-
+ --omega_file $OMEGA_FILE --ilp_seed 120 --gamma 0.6 \
+ --theta 0.001 --global_bz 32 --group 4 --ilp_time_limit 300 --debug --fit --ilp_tolerance 0.05

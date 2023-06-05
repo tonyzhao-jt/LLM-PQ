@@ -13,6 +13,12 @@ import numpy as np
 import pickle
 from time import perf_counter
 
+def calculate_hessian_error(err, hess):
+    eigvals = torch.linalg.eigvalsh(hess)
+    top_eigval = eigvals[-1]
+    err_h = err * top_eigval
+    return err_h
+
 class OPTClass(BaseLM):
     def __init__(self, args):
 
@@ -333,8 +339,9 @@ class OPTClass(BaseLM):
                 print(i, name)
                 print('Quantizing ...')
                 (err, Hessian) = gptq[name].fasterquant(percdamp=self.args.percdamp, groupsize=self.args.groupsize)
+                hess_err = calculate_hessian_error(err, Hessian)
                 if not self.args.rand_bit and bit_assignment is None:
-                    collected_information[(i, name)] = (err.detach().cpu().numpy(), Hessian.detach().cpu().numpy())
+                    collected_information[(i, name)] = hess_err.detach().cpu().numpy()
                 quantizers['model.decoder.layers.%d.%s' % (i, name)] = gptq[name].quantizer
                 gptq[name].free()
             for j in range(self.args.nsamples):
@@ -364,7 +371,8 @@ class OPTClass(BaseLM):
             print(f'Profiled in {duration:.2f} seconds.')
             # store the collected information
             with open(file_path, 'wb') as f: pickle.dump(collected_information, f)
-
+            if self.args.profile_hessian:
+                exit()
         return quantizers
 
 

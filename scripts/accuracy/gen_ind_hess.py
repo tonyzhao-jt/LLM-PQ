@@ -18,9 +18,13 @@ def generate_indicator_hess(model_name, model_size, folder_path):
 
     model_pretrained_name = model_pretrained_name.replace('/', '_')
     dataset = 'c4'
-    available_bits = [2, 3, 4, 8] # all cases
+    available_bits = get_available_candidate_bits() # regard 8-bit as same
     all_collected_data = {}
     for bit in available_bits:
+        if type(bit) == str: 
+            bit = 8 # 8:tc or 8:tc-li
+        if bit == 16:
+            continue
         file_name = f"{model_pretrained_name}_{dataset}_hess_stat_{bit}.pkl"
         # check if exists
         abs_file_path = f"{folder_path}/{file_name}"
@@ -33,7 +37,6 @@ def generate_indicator_hess(model_name, model_size, folder_path):
     # check the data
     config, num_layers = model_config_and_decoder_layers(model_name, model_size)
     L = num_layers
-    available_bits = get_available_candidate_bits() # regard 8-bit as same
     BITs = get_available_bits_pair(available_bits)
 
     dur_sum = 0
@@ -66,11 +69,11 @@ def generate_indicator_hess(model_name, model_size, folder_path):
             mlp_second_name = 'fc2'
             mlp_names = [mlp_first_name, mlp_second_name]
         
-        def calculate_hessian_error(err, hess):
-            eigvals = torch.linalg.eigvalsh(hess)
-            top_eigval = eigvals[-1]
-            err_h = err * top_eigval
-            return err_h
+        # def calculate_hessian_error(err, hess):
+        #     eigvals = torch.linalg.eigvalsh(hess)
+        #     top_eigval = eigvals[-1]
+        #     err_h = err * top_eigval
+        #     return err_h
         # get the corresponding data we need
         # self attn
         all_err_h = 0
@@ -78,16 +81,16 @@ def generate_indicator_hess(model_name, model_size, folder_path):
             if atten_bit == 16:
                 continue
             try:
-                err, hess = all_collected_data[atten_bit][(layer_idx, qkv_name)]
+                err_h = all_collected_data[atten_bit][(layer_idx, qkv_name)]
             except:
                 import pdb; pdb.set_trace()
-            err_h = calculate_hessian_error(err, hess)
+            # err_h = calculate_hessian_error(err, hess)
             all_err_h += err_h
         for mlp_name in mlp_names:
             if ffn_bit == 16:
                 continue
-            err, hess = all_collected_data[ffn_bit][(layer_idx, mlp_name)]
-            err_h = calculate_hessian_error(err, hess)
+            err_h = all_collected_data[ffn_bit][(layer_idx, mlp_name)]
+            # err_h = calculate_hessian_error(err, hess)
             all_err_h += err_h
         return all_err_h
     
