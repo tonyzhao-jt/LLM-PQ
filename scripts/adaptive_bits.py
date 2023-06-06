@@ -150,7 +150,7 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits, bz_pack, model_mem_est
             print(omega_loaded.shape, omega.shape)
             raise ValueError('omega shape mismatched')
         omega = omega_loaded
-
+    # import pdb; pdb.set_trace()
     # for i in range(N):
     #     device_name = D[i]
     #     has_tc_bit = has_tc(device_name)

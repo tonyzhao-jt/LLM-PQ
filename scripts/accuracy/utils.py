@@ -1,11 +1,13 @@
 import argparse
 import qpipe
+import os 
 def simple_model_info_parser():
+    root_folder = os.environ.get('ROOT_DIR') if os.environ.get('ROOT_DIR') else '/workspace/qpipe'
     parser = argparse.ArgumentParser()
     parser.add_argument('--model-size', type=str, default='125m')
     parser.add_argument('--model-name', type=str, default='opt')
     parser.add_argument('--device-info', type=str, default=None)
-    parser.add_argument('--sol-folder', type=str, default='/workspace/qpipe/scripts/part_strategy')
+    parser.add_argument('--sol-folder', type=str, default=f'{root_folder}/scripts/part_strategy')
     args = parser.parse_args()
     # available method
     args.available_methods = ['adabits', 'adaqpipe', 'pipeedge', 'uniform']

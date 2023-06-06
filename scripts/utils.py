@@ -46,6 +46,7 @@ def common_argparser():
     # for debug and fit
     parser.add_argument('--fit', action='store_true', help='fit cost model')
     parser.add_argument('--debug', action='store_true', help='debug mode')
+    parser.add_argument('--fname', type=str, default=None)
     # choose from 'adabits' 'adaqpipe' 'pipeedge' 'uniform'
     parser.add_argument('--test_method', type=str, default='adabits', help='test method')
     args = parser.parse_args()

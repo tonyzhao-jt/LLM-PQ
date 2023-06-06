@@ -79,6 +79,7 @@ def generate_indicator_hess(model_name, model_size, folder_path):
         all_err_h = 0
         for qkv_name in qkv_names:
             if atten_bit == 16:
+                all_err_h += 1 # give a small value, else error in solver.
                 continue
             try:
                 err_h = all_collected_data[atten_bit][(layer_idx, qkv_name)]

@@ -1,0 +1,800 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+===================================BUG REPORT===================================
+Welcome to bitsandbytes. For bug reports, please run
+
+python -m bitsandbytes
+
+ and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
+================================================================================
+
+===================================BUG REPORT===================================
+Welcome to bitsandbytes. For bug reports, please run
+
+python -m bitsandbytes
+
+ and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
+================================================================================
+bin /home/tiger/.local/lib/python3.9/site-packages/bitsandbytes/libbitsandbytes_cuda117.so
+CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so
+CUDA SETUP: Highest compute capability among GPUs detected: 7.5
+CUDA SETUP: Detected CUDA version 117
+CUDA SETUP: Loading binary /home/tiger/.local/lib/python3.9/site-packages/bitsandbytes/libbitsandbytes_cuda117.so...
+
+===================================BUG REPORT===================================
+Welcome to bitsandbytes. For bug reports, please run
+
+python -m bitsandbytes
+
+ and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
+================================================================================
+bin /home/tiger/.local/lib/python3.9/site-packages/bitsandbytes/libbitsandbytes_cuda117.so
+CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so
+CUDA SETUP: Highest compute capability among GPUs detected: 7.5
+CUDA SETUP: Detected CUDA version 117
+CUDA SETUP: Loading binary /home/tiger/.local/lib/python3.9/site-packages/bitsandbytes/libbitsandbytes_cuda117.so...
+
+===================================BUG REPORT===================================
+Welcome to bitsandbytes. For bug reports, please run
+
+python -m bitsandbytes
+
+ and submit this information together with your error trace to: https://github.com/TimDettmers/bitsandbytes/issues
+================================================================================
+bin /home/tiger/.local/lib/python3.9/site-packages/bitsandbytes/libbitsandbytes_cuda117.so
+CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so.11.0
+CUDA SETUP: Highest compute capability among GPUs detected: 7.5
+CUDA SETUP: Detected CUDA version 117
+CUDA SETUP: Loading binary /home/tiger/.local/lib/python3.9/site-packages/bitsandbytes/libbitsandbytes_cuda117.so...
+bin /home/tiger/.local/lib/python3.9/site-packages/bitsandbytes/libbitsandbytes_cuda117.so
+CUDA SETUP: CUDA runtime path found: /usr/local/cuda/lib64/libcudart.so
+CUDA SETUP: Highest compute capability among GPUs detected: 7.5
+CUDA SETUP: Detected CUDA version 117
+CUDA SETUP: Loading binary /home/tiger/.local/lib/python3.9/site-packages/bitsandbytes/libbitsandbytes_cuda117.so...
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+prompt_length 512
+prompt_length 512
+rank 1 is in stage 1
+prompt_length 512
+rank 2 is in stage 2
+prompt_length 512
+rank 3 is in stage 3
+create layer: 12|create layer: 24|create layer: 36|create layer: 13|create layer: 37|Downloading (…)okenizer_config.json:   0%|          | 0.00/685 [00:00<?, ?B/s]Downloading (…)okenizer_config.json: 100%|██████████| 685/685 [00:00<00:00, 413kB/s]
+Downloading (…)lve/main/config.json:   0%|          | 0.00/676 [00:00<?, ?B/s]Downloading (…)lve/main/config.json: 100%|██████████| 676/676 [00:00<00:00, 200kB/s]
+create layer: 14|Downloading (…)olve/main/vocab.json:   0%|          | 0.00/899k [00:00<?, ?B/s]create layer: 38|Downloading (…)olve/main/vocab.json: 100%|██████████| 899k/899k [00:00<00:00, 1.50MB/s]Downloading (…)olve/main/vocab.json: 100%|██████████| 899k/899k [00:00<00:00, 1.50MB/s]
+Downloading (…)olve/main/merges.txt:   0%|          | 0.00/456k [00:00<?, ?B/s]Downloading (…)olve/main/merges.txt: 100%|██████████| 456k/456k [00:00<00:00, 1.02MB/s]Downloading (…)olve/main/merges.txt: 100%|██████████| 456k/456k [00:00<00:00, 1.02MB/s]
+Downloading (…)cial_tokens_map.json:   0%|          | 0.00/221 [00:00<?, ?B/s]Downloading (…)cial_tokens_map.json: 100%|██████████| 221/221 [00:00<00:00, 136kB/s]
+Pipeline Data Loaded, with prefill cnts:  16
+rank 0 is in stage 0
+create layer: 0|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 39|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 25|create layer: 1|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 40|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 2|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 41|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 15|create layer: 42|create layer: 26|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 3|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 16|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 43|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 27|create layer: 4|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 17|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 44|create layer: 28|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 29|create layer: 30|create layer: 5|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 31|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 18|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 32|create layer: 45|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 19|create layer: 33|create layer: 20|create layer: 6|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 34|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 21|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 22|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 46|create layer: 7|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 35|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 23|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 47|create layer: 8|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+Stage 2 module sharded
+Stage 2 kv initialized
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+Stage 1 module sharded
+Stage 1 kv initialized
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+Stage 3 module sharded
+Stage 3 kv initialized
+create layer: 9|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 10|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+create layer: 11|huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+huggingface/tokenizers: The current process just got forked, after parallelism has already been used. Disabling parallelism to avoid deadlocks...
+To disable this warning, you can either:
+	- Avoid using `tokenizers` before the fork if possible
+	- Explicitly set the environment variable TOKENIZERS_PARALLELISM=(true | false)
+Stage 0 module sharded
+Stage 0 kv initialized
+rank_src: 0, rank_dst: 2, rank: 1, results_cb: Nonerank_src: 1, rank_dst: 3, rank: 2, results_cb: None
+
+rank_src: 2, rank_dst: 0, rank: 3, results_cb: None
+rank_src: 3, rank_dst: 1, rank: 0, results_cb: <function handle_results at 0x7fc7a910b430>
+2023-06-06 20:53:20,887 - INFO - start pipe data
+2023-06-06 20:55:28,677 - INFO - Request id 0 done for token 1
+2023-06-06 20:56:52,433 - INFO - Request id 1 done for token 1
+2023-06-06 20:58:15,745 - INFO - Request id 2 done for token 1
+2023-06-06 20:59:37,842 - INFO - Request id 3 done for token 1
+2023-06-06 20:59:38,899 - INFO - Latency is 378.011454, throughput is 0.084654
+2023-06-06 20:59:38,899 - INFO - Token throughput is 0.169307
+2023-06-06 20:59:48,912 - INFO - start pipe data
+2023-06-06 21:01:59,065 - INFO - Request id 0 done for token 1
+2023-06-06 21:03:22,584 - INFO - Request id 1 done for token 1
+2023-06-06 21:04:45,720 - INFO - Request id 2 done for token 1
+2023-06-06 21:06:07,839 - INFO - Request id 3 done for token 1
+2023-06-06 21:06:08,062 - INFO - Request id 0 done for token 2
+2023-06-06 21:06:08,331 - INFO - Request id 1 done for token 2
+2023-06-06 21:06:08,597 - INFO - Request id 2 done for token 2
+2023-06-06 21:06:08,879 - INFO - Request id 3 done for token 2
+2023-06-06 21:06:09,145 - INFO - Request id 0 done for token 3
+2023-06-06 21:06:09,411 - INFO - Request id 1 done for token 3
+2023-06-06 21:06:09,672 - INFO - Request id 2 done for token 3
+2023-06-06 21:06:09,947 - INFO - Request id 3 done for token 3
+2023-06-06 21:06:10,218 - INFO - Request id 0 done for token 4
+2023-06-06 21:06:10,487 - INFO - Request id 1 done for token 4
+2023-06-06 21:06:10,750 - INFO - Request id 2 done for token 4
+2023-06-06 21:06:11,019 - INFO - Request id 3 done for token 4
+2023-06-06 21:06:11,281 - INFO - Request id 0 done for token 5
+2023-06-06 21:06:11,548 - INFO - Request id 1 done for token 5
+2023-06-06 21:06:11,815 - INFO - Request id 2 done for token 5
+2023-06-06 21:06:12,091 - INFO - Request id 3 done for token 5
+2023-06-06 21:06:12,356 - INFO - Request id 0 done for token 6
+2023-06-06 21:06:12,625 - INFO - Request id 1 done for token 6
+2023-06-06 21:06:12,885 - INFO - Request id 2 done for token 6
+2023-06-06 21:06:13,150 - INFO - Request id 3 done for token 6
+2023-06-06 21:06:13,410 - INFO - Request id 0 done for token 7
+2023-06-06 21:06:13,679 - INFO - Request id 1 done for token 7
+2023-06-06 21:06:13,945 - INFO - Request id 2 done for token 7
+2023-06-06 21:06:14,220 - INFO - Request id 3 done for token 7
+2023-06-06 21:06:14,485 - INFO - Request id 0 done for token 8
+2023-06-06 21:06:14,751 - INFO - Request id 1 done for token 8
+2023-06-06 21:06:15,016 - INFO - Request id 2 done for token 8
+2023-06-06 21:06:15,282 - INFO - Request id 3 done for token 8
+2023-06-06 21:06:15,556 - INFO - Request id 0 done for token 9
+2023-06-06 21:06:15,823 - INFO - Request id 1 done for token 9
+2023-06-06 21:06:16,087 - INFO - Request id 2 done for token 9
+2023-06-06 21:06:16,350 - INFO - Request id 3 done for token 9
+2023-06-06 21:06:16,583 - INFO - Request id 0 done for token 10
+2023-06-06 21:06:16,857 - INFO - Request id 1 done for token 10
+2023-06-06 21:06:17,124 - INFO - Request id 2 done for token 10
+2023-06-06 21:06:17,385 - INFO - Request id 3 done for token 10
+2023-06-06 21:06:17,650 - INFO - Request id 0 done for token 11
+2023-06-06 21:06:17,917 - INFO - Request id 1 done for token 11
+2023-06-06 21:06:18,182 - INFO - Request id 2 done for token 11
+2023-06-06 21:06:18,445 - INFO - Request id 3 done for token 11
+2023-06-06 21:06:18,706 - INFO - Request id 0 done for token 12
+2023-06-06 21:06:18,975 - INFO - Request id 1 done for token 12
+2023-06-06 21:06:19,245 - INFO - Request id 2 done for token 12
+2023-06-06 21:06:19,514 - INFO - Request id 3 done for token 12
+2023-06-06 21:06:19,778 - INFO - Request id 0 done for token 13
+2023-06-06 21:06:20,046 - INFO - Request id 1 done for token 13
+2023-06-06 21:06:20,308 - INFO - Request id 2 done for token 13
+2023-06-06 21:06:20,574 - INFO - Request id 3 done for token 13
+2023-06-06 21:06:20,834 - INFO - Request id 0 done for token 14
+2023-06-06 21:06:21,100 - INFO - Request id 1 done for token 14
+2023-06-06 21:06:21,363 - INFO - Request id 2 done for token 14
+2023-06-06 21:06:21,631 - INFO - Request id 3 done for token 14
+2023-06-06 21:06:21,890 - INFO - Request id 0 done for token 15
+2023-06-06 21:06:22,157 - INFO - Request id 1 done for token 15
+2023-06-06 21:06:22,417 - INFO - Request id 2 done for token 15
+2023-06-06 21:06:22,683 - INFO - Request id 3 done for token 15
+2023-06-06 21:06:22,944 - INFO - Request id 0 done for token 16
+2023-06-06 21:06:23,209 - INFO - Request id 1 done for token 16
+2023-06-06 21:06:23,471 - INFO - Request id 2 done for token 16
+2023-06-06 21:06:23,737 - INFO - Request id 3 done for token 16
+2023-06-06 21:06:23,999 - INFO - Request id 0 done for token 17
+2023-06-06 21:06:24,268 - INFO - Request id 1 done for token 17
+2023-06-06 21:06:24,536 - INFO - Request id 2 done for token 17
+2023-06-06 21:06:24,811 - INFO - Request id 3 done for token 17
+2023-06-06 21:06:25,068 - INFO - Request id 0 done for token 18
+2023-06-06 21:06:25,338 - INFO - Request id 1 done for token 18
+2023-06-06 21:06:25,603 - INFO - Request id 2 done for token 18
+2023-06-06 21:06:25,866 - INFO - Request id 3 done for token 18
+2023-06-06 21:06:26,129 - INFO - Request id 0 done for token 19
+2023-06-06 21:06:26,392 - INFO - Request id 1 done for token 19
+2023-06-06 21:06:26,659 - INFO - Request id 2 done for token 19
+2023-06-06 21:06:26,930 - INFO - Request id 3 done for token 19
+2023-06-06 21:06:27,201 - INFO - Request id 0 done for token 20
+2023-06-06 21:06:27,469 - INFO - Request id 1 done for token 20
+2023-06-06 21:06:27,737 - INFO - Request id 2 done for token 20
+2023-06-06 21:06:28,003 - INFO - Request id 3 done for token 20
+2023-06-06 21:06:28,278 - INFO - Request id 0 done for token 21
+2023-06-06 21:06:28,544 - INFO - Request id 1 done for token 21
+2023-06-06 21:06:28,808 - INFO - Request id 2 done for token 21
+2023-06-06 21:06:29,070 - INFO - Request id 3 done for token 21
+2023-06-06 21:06:29,338 - INFO - Request id 0 done for token 22
+2023-06-06 21:06:29,613 - INFO - Request id 1 done for token 22
+2023-06-06 21:06:29,881 - INFO - Request id 2 done for token 22
+2023-06-06 21:06:30,149 - INFO - Request id 3 done for token 22
+2023-06-06 21:06:30,410 - INFO - Request id 0 done for token 23
+2023-06-06 21:06:30,677 - INFO - Request id 1 done for token 23
+2023-06-06 21:06:30,949 - INFO - Request id 2 done for token 23
+2023-06-06 21:06:31,220 - INFO - Request id 3 done for token 23
+2023-06-06 21:06:31,483 - INFO - Request id 0 done for token 24
+2023-06-06 21:06:31,747 - INFO - Request id 1 done for token 24
+2023-06-06 21:06:32,009 - INFO - Request id 2 done for token 24
+2023-06-06 21:06:32,278 - INFO - Request id 3 done for token 24
+2023-06-06 21:06:32,538 - INFO - Request id 0 done for token 25
+2023-06-06 21:06:32,805 - INFO - Request id 1 done for token 25
+2023-06-06 21:06:33,070 - INFO - Request id 2 done for token 25
+2023-06-06 21:06:33,348 - INFO - Request id 3 done for token 25
+2023-06-06 21:06:33,613 - INFO - Request id 0 done for token 26
+2023-06-06 21:06:33,877 - INFO - Request id 1 done for token 26
+2023-06-06 21:06:34,140 - INFO - Request id 2 done for token 26
+2023-06-06 21:06:34,406 - INFO - Request id 3 done for token 26
+2023-06-06 21:06:34,671 - INFO - Request id 0 done for token 27
+2023-06-06 21:06:34,938 - INFO - Request id 1 done for token 27
+2023-06-06 21:06:35,212 - INFO - Request id 2 done for token 27
+2023-06-06 21:06:35,480 - INFO - Request id 3 done for token 27
+2023-06-06 21:06:35,744 - INFO - Request id 0 done for token 28
+2023-06-06 21:06:36,008 - INFO - Request id 1 done for token 28
+2023-06-06 21:06:36,269 - INFO - Request id 2 done for token 28
+2023-06-06 21:06:36,538 - INFO - Request id 3 done for token 28
+2023-06-06 21:06:36,812 - INFO - Request id 0 done for token 29
+2023-06-06 21:06:37,080 - INFO - Request id 1 done for token 29
+2023-06-06 21:06:37,345 - INFO - Request id 2 done for token 29
+2023-06-06 21:06:37,608 - INFO - Request id 3 done for token 29
+2023-06-06 21:06:37,879 - INFO - Request id 0 done for token 30
+2023-06-06 21:06:38,153 - INFO - Request id 1 done for token 30
+2023-06-06 21:06:38,419 - INFO - Request id 2 done for token 30
+2023-06-06 21:06:38,684 - INFO - Request id 3 done for token 30
+2023-06-06 21:06:38,947 - INFO - Request id 0 done for token 31
+2023-06-06 21:06:39,212 - INFO - Request id 1 done for token 31
+2023-06-06 21:06:39,477 - INFO - Request id 2 done for token 31
+2023-06-06 21:06:39,738 - INFO - Request id 3 done for token 31
+2023-06-06 21:06:40,004 - INFO - Request id 0 done for token 32
+2023-06-06 21:06:40,270 - INFO - Request id 1 done for token 32
+2023-06-06 21:06:40,539 - INFO - Request id 2 done for token 32
+2023-06-06 21:06:40,811 - INFO - Request id 3 done for token 32
+2023-06-06 21:06:41,079 - INFO - Request id 0 done for token 33
+2023-06-06 21:06:41,341 - INFO - Request id 1 done for token 33
+2023-06-06 21:06:41,606 - INFO - Request id 2 done for token 33
+2023-06-06 21:06:41,872 - INFO - Request id 3 done for token 33
+2023-06-06 21:06:42,137 - INFO - Request id 0 done for token 34
+2023-06-06 21:06:42,413 - INFO - Request id 1 done for token 34
+2023-06-06 21:06:42,680 - INFO - Request id 2 done for token 34
+2023-06-06 21:06:42,944 - INFO - Request id 3 done for token 34
+2023-06-06 21:06:43,207 - INFO - Request id 0 done for token 35
+2023-06-06 21:06:43,475 - INFO - Request id 1 done for token 35
+2023-06-06 21:06:43,742 - INFO - Request id 2 done for token 35
+2023-06-06 21:06:44,016 - INFO - Request id 3 done for token 35
+2023-06-06 21:06:44,283 - INFO - Request id 0 done for token 36
+2023-06-06 21:06:44,549 - INFO - Request id 1 done for token 36
+2023-06-06 21:06:44,813 - INFO - Request id 2 done for token 36
+2023-06-06 21:06:45,081 - INFO - Request id 3 done for token 36
+2023-06-06 21:06:45,356 - INFO - Request id 0 done for token 37
+2023-06-06 21:06:45,624 - INFO - Request id 1 done for token 37
+2023-06-06 21:06:45,891 - INFO - Request id 2 done for token 37
+2023-06-06 21:06:46,166 - INFO - Request id 3 done for token 37
+2023-06-06 21:06:46,438 - INFO - Request id 0 done for token 38
+2023-06-06 21:06:46,698 - INFO - Request id 1 done for token 38
+2023-06-06 21:06:46,964 - INFO - Request id 2 done for token 38
+2023-06-06 21:06:47,229 - INFO - Request id 3 done for token 38
+2023-06-06 21:06:47,495 - INFO - Request id 0 done for token 39
+2023-06-06 21:06:47,771 - INFO - Request id 1 done for token 39
+2023-06-06 21:06:48,037 - INFO - Request id 2 done for token 39
+2023-06-06 21:06:48,301 - INFO - Request id 3 done for token 39
+2023-06-06 21:06:48,565 - INFO - Request id 0 done for token 40
+2023-06-06 21:06:48,833 - INFO - Request id 1 done for token 40
+2023-06-06 21:06:49,108 - INFO - Request id 2 done for token 40
+2023-06-06 21:06:49,376 - INFO - Request id 3 done for token 40
+2023-06-06 21:06:49,639 - INFO - Request id 0 done for token 41
+2023-06-06 21:06:49,905 - INFO - Request id 1 done for token 41
+2023-06-06 21:06:50,171 - INFO - Request id 2 done for token 41
+2023-06-06 21:06:50,438 - INFO - Request id 3 done for token 41
+2023-06-06 21:06:50,713 - INFO - Request id 0 done for token 42
+2023-06-06 21:06:50,980 - INFO - Request id 1 done for token 42
+2023-06-06 21:06:51,248 - INFO - Request id 2 done for token 42
+2023-06-06 21:06:51,514 - INFO - Request id 3 done for token 42
+2023-06-06 21:06:51,786 - INFO - Request id 0 done for token 43
+2023-06-06 21:06:52,059 - INFO - Request id 1 done for token 43
+2023-06-06 21:06:52,326 - INFO - Request id 2 done for token 43
+2023-06-06 21:06:52,596 - INFO - Request id 3 done for token 43
+2023-06-06 21:06:52,866 - INFO - Request id 0 done for token 44
+2023-06-06 21:06:53,137 - INFO - Request id 1 done for token 44
+2023-06-06 21:06:53,401 - INFO - Request id 2 done for token 44
+2023-06-06 21:06:53,668 - INFO - Request id 3 done for token 44
+2023-06-06 21:06:53,944 - INFO - Request id 0 done for token 45
+2023-06-06 21:06:54,212 - INFO - Request id 1 done for token 45
+2023-06-06 21:06:54,475 - INFO - Request id 2 done for token 45
+2023-06-06 21:06:54,741 - INFO - Request id 3 done for token 45
+2023-06-06 21:06:55,010 - INFO - Request id 0 done for token 46
+2023-06-06 21:06:55,286 - INFO - Request id 1 done for token 46
+2023-06-06 21:06:55,551 - INFO - Request id 2 done for token 46
+2023-06-06 21:06:55,814 - INFO - Request id 3 done for token 46
+2023-06-06 21:06:56,082 - INFO - Request id 0 done for token 47
+2023-06-06 21:06:56,349 - INFO - Request id 1 done for token 47
+2023-06-06 21:06:56,623 - INFO - Request id 2 done for token 47
+2023-06-06 21:06:56,889 - INFO - Request id 3 done for token 47
+2023-06-06 21:06:57,158 - INFO - Request id 0 done for token 48
+2023-06-06 21:06:57,422 - INFO - Request id 1 done for token 48
+2023-06-06 21:06:57,689 - INFO - Request id 2 done for token 48
+2023-06-06 21:06:57,957 - INFO - Request id 3 done for token 48
+2023-06-06 21:06:58,233 - INFO - Request id 0 done for token 49
+2023-06-06 21:06:58,500 - INFO - Request id 1 done for token 49
+2023-06-06 21:06:58,766 - INFO - Request id 2 done for token 49
+2023-06-06 21:06:59,035 - INFO - Request id 3 done for token 49
+2023-06-06 21:06:59,310 - INFO - Request id 0 done for token 50
+2023-06-06 21:06:59,577 - INFO - Request id 1 done for token 50
+2023-06-06 21:06:59,851 - INFO - Request id 2 done for token 50
+2023-06-06 21:07:00,120 - INFO - Request id 3 done for token 50
+2023-06-06 21:07:00,386 - INFO - Request id 0 done for token 51
+2023-06-06 21:07:00,652 - INFO - Request id 1 done for token 51
+2023-06-06 21:07:00,919 - INFO - Request id 2 done for token 51
+2023-06-06 21:07:01,184 - INFO - Request id 3 done for token 51
+2023-06-06 21:07:01,462 - INFO - Request id 0 done for token 52
+2023-06-06 21:07:01,728 - INFO - Request id 1 done for token 52
+2023-06-06 21:07:01,994 - INFO - Request id 2 done for token 52
+2023-06-06 21:07:02,259 - INFO - Request id 3 done for token 52
+2023-06-06 21:07:02,534 - INFO - Request id 0 done for token 53
+2023-06-06 21:07:02,803 - INFO - Request id 1 done for token 53
+2023-06-06 21:07:03,070 - INFO - Request id 2 done for token 53
+2023-06-06 21:07:03,338 - INFO - Request id 3 done for token 53
+2023-06-06 21:07:03,614 - INFO - Request id 0 done for token 54
+2023-06-06 21:07:03,879 - INFO - Request id 1 done for token 54
+2023-06-06 21:07:04,144 - INFO - Request id 2 done for token 54
+2023-06-06 21:07:04,409 - INFO - Request id 3 done for token 54
+2023-06-06 21:07:04,679 - INFO - Request id 0 done for token 55
+2023-06-06 21:07:04,952 - INFO - Request id 1 done for token 55
+2023-06-06 21:07:05,222 - INFO - Request id 2 done for token 55
+2023-06-06 21:07:05,494 - INFO - Request id 3 done for token 55
+2023-06-06 21:07:05,766 - INFO - Request id 0 done for token 56
+2023-06-06 21:07:06,030 - INFO - Request id 1 done for token 56
+2023-06-06 21:07:06,299 - INFO - Request id 2 done for token 56
+2023-06-06 21:07:06,573 - INFO - Request id 3 done for token 56
+2023-06-06 21:07:06,842 - INFO - Request id 0 done for token 57
+2023-06-06 21:07:07,109 - INFO - Request id 1 done for token 57
+2023-06-06 21:07:07,372 - INFO - Request id 2 done for token 57
+2023-06-06 21:07:07,639 - INFO - Request id 3 done for token 57
+2023-06-06 21:07:07,905 - INFO - Request id 0 done for token 58
+2023-06-06 21:07:08,182 - INFO - Request id 1 done for token 58
+2023-06-06 21:07:08,448 - INFO - Request id 2 done for token 58
+2023-06-06 21:07:08,715 - INFO - Request id 3 done for token 58
+2023-06-06 21:07:08,977 - INFO - Request id 0 done for token 59
+2023-06-06 21:07:09,246 - INFO - Request id 1 done for token 59
+2023-06-06 21:07:09,520 - INFO - Request id 2 done for token 59
+2023-06-06 21:07:09,791 - INFO - Request id 3 done for token 59
+2023-06-06 21:07:10,055 - INFO - Request id 0 done for token 60
+2023-06-06 21:07:10,324 - INFO - Request id 1 done for token 60
+2023-06-06 21:07:10,599 - INFO - Request id 2 done for token 60
+2023-06-06 21:07:10,866 - INFO - Request id 3 done for token 60
+2023-06-06 21:07:11,128 - INFO - Request id 0 done for token 61
+2023-06-06 21:07:11,395 - INFO - Request id 1 done for token 61
+2023-06-06 21:07:11,672 - INFO - Request id 2 done for token 61
+2023-06-06 21:07:11,941 - INFO - Request id 3 done for token 61
+2023-06-06 21:07:12,204 - INFO - Request id 0 done for token 62
+2023-06-06 21:07:12,472 - INFO - Request id 1 done for token 62
+2023-06-06 21:07:12,722 - INFO - Request id 2 done for token 62
+2023-06-06 21:07:13,007 - INFO - Request id 3 done for token 62
+2023-06-06 21:07:13,281 - INFO - Request id 0 done for token 63
+2023-06-06 21:07:13,551 - INFO - Request id 1 done for token 63
+2023-06-06 21:07:13,816 - INFO - Request id 2 done for token 63
+2023-06-06 21:07:14,090 - INFO - Request id 3 done for token 63
+2023-06-06 21:07:14,355 - INFO - Request id 0 done for token 64
+2023-06-06 21:07:14,620 - INFO - Request id 1 done for token 64
+2023-06-06 21:07:14,884 - INFO - Request id 2 done for token 64
+2023-06-06 21:07:15,156 - INFO - Request id 3 done for token 64
+2023-06-06 21:07:15,430 - INFO - Request id 0 done for token 65
+2023-06-06 21:07:15,694 - INFO - Request id 1 done for token 65
+2023-06-06 21:07:15,961 - INFO - Request id 2 done for token 65
+2023-06-06 21:07:16,236 - INFO - Request id 3 done for token 65
+2023-06-06 21:07:16,505 - INFO - Request id 0 done for token 66
+2023-06-06 21:07:16,770 - INFO - Request id 1 done for token 66
+2023-06-06 21:07:17,042 - INFO - Request id 2 done for token 66
+2023-06-06 21:07:17,314 - INFO - Request id 3 done for token 66
+2023-06-06 21:07:17,578 - INFO - Request id 0 done for token 67
+2023-06-06 21:07:17,843 - INFO - Request id 1 done for token 67
+2023-06-06 21:07:18,112 - INFO - Request id 2 done for token 67
+2023-06-06 21:07:18,389 - INFO - Request id 3 done for token 67
+2023-06-06 21:07:18,653 - INFO - Request id 0 done for token 68
+2023-06-06 21:07:18,914 - INFO - Request id 1 done for token 68
+2023-06-06 21:07:19,179 - INFO - Request id 2 done for token 68
+2023-06-06 21:07:19,444 - INFO - Request id 3 done for token 68
+2023-06-06 21:07:19,714 - INFO - Request id 0 done for token 69
+2023-06-06 21:07:19,988 - INFO - Request id 1 done for token 69
+2023-06-06 21:07:20,252 - INFO - Request id 2 done for token 69
+2023-06-06 21:07:20,518 - INFO - Request id 3 done for token 69
+2023-06-06 21:07:20,784 - INFO - Request id 0 done for token 70
+2023-06-06 21:07:21,059 - INFO - Request id 1 done for token 70
+2023-06-06 21:07:21,329 - INFO - Request id 2 done for token 70
+2023-06-06 21:07:21,591 - INFO - Request id 3 done for token 70
+2023-06-06 21:07:21,856 - INFO - Request id 0 done for token 71
+2023-06-06 21:07:22,126 - INFO - Request id 1 done for token 71
+2023-06-06 21:07:22,404 - INFO - Request id 2 done for token 71
+2023-06-06 21:07:22,666 - INFO - Request id 3 done for token 71
+2023-06-06 21:07:22,930 - INFO - Request id 0 done for token 72
+2023-06-06 21:07:23,195 - INFO - Request id 1 done for token 72
+2023-06-06 21:07:23,465 - INFO - Request id 2 done for token 72
+2023-06-06 21:07:23,740 - INFO - Request id 3 done for token 72
+2023-06-06 21:07:24,003 - INFO - Request id 0 done for token 73
+2023-06-06 21:07:24,270 - INFO - Request id 1 done for token 73
+2023-06-06 21:07:24,535 - INFO - Request id 2 done for token 73
+2023-06-06 21:07:24,809 - INFO - Request id 3 done for token 73
+2023-06-06 21:07:25,082 - INFO - Request id 0 done for token 74
+2023-06-06 21:07:25,345 - INFO - Request id 1 done for token 74
+2023-06-06 21:07:25,625 - INFO - Request id 2 done for token 74
+2023-06-06 21:07:25,893 - INFO - Request id 3 done for token 74
+2023-06-06 21:07:26,159 - INFO - Request id 0 done for token 75
+2023-06-06 21:07:26,432 - INFO - Request id 1 done for token 75
+2023-06-06 21:07:26,703 - INFO - Request id 2 done for token 75
+2023-06-06 21:07:26,970 - INFO - Request id 3 done for token 75
+2023-06-06 21:07:27,239 - INFO - Request id 0 done for token 76
+2023-06-06 21:07:27,515 - INFO - Request id 1 done for token 76
+2023-06-06 21:07:27,779 - INFO - Request id 2 done for token 76
+2023-06-06 21:07:28,044 - INFO - Request id 3 done for token 76
+2023-06-06 21:07:28,308 - INFO - Request id 0 done for token 77
+2023-06-06 21:07:28,586 - INFO - Request id 1 done for token 77
+2023-06-06 21:07:28,853 - INFO - Request id 2 done for token 77
+2023-06-06 21:07:29,116 - INFO - Request id 3 done for token 77
+2023-06-06 21:07:29,379 - INFO - Request id 0 done for token 78
+2023-06-06 21:07:29,645 - INFO - Request id 1 done for token 78
+2023-06-06 21:07:29,915 - INFO - Request id 2 done for token 78
+2023-06-06 21:07:30,191 - INFO - Request id 3 done for token 78
+2023-06-06 21:07:30,453 - INFO - Request id 0 done for token 79
+2023-06-06 21:07:30,719 - INFO - Request id 1 done for token 79
+2023-06-06 21:07:30,983 - INFO - Request id 2 done for token 79
+2023-06-06 21:07:31,251 - INFO - Request id 3 done for token 79
+2023-06-06 21:07:32,333 - INFO - Latency is 463.421641, throughput is 0.069052
+2023-06-06 21:07:32,333 - INFO - Token throughput is 5.524127
+2023-06-06 21:07:32,382 - INFO - handle_cmd: stop
+2023-06-06 21:07:32,393 - INFO - handle_cmd: stop
+2023-06-06 21:07:32,399 - INFO - handle_cmd: stop
+╭─────────────────────────────── Traceback (most recent call last) ────────────────────────────────╮
+│ /opt/tiger/launch/qsync/QPipe/tests/main_p2p.py:330 in <module>                                  │
+│                                                                                                  │
+│   327 │   │   model_pre_and_post = model_pre_and_post.cuda()                                     │
+│   328 │                                                                                          │
+│   329 │   run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)        │
+│ ❱ 330 │   simple_queue_thread.join()                                                             │
+│   331 │   # from torch import profiler                                                           │
+│   332 │   # from torch.profiler import profile, record_function, ProfilerActivity                │
+│   333 │   # with profiler.profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], wi   │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+AttributeError: 'NoneType' object has no attribute 'join'
+╭─────────────────────────────── Traceback (most recent call last) ────────────────────────────────╮
+│ /opt/tiger/launch/qsync/QPipe/tests/main_p2p.py:330 in <module>                                  │
+│                                                                                                  │
+│   327 │   │   model_pre_and_post = model_pre_and_post.cuda()                                     │
+│   328 │                                                                                          │
+│   329 │   run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)        │
+│ ❱ 330 │   simple_queue_thread.join()                                                             │
+│   331 │   # from torch import profiler                                                           │
+│   332 │   # from torch.profiler import profile, record_function, ProfilerActivity                │
+│   333 │   # with profiler.profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], wi   │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+AttributeError: 'NoneType' object has no attribute 'join'
+╭─────────────────────────────── Traceback (most recent call last) ────────────────────────────────╮
+│ /opt/tiger/launch/qsync/QPipe/tests/main_p2p.py:330 in <module>                                  │
+│                                                                                                  │
+│   327 │   │   model_pre_and_post = model_pre_and_post.cuda()                                     │
+│   328 │                                                                                          │
+│   329 │   run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)        │
+│ ❱ 330 │   simple_queue_thread.join()                                                             │
+│   331 │   # from torch import profiler                                                           │
+│   332 │   # from torch.profiler import profile, record_function, ProfilerActivity                │
+│   333 │   # with profiler.profile(activities=[ProfilerActivity.CPU, ProfilerActivity.CUDA], wi   │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────╯
+AttributeError: 'NoneType' object has no attribute 'join'
+Exception in thread Thread-362:
+Traceback (most recent call last):
+  File "/usr/lib/python3.9/threading.py", line 954, in _bootstrap_inner
+    self.run()
+  File "/home/tiger/.local/lib/python3.9/site-packages/qpipe/p2p/util.py", line 24, in run
+    self._req.wait()
+RuntimeError: [../third_party/gloo/gloo/transport/tcp/pair.cc:598] Connection closed by peer [10.139.114.217]:50579
+WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 10620 closing signal SIGTERM
+ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 1) local_rank: 1 (pid: 10621) of binary: /usr/bin/python3
+Traceback (most recent call last):
+  File "/usr/local/bin/torchrun", line 8, in <module>
+    sys.exit(main())
+  File "/home/tiger/.local/lib/python3.9/site-packages/torch/distributed/elastic/multiprocessing/errors/__init__.py", line 345, in wrapper
+    return f(*args, **kwargs)
+  File "/home/tiger/.local/lib/python3.9/site-packages/torch/distributed/run.py", line 719, in main
+    run(args)
+  File "/home/tiger/.local/lib/python3.9/site-packages/torch/distributed/run.py", line 710, in run
+    elastic_launch(
+  File "/home/tiger/.local/lib/python3.9/site-packages/torch/distributed/launcher/api.py", line 131, in __call__
+    return launch_agent(self._config, self._entrypoint, list(args))
+  File "/home/tiger/.local/lib/python3.9/site-packages/torch/distributed/launcher/api.py", line 259, in launch_agent
+    raise ChildFailedError(
+torch.distributed.elastic.multiprocessing.errors.ChildFailedError: 
+============================================================
+main_p2p.py FAILED
+------------------------------------------------------------
+Failures:
+[1]:
+  time      : 2023-06-06_21:07:34
+  host      : n139-114-217.byted.org
+  rank      : 2 (local_rank: 2)
+  exitcode  : 1 (pid: 10622)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+[2]:
+  time      : 2023-06-06_21:07:34
+  host      : n139-114-217.byted.org
+  rank      : 3 (local_rank: 3)
+  exitcode  : 1 (pid: 10623)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+------------------------------------------------------------
+Root Cause (first observed failure):
+[0]:
+  time      : 2023-06-06_21:07:34
+  host      : n139-114-217.byted.org
+  rank      : 1 (local_rank: 1)
+  exitcode  : 1 (pid: 10621)
+  error_file: <N/A>
+  traceback : To enable traceback see: https://pytorch.org/docs/stable/elastic/errors.html
+============================================================

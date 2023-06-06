@@ -3,7 +3,7 @@ from qllm.models.OPT.opt import model_cards
 # qpipe libs
 import qpipe
 from qpipe.partitioner.indicator import (
-    assign_omega_uniform
+    assign_omega_uniform, assign_omega_constant
 )
 from qpipe.partitioner.utils import (
     interpret_ilp_result_i_j_b,
@@ -184,7 +184,7 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
         l_prefill[:, 0, :] += prefill_prepost_cost
         l_decode[:, 0, :] += decode_prepost_cost
     # omega
-    omega = assign_omega_uniform(group_L, BITs)
+    omega = assign_omega_constant(group_L, BITs)
     if omega_file is not None:
         # open and load with pickle
         with open(omega_file, 'rb') as f:
@@ -390,11 +390,36 @@ def main(args):
     comm_cost_model_dir = f'{args.comm_cost_model_dir}/{device_info}'
     cost_model_store_path = None # initialize the cost model
 
+    if args.init_pack is None:
+        model_mem_estimator, comm_cost_model, lat_cost_model, T = init_parameters_and_cost_models(config, device_names, device_numbers, cost_model_store_path, \
+                                                                                                     global_bz, micro_bz, s, n, \
+                                                                                                  comm_cost_model_folder=comm_cost_model_dir)
+    
+        args.init_pack = (model_mem_estimator, comm_cost_model, lat_cost_model, T)
+        lat_cost_model.update_profiled_result(args.lat_profile_dir)
+        lat_cost_model.update_profiled_prepost_result(args.lat_prepost_profile_dir)
+        if args.fit:
+            lat_cost_model.fit_regression_cost_model()
+        else:
+            if not args.use_profiler_prediction:
+                lat_cost_model.load_regression_cost_model()
+
     lat_profile_result_path = args.lat_profile_dir
     return enumerate_best_result(args)
 
 if __name__ == '__main__':
+    from utils import get_final_strat_file_name
+    from algo_entry import convert_to_adaqpipe_result2partitions
     ilp_env()
     args = common_argparser()
-    main(args)
+    best_plan = main(args)
     # model size
+    sols = {
+        'adaqpipe': convert_to_adaqpipe_result2partitions(best_plan)
+    }
+    model_name = args.model_name
+    folder = args.store_folder
+    file_name = get_final_strat_file_name(model_name, model_size, device_info)
+    save_with_pickle(sols, file_name, folder)
+    logger.info(f'All plans saved to {file_name} in {folder}')
+
