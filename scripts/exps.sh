@@ -84,7 +84,7 @@ python3 algo_entry.py --model_size ${model_size} \
  --model_name bloom \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
  --time_mult_times 2 \
- --theta 0.01 --global_bz 32 --group 1 --adapp_group_size 1 --ilp_time_limit 300 --debug  --ilp_tolerance 0.13
+ --theta 1 --global_bz 32 --group 1 --adapp_group_size 1 --ilp_time_limit 1200 --debug  --ilp_tolerance 0.07
 
 # case 8
 model_size=176b

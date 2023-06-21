@@ -1,15 +1,56 @@
+#!/bin/bash
+# usage: ./test_plan_acc_cmd.sh -n mymodel -s 125m -f /path/to/folder -g 2
+# Set default values
 model_storage_path='/data/llms/'
-export TRANSFORMERS_CACHE=$model_storage_path
-export CUDA_VISIBLE_DEVICES=3 # control the gpu used
 device_info="Tesla_T4_4_rand"
 available_methods=('adaqpipe')
-# model control
 model_name="opt"
 model_size="125m"
-model_name="bloom"
-model_size="560m"
+sol_folder="${ROOT_DIR}/scripts/part_strategy"
+cuda_visible_devices="3"
+export TRANSFORMERS_CACHE=$model_storage_path
+export CUDA_VISIBLE_DEVICES=$cuda_visible_devices
 
-sol_folder="${ROOT_DIR}/scripts/part_strategy" # control the part_strategy folder path
+# Parse command line arguments
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+
+    case $key in
+        -n|--model_name)
+        model_name="$2"
+        shift
+        shift
+        ;;
+        -s|--model_size)
+        model_size="$2"
+        shift
+        shift
+        ;;
+        -f|--sol_folder)
+        sol_folder="$2"
+        shift
+        shift
+        ;;
+        -g|--cuda_visible_devices)
+        cuda_visible_devices="$2"
+        shift
+        shift
+        ;;
+        *)    # unknown option
+        shift # past argument
+        ;;
+    esac
+done
+
+# Run commands that use the input arguments and default values
+echo "model_name is set to: $model_name"
+echo "model_size is set to: $model_size"
+echo "sol_folder is set to: $sol_folder"
+echo "cuda_visible_devices is set to: $cuda_visible_devices"
+
+export TRANSFORMERS_CACHE=$model_storage_path
+export CUDA_VISIBLE_DEVICES=$cuda_visible_devices
 
 if [[ "${model_name}" == "opt" ]]; then
     model_prefix="facebook/opt-"
