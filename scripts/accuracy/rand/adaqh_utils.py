@@ -12,6 +12,7 @@ def add_argparser(parser: argparse.ArgumentParser):
     parser.add_argument('--mixed-bit', action="store_true")
     return parser
 
+mixed_precision_result = []
 def mixed_bit_handler(args, bit_for_layer):
     if not args.mixed_bit:
         return bit_for_layer
@@ -28,6 +29,8 @@ def mixed_bit_handler(args, bit_for_layer):
 available_non_gptq = ['bitsandbytes']
 def handle_non_gptq_impl(layer:nn.Module, impl_type:str="bitsandbytes"):
     os.environ['PERF_MODE'] = "0" # not in perf mode
+    # os.environ['LP_BITS_THRESHOLD'] = "0.3"
+
     if impl_type not in available_non_gptq:
         raise NotImplementedError(f"impl_type {impl_type} not implemented")
     if impl_type == 'bitsandbytes':

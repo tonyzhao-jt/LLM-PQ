@@ -10,9 +10,9 @@ device_info="Tesla_T4_4_rand"
 available_methods=('adaqpipe')
 # model control
 model_name="opt"
-model_size="125m"
-model_name="bloom"
-model_size="560m"
+model_size="1.3b"
+# model_name="bloom"
+# model_size="560m"
 
 sol_folder="${ROOT_DIR}/scripts/part_strategy" # control the part_strategy folder path
 
@@ -38,7 +38,7 @@ do
     file_name="${available_methods[i]}_${model_size}_${device_info}_acc_test.pkl"
     file_abs_path="${folder_abs_path}${file_name}"
     # if [ -f $file_abs_path ]; then
-    python3 ${model_name}.py ${pretrained_config} c4 --wbits 4 \
+    python3 ${model_name}.py ${pretrained_config} c4 --wbits 8 \
     --ada-file ${file_abs_path} 2>&1 | tee "${file_name}.txt"
     # else
     #     echo "$file_abs_path does not exist"

@@ -84,6 +84,7 @@ def bloom_sequential(model, dataloader, dev, means=None, stds=None):
         else:
             bit_for_layer = args.wbits
         bit_for_layer = mixed_bit_handler(args, bit_for_layer)
+        mixed_precision_result.append(bit_for_layer)
         not_gptq = bit_for_layer in custom_precisions
         if not_gptq: 
             ori_layer = copy.deepcopy(layer)
@@ -185,10 +186,7 @@ def bloom_eval(model, testenc, dev):
     bit_assignment = read_ada_file(args.ada_file, layers)
 
     for i in range(len(layers)):
-        if bit_assignment is not None:
-            bit_for_layer = bit_assignment[i]
-        else:
-            bit_for_layer = args.wbits
+        bit_for_layer = mixed_precision_result[i]
         not_gptq = bit_for_layer in custom_precisions
         if not_gptq: 
             layer = layers[i]
@@ -225,8 +223,12 @@ def bloom_eval(model, testenc, dev):
         loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
         neg_log_likelihood = loss.float() * model.seqlen
         nlls.append(neg_log_likelihood)
-    ppl = torch.exp(torch.stack(nlls).sum() / (nsamples * model.seqlen))
-    print("Perplexity: {:.3f}".format(ppl.item()))
+    # Compute PPL and count NaN values in nlls
+    nlls_tensor = torch.stack(nlls)
+    n_nan = torch.sum(torch.isnan(nlls_tensor)).item()
+    ppl = torch.exp(nlls_tensor[~torch.isnan(nlls_tensor)].sum() / ((nsamples - n_nan) * model.seqlen))
+    print(f"Perplexity: {ppl:.3f}")
+    print(f"Number of NaN values in nlls: {n_nan}")
 
     model.config.use_cache = use_cache
 
