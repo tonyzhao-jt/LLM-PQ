@@ -1,16 +1,30 @@
-# add new space to argparser
+import torch.nn as nn 
+import torch 
 import argparse
+import pickle
+import os 
+
+# add new space to argparser
 def add_argparser(parser: argparse.ArgumentParser):
     # add the ada file_path
     parser.add_argument('--ada-file', type=str, default=None)
     # motivation and debug
-    parser.add_argument('--rand-bit', action="store_true")
-
+    parser.add_argument('--mixed-bit', action="store_true")
     return parser
 
+def mixed_bit_handler(args, bit_for_layer):
+    if not args.mixed_bit:
+        return bit_for_layer
+    else:
+        if bit_for_layer == 4:
+            # randomly choose from 4 and 8
+            return 4 if torch.rand(1) < 0.5 else 8
+        elif bit_for_layer == 3:
+            # randomly choose from 3 and 4
+            return 3 if torch.rand(1) < 0.5 else 4
+        
+
 # handle the precision that is not well tackled by gptq
-import torch.nn as nn 
-import torch 
 available_non_gptq = ['bitsandbytes']
 def handle_non_gptq_impl(layer:nn.Module, impl_type:str="bitsandbytes"):
     os.environ['PERF_MODE'] = "0" # not in perf mode
@@ -34,8 +48,7 @@ def customize_precision(layer:nn.Module, bit=8):
     else:
         return False 
 
-import pickle
-import os 
+
 def read_ada_file(file_path:str, layers:list):
     # or file not exists
     if file_path is not None and os.path.exists(file_path):

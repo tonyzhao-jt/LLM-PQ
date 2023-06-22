@@ -83,6 +83,7 @@ def bloom_sequential(model, dataloader, dev, means=None, stds=None):
             bit_for_layer = bit_assignment[i]
         else:
             bit_for_layer = args.wbits
+        bit_for_layer = mixed_bit_handler(args, bit_for_layer)
         not_gptq = bit_for_layer in custom_precisions
         if not_gptq: 
             ori_layer = copy.deepcopy(layer)

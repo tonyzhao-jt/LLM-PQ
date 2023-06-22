@@ -1,4 +1,9 @@
 model_storage_path='/data/llms/'
+# Check if the LLM_PATH environmental variable is set
+if [ -n "$LLM_PATH" ]; then
+    model_storage_path="$LLM_PATH"
+fi
+
 export TRANSFORMERS_CACHE=$model_storage_path
 export CUDA_VISIBLE_DEVICES=3 # control the gpu used
 device_info="Tesla_T4_4_rand"
@@ -33,7 +38,7 @@ do
     file_name="${available_methods[i]}_${model_size}_${device_info}_acc_test.pkl"
     file_abs_path="${folder_abs_path}${file_name}"
     # if [ -f $file_abs_path ]; then
-    python3 ${model_name}.py ${pretrained_config} c4 --wbits 8 \
+    python3 ${model_name}.py ${pretrained_config} c4 --wbits 4 \
     --ada-file ${file_abs_path} 2>&1 | tee "${file_name}.txt"
     # else
     #     echo "$file_abs_path does not exist"
