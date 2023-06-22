@@ -7,7 +7,6 @@ if [ -n "$LLM_PATH" ]; then
     model_storage_path="$LLM_PATH"
 fi
 device_info="Tesla_T4_4_rand"
-available_methods=('adaqpipe')
 model_name="opt"
 model_size="125m"
 sol_folder="${ROOT_DIR}/scripts/part_strategy"
@@ -63,16 +62,39 @@ do
         shift
         shift
         ;;
+        -p|--folder_abs_path)
+        folder_abs_path="$2"
+        shift
+        shift
+        ;;
+        -m|--available_methods)
+        available_methods_str="$2"
+        IFS=',' read -ra available_methods <<< "$available_methods_str"
+        shift
+        shift
+        ;;
         *)    # unknown option
         shift # past argument
         ;;
     esac
 done
 
+if [ -z "${available_methods[@]}" ]; then
+    available_methods=('adaqpipe')
+fi
+
 # Create storage path directory if it does not exist
 if [ ! -d "$storage_path" ]; then
     mkdir -p "$storage_path"
 fi
+
+
+if [ ! -d "$folder_abs_path"]; then 
+    echo $folder_abs_path
+else
+    folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test/"
+    echo $folder_abs_path
+fi 
 
 # Run commands that use the input arguments and default values
 echo "Model name: $model_name"
@@ -80,7 +102,11 @@ echo "Model size: $model_size"
 echo "Solution folder: $sol_folder"
 echo "CUDA visible devices: $cuda_visible_devices"
 echo "Mixed mode: $mixed_mode"
-echo "Weight bit: $wbit"
+if [! -d "$adafile"]; then 
+    echo "use file provided mixed-precision setups"
+else 
+    echo "Weight bit: $wbit"
+fi 
 echo "Storage path: $storage_path"
 
 export TRANSFORMERS_CACHE=$model_storage_path
@@ -97,7 +123,6 @@ else
     fi
 fi
 
-folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test/"
 # create the corresponding adabit files
 if [ "$adafile_mode" = true ]; then
     python3 convert_sol_to_gptq_bits.py --model-name ${model_name} --model-size ${model_size} \
@@ -114,11 +139,11 @@ do
     elif [ "$adafile_mode" = true ]; then
         echo "Adabits file loaded"
         echo "run ${available_methods[i]} perplexity accuracy test"
-        file_name="${storage_path}/${available_methods[i]}_${model_size}_${device_info}_acc_test.pkl"
+        file_name="${available_methods[i]}_${model_size}_${device_info}_acc_test.pkl"
         file_abs_path="${folder_abs_path}${file_name}"
         # if [ -f $file_abs_path ]; then
         python3 ${model_name}.py ${pretrained_config} c4 --wbits ${wbit} \
-        --ada-file ${file_abs_path} 2>&1 | tee "${file_name}.txt"
+        --ada-file ${file_abs_path} 2>&1 | tee "${storage_path}/${file_name}.txt"
     else
         # if [ -f $file_abs_path ]; then
         file_name="${storage_path}/${model_name}_${model_size}_${device_info}_${wbit}.pkl"
