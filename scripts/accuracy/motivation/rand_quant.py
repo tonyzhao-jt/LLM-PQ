@@ -19,7 +19,7 @@ from qpipe.partitioner.indicator import (
     assign_omega_constant
 )
 from qpipe.utils import (
-    save_with_pickle,
+    save_with_pickle, get_available_bits_pair
 )
 
 from qpipe.logger import logger
@@ -93,11 +93,9 @@ logger.info(f"memory_contraints {memory_contraints}")
 # problem is easy, first fetch the indicator for each layer (self attn, ff)
 # then based on the setting, we calculte the optimal bit allocation that minimize the indicator result.
 L = num_layers
-available_bits = [2, 3, 4, 8, 16] # regard 8-bit as same
+available_bits = [3, 4, 8, 16] # regard 8-bit as same
 available_bits = list(set(available_bits))
-BITs = [
-    (i, j) for i in available_bits for j in available_bits
-]
+BITs = get_available_bits_pair(available_bits)
 if indicator_type == 'uniform':
     omega = assign_omega_uniform(L, BITs)
 elif indicator_type == 'constant':

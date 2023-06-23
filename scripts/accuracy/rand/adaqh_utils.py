@@ -14,6 +14,8 @@ def add_argparser(parser: argparse.ArgumentParser):
 
 mixed_precision_result = []
 def mixed_bit_handler(args, bit_for_layer):
+    if type(bit_for_layer) == list or type(bit_for_layer) == tuple:
+        bit_for_layer = bit_for_layer[0] # for the moment we didn't decompose MLP and ATTN
     if not args.mixed_bit:
         return bit_for_layer
     else:

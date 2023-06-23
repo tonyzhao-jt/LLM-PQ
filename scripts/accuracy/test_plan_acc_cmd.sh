@@ -6,11 +6,15 @@ model_storage_path='/data/llms/'
 if [ -n "$LLM_PATH" ]; then
     model_storage_path="$LLM_PATH"
 fi
-device_info="Tesla_T4_4_rand"
+CURRENT_FOLDER=$PWD
+device_info=""
 model_name="opt"
 model_size="125m"
 sol_folder="${ROOT_DIR}/scripts/part_strategy"
+folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test/"
+available_methods=('adaqpipe')
 cuda_visible_devices="3"
+zeroshot=false
 export TRANSFORMERS_CACHE=$model_storage_path
 export CUDA_VISIBLE_DEVICES=$cuda_visible_devices
 
@@ -73,28 +77,21 @@ do
         shift
         shift
         ;;
+        --zeroshot)
+        zeroshot=true
+        shift
+        ;;
         *)    # unknown option
         shift # past argument
         ;;
     esac
 done
 
-if [ -z "${available_methods[@]}" ]; then
-    available_methods=('adaqpipe')
-fi
 
 # Create storage path directory if it does not exist
 if [ ! -d "$storage_path" ]; then
     mkdir -p "$storage_path"
 fi
-
-
-if [ ! -d "$folder_abs_path"]; then 
-    echo $folder_abs_path
-else
-    folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test/"
-    echo $folder_abs_path
-fi 
 
 # Run commands that use the input arguments and default values
 echo "Model name: $model_name"
@@ -102,8 +99,9 @@ echo "Model size: $model_size"
 echo "Solution folder: $sol_folder"
 echo "CUDA visible devices: $cuda_visible_devices"
 echo "Mixed mode: $mixed_mode"
-if [! -d "$adafile"]; then 
-    echo "use file provided mixed-precision setups"
+echo "Run zeroshot?: $zeroshot"
+if [ ! -d "$adafile" ]; then 
+    echo "use file provided mixed-precision setups under folder ${folder_abs_path}"
 else 
     echo "Weight bit: $wbit"
 fi 
@@ -125,8 +123,10 @@ fi
 
 # create the corresponding adabit files
 if [ "$adafile_mode" = true ]; then
-    python3 convert_sol_to_gptq_bits.py --model-name ${model_name} --model-size ${model_size} \
-            --device-info ${device_info} --sol-folder ${sol_folder}
+    if [ -n "$device_info" ]; then
+        python3 convert_sol_to_gptq_bits.py --model-name ${model_name} --model-size ${model_size} \
+                --device-info ${device_info} --sol-folder ${sol_folder}
+    fi
 fi
 cd ${ROOT_DIR}/3rd_party/gptq # main folder
 for i in "${!available_methods[@]}"
@@ -139,14 +139,33 @@ do
     elif [ "$adafile_mode" = true ]; then
         echo "Adabits file loaded"
         echo "run ${available_methods[i]} perplexity accuracy test"
-        file_name="${available_methods[i]}_${model_size}_${device_info}_acc_test.pkl"
+        if [ -n "$device_info" ]; then
+            file_name="${available_methods[i]}_${model_name}_${model_size}_${device_info}_acc_test.pkl"
+        else 
+            file_name="${available_methods[i]}_${model_name}_${model_size}_bit_ass.pkl"
+        fi 
         file_abs_path="${folder_abs_path}${file_name}"
-        # if [ -f $file_abs_path ]; then
-        python3 ${model_name}.py ${pretrained_config} c4 --wbits ${wbit} \
-        --ada-file ${file_abs_path} 2>&1 | tee "${storage_path}/${file_name}.txt"
+        if [ -e "$file_abs_path" ]; then
+            echo "File exists!"
+        else
+            echo "File does not exist."
+            echo $file_abs_path
+            exit 1
+        fi
+        if [ "$zeroshot" = true ]; then
+            # zeroshot test
+            cd zeroShot
+            python3 main.py ${pretrained_config} c4 --wbits 4 --task piqa,arc_easy,lambada \
+             --ada-file ${file_abs_path} 2>&1 | tee "${storage_path}/${file_name}.txt"
+        else
+            # pp text
+            python3 ${model_name}.py ${pretrained_config} c4 --wbits ${wbit} \
+            --ada-file ${file_abs_path} 2>&1 | tee "${storage_path}/${file_name}.txt"
+        fi
     else
         # if [ -f $file_abs_path ]; then
         file_name="${storage_path}/${model_name}_${model_size}_${device_info}_${wbit}.pkl"
         python3 ${model_name}.py ${pretrained_config} c4 --wbits ${wbit} | tee "${file_name}.txt"
     fi
 done
+cd $CURRENT_FOLDER # back to current folder
