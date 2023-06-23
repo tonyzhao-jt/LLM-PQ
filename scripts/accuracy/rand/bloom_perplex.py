@@ -88,12 +88,20 @@ def bloom_sequential(model, dataloader, dev, means=None, stds=None):
         not_gptq = bit_for_layer in custom_precisions
         if not_gptq: 
             ori_layer = copy.deepcopy(layer)
-            customize_precision(layer, bit=bit_for_layer)
-            layer = layer.to(dev)
-            for j in range(args.nsamples):
-                outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask, alibi=alibi)[0]
-            # didn't replace the bitsandbytes result
-            # print(outs)
+            lower_threshold = False
+            while True:
+                layer = copy.deepcopy(ori_layer)
+                layer = customize_llm_int8(layer, i, lower_threshold)
+                layer = layer.to(dev)
+                for j in range(args.nsamples):
+                    outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask, alibi=alibi)[0]
+                # didn't replace the bitsandbytes result
+                # check whether nan in outs
+                if torch.isnan(outs).any():
+                    lower_threshold = True
+                    continue
+                else:
+                    break
             layers[i] = ori_layer
             pass
         else:
@@ -192,7 +200,8 @@ def bloom_eval(model, testenc, dev):
             layer = layers[i]
             print("Layer", i, "use customized precision:", bit_for_layer)
             ori_layer = copy.deepcopy(layer)
-            customize_precision(layer, bit=bit_for_layer)
+            lower_threshold = False 
+            layer = customize_llm_int8(layer, i, lower_threshold)
             layer = layer.to(dev)
             for j in range(nsamples):
                 outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask, alibi=alibi)[0]
@@ -305,3 +314,4 @@ if __name__ == '__main__':
         )
         print(dataset)
         bloom_eval(model, testloader, DEV)
+    log_customize_info(args.model)

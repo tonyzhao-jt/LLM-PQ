@@ -92,12 +92,20 @@ def opt_sequential(model, dataloader, dev):
         if not_gptq: 
             print("Layer", i, "use customized precision:", bit_for_layer)
             ori_layer = copy.deepcopy(layer)
-            customize_precision(layer, bit=bit_for_layer)
-            layer = layer.to(dev)
-            for j in range(args.nsamples):
-                outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask)[0]
-            # didn't replace the bitsandbytes result
-            # print(outs)
+            lower_threshold = False
+            while True:
+                layer = copy.deepcopy(ori_layer)
+                layer = customize_llm_int8(layer, i, lower_threshold)
+                layer = layer.to(dev)
+                for j in range(args.nsamples):
+                    outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask)[0]
+                # didn't replace the bitsandbytes result
+                # check whether nan in outs
+                if torch.isnan(outs).any():
+                    lower_threshold = True
+                    continue
+                else:
+                    break
             layers[i] = ori_layer
             pass
         else:
@@ -204,21 +212,24 @@ def opt_eval(model, testenc, dev):
 
         bit_for_layer = mixed_precision_result[i]
         not_gptq = bit_for_layer in custom_precisions
-        if not_gptq: 
-            layer = layers[i]
-            print("Layer", i, "use customized precision:", bit_for_layer)
-            ori_layer = copy.deepcopy(layer)
-            customize_precision(layer, bit=bit_for_layer)
-            layer = layer.to(dev)
-            for j in range(nsamples):
-                outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask)[0]
-            layers[i] = ori_layer
-        else:
-            layer = layers[i].to(dev)
-            for j in range(nsamples):
-                outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask)[0]
-            layers[i] = layer.cpu()
-        del layer
+        try:
+            if not_gptq: 
+                layer = layers[i]
+                print("Layer", i, "use customized precision:", bit_for_layer)
+                ori_layer = copy.deepcopy(layer)
+                layer = customize_llm_int8(layer, i, lower_threshold=False)
+                layer = layer.to(dev)
+                for j in range(nsamples):
+                    outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask)[0]
+                layers[i] = ori_layer
+            else:
+                layer = layers[i].to(dev)
+                for j in range(nsamples):
+                    outs[j] = layer(inps[j].unsqueeze(0), attention_mask=attention_mask)[0]
+                layers[i] = layer.cpu()
+            del layer
+        except:
+            import pdb; pdb.set_trace()
         torch.cuda.empty_cache()
         inps, outs = outs, inps
 
@@ -502,3 +513,5 @@ if __name__ == '__main__':
     if args.save:
         opt_pack3(model, quantizers)
         torch.save(model.state_dict(), args.save) 
+    
+    log_customize_info(args.model)

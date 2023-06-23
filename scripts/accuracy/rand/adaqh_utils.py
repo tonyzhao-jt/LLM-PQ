@@ -53,6 +53,38 @@ def customize_precision(layer:nn.Module, bit=8):
     else:
         return False 
 
+# handle the llm int8
+def quant_llm_int8(layer, threshold):
+    os.environ['PERF_MODE'] = "0" # not in perf mode
+    original_threshold = os.environ['LP_BITS_THRESHOLD'] # store current
+    os.environ['LP_BITS_THRESHOLD'] = threshold
+    from lptorch import quantize_linear_module_with_bit
+    os.environ['Q_METHOD'] = "BITSANDBYTES"
+    quantize_linear_module_with_bit(layer, bit=8)
+    os.environ['Q_METHOD'] = "ADALINEAR"
+    os.environ['LP_BITS_THRESHOLD'] = original_threshold # recover
+    return layer
+
+threshold_dict = {}
+def customize_llm_int8(layer:nn.Module, idx=0, lower_threshold=False):
+    if threshold_dict.get(idx, None) is None:
+        threshold_dict[idx] = float(os.environ.get('LP_BITS_THRESHOLD', 6.0)) # default provided by HF
+    else:
+        if lower_threshold:
+            print("Nan detected, lower the threshold for layer {}".format(idx))
+            threshold_dict[idx] = threshold_dict[idx] * 0.9
+    thresh_ = threshold_dict[idx]
+    # print(threshold_dict)
+    return quant_llm_int8(layer, str(thresh_))
+
+import pickle
+def log_customize_info(model_name:str):
+    if len(threshold_dict) > 0:
+        print("customize llm int8 threshold:")
+        for k, v in threshold_dict.items():
+            print(f"layer {k} threshold: {v}")
+        with open(f"customize_info_{model_name.replace('/', '_')}.pkl", 'wb') as f:
+            pickle.dump(threshold_dict, f)
 
 def read_ada_file(file_path:str, layers:list):
     # or file not exists

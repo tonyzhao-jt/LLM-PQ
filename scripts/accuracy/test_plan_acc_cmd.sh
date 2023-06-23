@@ -13,10 +13,8 @@ model_size="125m"
 sol_folder="${ROOT_DIR}/scripts/part_strategy"
 folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test/"
 available_methods=('adaqpipe')
-cuda_visible_devices="3"
 zeroshot=false
 export TRANSFORMERS_CACHE=$model_storage_path
-export CUDA_VISIBLE_DEVICES=$cuda_visible_devices
 
 mixed_mode=false
 adafile_mode=false
