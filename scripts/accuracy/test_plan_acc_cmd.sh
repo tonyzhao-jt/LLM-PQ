@@ -142,11 +142,16 @@ do
         if [ -n "$device_info" ]; then
             file_name="${available_methods[i]}_${model_name}_${model_size}_${device_info}_acc_test.pkl"
         else 
-            file_name="${available_methods[i]}_${model_name}_${model_size}_bit_ass.pkl"
+            if [ -n "$TEST_RATIO" ]; then 
+                file_name="${available_methods[i]}_${model_name}_${model_size}_${TEST_RATIO}_bit_ass.pkl"
+            else
+                file_name="${available_methods[i]}_${model_name}_${model_size}_bit_ass.pkl"
+            fi 
         fi 
         file_abs_path="${folder_abs_path}${file_name}"
         if [ -e "$file_abs_path" ]; then
             echo "File exists!"
+            echo $file_abs_path
         else
             echo "File does not exist."
             echo $file_abs_path

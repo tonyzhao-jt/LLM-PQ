@@ -161,5 +161,5 @@ for layer, bits in result.items():
 print(bit_assignment)
 
 folder_name = 'bit_result'
-file_name = f'{indicator_type}_{model_name}_{model_size}_bit_ass.pkl'
+file_name = f'{indicator_type}_{model_name}_{model_size}_{ratio}_bit_ass.pkl'
 save_with_pickle(bit_assignment, file_name, folder_name)
