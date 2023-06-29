@@ -19,6 +19,8 @@ def generate_indicator(model_name, model_size, folder_path, fast=True):
 
     # load the data
     config, num_layers = model_config_and_decoder_layers(model_name, model_size)
+    # weight size
+    hd_size = config.hidden_size
 
 
     L = num_layers
@@ -40,56 +42,24 @@ def generate_indicator(model_name, model_size, folder_path, fast=True):
 
     # get indicator for each layer
     # final result should be a dict with respect to different layer and BITs
-    def calculate_indicator(bit, x_max, x_min, w_max, w_min, w_norm2, x_norm2, is_ffn=False):
+    def calculate_indicator(bit, x_var, w_max, w_min, is_ffn=False):
         if bit in ['8:tc', '8:tc-li']:
             bit = 8
         ind = 0
-        x_max = x_max.astype(np.float64)
-        x_min = x_min.astype(np.float64)
-        w_max = w_max.astype(np.float64)
-        w_min = w_min.astype(np.float64)
-        # first item of the indicator
-        # weight_always_tensor
+        # get s_w^2 and d_w
+        # focus on get s_w
         w_mag = (w_max - w_min).max()
-        if x_quant_method == 'tensor':
-            x_mag = np.abs((x_max - x_min)).max()
-            item_num = x_max.shape[1]
-        else:
-            x_mag = np.abs((x_max - x_min))
-        # weight always tensor
-        item_num = 1
-        if x_quant_method == 'tensor':
-            item_num = x_max.shape[1]
-            x_max = np.max(x_max.abs(), x_min.abs())
-        # first term
-        if item_num != 1:
-            first_term = w_mag * x_max * item_num
-        else:
-            first_term = (w_mag * x_max).sum()
-        # second item of the indicator
-        w_max = np.abs(w_max).max()
-        item_num = 1
-        slot = 2 ** (bit) - 1
-        if fast:
-            if item_num != 1:
-                second_term = w_max * x_mag * item_num
-            else:
-                second_term = (w_max * x_mag).sum()
-
-            ind = (first_term / slot) ** 2 + (second_term / slot) ** 2
-        else:
-            if np.isscalar(x_max):
-                abs_x_max = abs(x_max)
-            else:
-                abs_x_max = np.max(np.abs(x_max))
-
-            if np.isscalar(w_max):
-                abs_w_max = abs(w_max)
-            else:
-                abs_w_max = np.max(np.abs(w_max))
-            ind = w_norm2 * (abs_x_max ** 2/slot) + x_norm2 * (abs_w_max ** 2/slot)
+        s_w = w_mag / (2 ** (bit - 1) - 1)
+        # result = s_w^2 d_w varx
+        ind = s_w ** 2 * x_var
+        # check if ind is 0-d tensor
+        ind = ind.sum()
+        # since dw is same execpt ffn, so we only multiply ffn with 4
         if is_ffn:
-            ind *= 2
+            ind *= 4
+        # weight_dim
+        # w_size = hd_size ** 2
+        # ind *= w_size
         return ind
 
     omega = np.zeros((L, len(BITs)))
@@ -111,56 +81,45 @@ def generate_indicator(model_name, model_size, folder_path, fast=True):
         
         for b_idx, bit in enumerate(BITs):
             bit_1, bit_2 = bit
-            # calculate qkv
+            # attention block
+            # qkv + output
             if model_name == 'bloom':
-                qkv_xmax, qkv_xmin = qkv_quant_stat['xmax'], qkv_quant_stat['xmin']
+                qkv_x_var = qkv_quant_stat['x_var']
                 qkv_wmax, qkv_wmin = qkv_quant_stat['wmax'], qkv_quant_stat['wmin']
-                out_xmax, out_xmin = out_stat['xmax'], out_stat['xmin']
 
-                qkv_w_norm2, qkv_x_norm2 = qkv_quant_stat['w_norm2'], qkv_quant_stat['x_norm2']
-                out_w_norm2, out_x_norm2 = out_stat['w_norm2'], out_stat['x_norm2']
+                out_x_var = out_stat['x_var']
+                out_wmax, out_wmin = out_stat['wmax'], out_stat['wmin']
+                qkv_ind = calculate_indicator(bit_1, qkv_x_var, qkv_wmax, qkv_wmin)
+                qkv_out = calculate_indicator(bit_1, out_x_var, out_wmax, out_wmin)
 
-                qkv_ind = calculate_indicator(bit_1, qkv_xmax, qkv_xmin, qkv_wmax, qkv_wmin, qkv_w_norm2, qkv_x_norm2)
-                qkv_out = calculate_indicator(bit_1, out_xmax, out_xmin, qkv_wmax, qkv_wmin, out_w_norm2, out_x_norm2)
-                #
             elif model_name == 'opt':
-                q_xmax, q_xmin = q_quant_stat['xmax'], q_quant_stat['xmin']
-                q_wmax, q_wmin = q_quant_stat['wmax'], q_quant_stat['wmin']
-                k_xmax, k_xmin = k_quant_stat['xmax'], k_quant_stat['xmin']
-                k_wmax, k_wmin = k_quant_stat['wmax'], k_quant_stat['wmin']
-                v_xmax, v_xmin = v_quant_stat['xmax'], v_quant_stat['xmin']
-                v_wmax, v_wmin = v_quant_stat['wmax'], v_quant_stat['wmin']
-                out_xmax, out_xmin = out_stat['xmax'], out_stat['xmin']
-                if x_quant_method == 'tensor':
-                    q_xmax = q_xmax.max()
-                    q_xmin = q_xmin.min()
-                    k_xmax = k_xmax.max()
-                    k_xmin = k_xmin.min()
-                    v_xmax = v_xmax.max()
-                    v_xmin = v_xmin.min()
-                
-                q_w_norm2, q_x_norm2 = q_quant_stat['w_norm2'], q_quant_stat['x_norm2']
-                k_w_norm2, k_x_norm2 = k_quant_stat['w_norm2'], k_quant_stat['x_norm2']
-                v_w_norm2, v_x_norm2 = v_quant_stat['w_norm2'], v_quant_stat['x_norm2']
-                out_w_norm2, out_x_norm2 = out_stat['w_norm2'], out_stat['x_norm2']
+                q_x_var = q_quant_stat['x_var']
+                k_x_var = k_quant_stat['x_var']
+                v_x_var = v_quant_stat['x_var']
 
+                q_wmax, q_wmin = q_quant_stat['wmax'], q_quant_stat['wmin']
+                k_wmax, k_wmin = k_quant_stat['wmax'], k_quant_stat['wmin']
+                v_wmax, v_wmin = v_quant_stat['wmax'], v_quant_stat['wmin']
+
+                out_x_var = out_stat['x_var']
+                out_wmax, out_wmin = out_stat['wmax'], out_stat['wmin']
                 
-                qkv_ind = calculate_indicator(bit_1, q_xmax, q_xmin, q_wmax, q_wmin, q_w_norm2, q_x_norm2)
-                qkv_ind += calculate_indicator(bit_1, k_xmax, k_xmin, k_wmax, k_wmin, k_w_norm2, k_x_norm2)
-                qkv_ind += calculate_indicator(bit_1, v_xmax, v_xmin, v_wmax, v_wmin, v_w_norm2, v_x_norm2)
-                qkv_out = calculate_indicator(bit_1, out_xmax, out_xmin, q_wmax, q_wmin, out_w_norm2, out_x_norm2)
+                qkv_ind = calculate_indicator(bit_1, q_x_var, q_wmax, q_wmin)
+                qkv_ind += calculate_indicator(bit_1, k_x_var, k_wmax, k_wmin)
+                qkv_ind += calculate_indicator(bit_1, v_x_var, v_wmax, v_wmin)
+                qkv_out = calculate_indicator(bit_1, out_x_var, out_wmax, out_wmin)
             
-            mlp_first_xmax, mlp_first_xmin = mlp_first['xmax'], mlp_first['xmin']
-            mlp_first_wmax, mlp_first_wmin = mlp_first['wmax'], mlp_first['wmin']
-            mlp_second_xmax, mlp_second_xmin = mlp_second['xmax'], mlp_second['xmin']
-            mlp_second_wmax, mlp_second_wmin = mlp_second['wmax'], mlp_second['wmin']
-            mlp_first_w_norm2, mlp_first_x_norm2 = mlp_first['w_norm2'], mlp_first['x_norm2']
-            mlp_second_w_norm2, mlp_second_x_norm2 = mlp_second['w_norm2'], mlp_second['x_norm2']
-            mlp_first_ind = calculate_indicator(bit_2, mlp_first_xmax, mlp_first_xmin, mlp_first_wmax, mlp_first_wmin, mlp_first_w_norm2, mlp_first_x_norm2, is_ffn=True)
-            mlp_second_ind = calculate_indicator(bit_2, mlp_second_xmax, mlp_second_xmin, mlp_second_wmax, mlp_second_wmin, mlp_second_w_norm2, mlp_second_x_norm2, is_ffn=True)
+            # mlp block
+            mlp_fc1_x_var = mlp_first['x_var']
+            mlp_fc1_wmax, mlp_fc1_wmin = mlp_first['wmax'], mlp_first['wmin']
+            mlp_fc2_x_var = mlp_second['x_var']
+            mlp_fc2_wmax, mlp_fc2_wmin = mlp_second['wmax'], mlp_second['wmin']
+
+            mlp_first_ind = calculate_indicator(bit_2, mlp_fc1_x_var, mlp_fc1_wmax, mlp_fc1_wmin, is_ffn=True)
+            mlp_second_ind = calculate_indicator(bit_2, mlp_fc2_x_var, mlp_fc2_wmax, mlp_fc2_wmin, is_ffn=True)
             # calculate the indicator sum for the selection of layer
             ind_res = qkv_ind + qkv_out + mlp_first_ind + mlp_second_ind
-            # print("layer: {}, bit: {}, indicator: {}".format(layer_idx, bit, ind_res))
+            print("layer: {}, bit: {}, indicator: {}".format(layer_idx, bit, ind_res))
             omega[layer_idx, b_idx] = ind_res
 
     return omega, dur

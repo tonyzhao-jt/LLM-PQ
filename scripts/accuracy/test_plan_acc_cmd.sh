@@ -2,6 +2,7 @@
 # usage: ./test_plan_acc_cmd.sh -n mymodel -s 125m -f /path/to/folder -g 2
 # Set default values
 model_storage_path='/data/llms/'
+export TRANSFORMERS_CACHE=$model_storage_path
 # Check if the LLM_PATH environmental variable is set
 if [ -n "$LLM_PATH" ]; then
     model_storage_path="$LLM_PATH"
@@ -14,7 +15,7 @@ sol_folder="${ROOT_DIR}/scripts/part_strategy"
 folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test/"
 available_methods=('adaqpipe')
 zeroshot=false
-export TRANSFORMERS_CACHE=$model_storage_path
+
 
 mixed_mode=false
 adafile_mode=false
@@ -38,11 +39,6 @@ do
         ;;
         -f|--sol_folder)
         sol_folder="$2"
-        shift
-        shift
-        ;;
-        -g|--cuda_visible_devices)
-        cuda_visible_devices="$2"
         shift
         shift
         ;;
@@ -95,7 +91,6 @@ fi
 echo "Model name: $model_name"
 echo "Model size: $model_size"
 echo "Solution folder: $sol_folder"
-echo "CUDA visible devices: $cuda_visible_devices"
 echo "Mixed mode: $mixed_mode"
 echo "Run zeroshot?: $zeroshot"
 if [ ! -d "$adafile" ]; then 
@@ -106,7 +101,6 @@ fi
 echo "Storage path: $storage_path"
 
 export TRANSFORMERS_CACHE=$model_storage_path
-export CUDA_VISIBLE_DEVICES=$cuda_visible_devices
 
 if [[ "${model_name}" == "opt" ]]; then
     model_prefix="facebook/opt-"
@@ -140,6 +134,7 @@ do
         if [ -n "$device_info" ]; then
             file_name="${available_methods[i]}_${model_name}_${model_size}_${device_info}_acc_test.pkl"
         else 
+            # echo $TEST_RATIO
             if [ -n "$TEST_RATIO" ]; then 
                 file_name="${available_methods[i]}_${model_name}_${model_size}_${TEST_RATIO}_bit_ass.pkl"
             else
@@ -157,6 +152,7 @@ do
         fi
         if [ "$zeroshot" = true ]; then
             # zeroshot test
+            # echo ${PWD}
             cd zeroShot
             python3 main.py ${pretrained_config} c4 --wbits 4 --task piqa,arc_easy,lambada \
              --ada-file ${file_abs_path} 2>&1 | tee "${storage_path}/${file_name}.txt"

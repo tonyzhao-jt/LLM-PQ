@@ -480,27 +480,25 @@ class OPTClass(BaseLM):
             #     return tmp
 
             def collect_in_w_scale(module, inp, out):
+                # the interested information
+                # for weight
                 weight = module.weight.data
-                wmax = weight.max(dim=-1).values.detach().cpu().numpy()
-                wmin = weight.min(dim=-1).values.detach().cpu().numpy()
-
-                w_norm2 = torch.norm(weight).item()
-
-                inp_max = inp[0].max(dim=-1).values.detach().cpu().numpy()
-                inp_min = inp[0].min(dim=-1).values.detach().cpu().numpy()
-
-                inp_norm2 = torch.norm(inp[0]).item()
+                wmax = weight.float().max(dim=-1, keepdim=True).values.detach().cpu().numpy()
+                wmin = weight.float().min(dim=-1, keepdim=True).values.detach().cpu().numpy()
+                # for input
+                # per-channel
+                # deterministic, only variance are concerned
+                # inp_max = inp[0].float().max(dim=-1, keepdim=True).values.detach().cpu().numpy()
+                # inp_min = inp[0].float().min(dim=-1, keepdim=True).values.detach().cpu().numpy()
+                inp_var = inp[0].float().var(dim=-1, keepdim=True).cpu().numpy()
 
                 if module.layer_idx not in collected_information:
                     collected_information[module.layer_idx] = {}
                 if module.name not in collected_information:
-                    collected_information[module.layer_idx][module.name] = {'xmax': inp_max, 'xmin': inp_min, 'wmax': wmax, 'wmin': wmin, \
-                                                                            'w_norm2': w_norm2, 'x_norm2': inp_norm2}
+                    collected_information[module.layer_idx][module.name] = {'x_var': inp_var, 'wmax': wmax, 'wmin': wmin}
                 else:
                     # running average the inp_max and inp_min
-                    collected_information[module.layer_idx][module.name]['xmax'] += inp_max
-                    collected_information[module.layer_idx][module.name]['xmin'] += inp_min
-                    collected_information[module.layer_idx][module.name]['x_norm2'] += inp_norm2
+                    collected_information[module.layer_idx][module.name]['x_var'] += inp_var
 
 
             handles = []
@@ -514,9 +512,7 @@ class OPTClass(BaseLM):
                 h.remove()
             
             for name in subset:
-                collected_information[i][name]['xmax'] /= self.args.nsamples
-                collected_information[i][name]['xmin'] /= self.args.nsamples
-                collected_information[i][name]['x_norm2'] /= self.args.nsamples
+                collected_information[i][name]['x_var'] /= self.args.nsamples
 
             # just don't do fast quant
             # for name in subset:
@@ -542,6 +538,7 @@ class OPTClass(BaseLM):
         duration = profile_end_time - profile_start_time
         collected_information['duration'] = duration
         print(f'Profiled in {duration:.2f} seconds.')
+        print("Collected AdaQH to file", file_path)
         # store the collected information
         with open(file_path, 'wb') as f: pickle.dump(collected_information, f)
         return quantizers

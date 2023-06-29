@@ -19,7 +19,7 @@ from qpipe.partitioner.indicator import (
     assign_omega_constant
 )
 from qpipe.utils import (
-    save_with_pickle, get_available_bits_pair
+    save_with_pickle, get_available_bits_pair_decoupled
 )
 
 from qpipe.logger import logger
@@ -95,7 +95,7 @@ logger.info(f"memory_contraints {memory_contraints}")
 L = num_layers
 available_bits = [3, 4, 8, 16] # regard 8-bit as same
 available_bits = list(set(available_bits))
-BITs = get_available_bits_pair(available_bits)
+BITs = get_available_bits_pair_decoupled(available_bits)
 if indicator_type == 'uniform':
     omega = assign_omega_uniform(L, BITs)
 elif indicator_type == 'constant':

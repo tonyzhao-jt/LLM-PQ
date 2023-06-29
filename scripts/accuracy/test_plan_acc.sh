@@ -11,8 +11,8 @@ available_methods=('adaqpipe')
 # model control
 model_name="opt"
 model_size="1.3b"
-# model_name="bloom"
-# model_size="560m"
+model_name="bloom"
+model_size="1b1"
 
 sol_folder="${ROOT_DIR}/scripts/part_strategy" # control the part_strategy folder path
 

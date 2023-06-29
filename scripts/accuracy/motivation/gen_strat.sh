@@ -11,7 +11,7 @@ function gen {
 ind_abs_path="/workspace/qpipe/scripts/accuracy/generated_ind/"
 ind_file_name="${ind_abs_path}gen_${model_name}_${model_size}_ind.pkl"
 ind_types=("constant" "uniform")
-ratios=(0.3 0.6)
+ratios=(0.3 0.5)
 
 for ratio in "${ratios[@]}"
 do 

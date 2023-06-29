@@ -210,7 +210,7 @@ def opt_eval(model, testenc, dev):
 
     for i in range(len(layers)):
 
-        bit_for_layer = mixed_precision_result[i]
+        bit_for_layer = mixed_precision_result[i] if len(mixed_precision_result) > 0 else 16
         not_gptq = bit_for_layer in custom_precisions
         try:
             if not_gptq: 

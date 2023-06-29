@@ -503,46 +503,27 @@ class BLOOMClass(BaseLM):
             gptq = {}
             if bit_assignment is not None:
                 bit_for_layer = bit_assignment[i]
-            # for n_idx, name in enumerate(subset):
-            #     gptq[name] = GPTQ(subset[name])
-            #     rand_bit = self.args.wbits
-            #     if bit_assignment is not None:
-            #         if 'qproj' in name or 'k_proj' in name or 'v_proj' in name or 'out' in name:
-            #             rand_bit = bit_for_layer[0]
-            #         else:
-            #             rand_bit = bit_for_layer[1]
-            #         print("use rand bit", rand_bit)
-            #     gptq[name].quantizer = Quantizer()
-            #     gptq[name].quantizer.configure(
-            #         rand_bit, perchannel=True, sym=False, mse=False
-            #     )
-
-            # def add_batch(name):
-            #     def tmp(_, inp, out):
-            #         gptq[name].add_batch(inp[0].data, out.data)
-
-            #     return tmp
 
             def collect_in_w_scale(module, inp, out):
+                # the interested information
+                # for weight
                 weight = module.weight.data
-                wmax = weight.float().max(dim=-1).values.detach().cpu().numpy()
-                wmin = weight.float().min(dim=-1).values.detach().cpu().numpy()
-                w_norm2 = torch.norm(weight.float()).item()
-
-                inp_max = inp[0].float().max(dim=-1).values.detach().cpu().numpy()
-                inp_min = inp[0].float().min(dim=-1).values.detach().cpu().numpy()
-                inp_norm2 = torch.norm(inp[0].float()).item()
+                wmax = weight.float().max(dim=-1, keepdim=True).values.detach().cpu().numpy()
+                wmin = weight.float().min(dim=-1, keepdim=True).values.detach().cpu().numpy()
+                # for input
+                # per-channel
+                # deterministic, only variance are concerned
+                # inp_max = inp[0].float().max(dim=-1, keepdim=True).values.detach().cpu().numpy()
+                # inp_min = inp[0].float().min(dim=-1, keepdim=True).values.detach().cpu().numpy()
+                inp_var = inp[0].float().var(dim=-1, keepdim=True).cpu().numpy()
 
                 if module.layer_idx not in collected_information:
                     collected_information[module.layer_idx] = {}
                 if module.name not in collected_information:
-                    collected_information[module.layer_idx][module.name] = {'xmax': inp_max, 'xmin': inp_min, 'wmax': wmax, 'wmin': wmin, \
-                                                                            'w_norm2': w_norm2, 'x_norm2': inp_norm2}
+                    collected_information[module.layer_idx][module.name] = {'x_var': inp_var, 'wmax': wmax, 'wmin': wmin}
                 else:
                     # running average the inp_max and inp_min
-                    collected_information[module.layer_idx][module.name]['xmax'] += inp_max
-                    collected_information[module.layer_idx][module.name]['xmin'] += inp_min
-                    collected_information[module.layer_idx][module.name]['x_norm2'] += inp_norm2
+                    collected_information[module.layer_idx][module.name]['x_var'] += inp_var
 
             handles = []
             for name in subset:
@@ -557,9 +538,7 @@ class BLOOMClass(BaseLM):
                 h.remove()
             
             for name in subset:
-                collected_information[i][name]['xmax'] /= self.args.nsamples
-                collected_information[i][name]['xmin'] /= self.args.nsamples
-                collected_information[i][name]['x_norm2'] /= self.args.nsamples
+                collected_information[i][name]['x_var'] /= self.args.nsamples
 
             # for name in subset:
             #     print(i, name)

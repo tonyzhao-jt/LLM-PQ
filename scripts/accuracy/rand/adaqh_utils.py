@@ -56,7 +56,7 @@ def customize_precision(layer:nn.Module, bit=8):
 # handle the llm int8
 def quant_llm_int8(layer, threshold):
     os.environ['PERF_MODE'] = "0" # not in perf mode
-    original_threshold = os.environ['LP_BITS_THRESHOLD'] # store current
+    original_threshold = os.environ.get('LP_BITS_THRESHOLD', "6.0") # store current
     os.environ['LP_BITS_THRESHOLD'] = threshold
     from lptorch import quantize_linear_module_with_bit
     os.environ['Q_METHOD'] = "BITSANDBYTES"
