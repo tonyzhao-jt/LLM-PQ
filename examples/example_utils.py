@@ -52,3 +52,33 @@ def create_uniform_sharding_strategies(shards_num, decoder_layer_nums, bitwidth)
     return sharding_strategy
 
 # create_uniform_sharding_strategies(3, 24, 16)
+
+
+# parser
+import argparse
+def parse_args():
+    # add argparser for model name and model_size
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model_size", type=str, default="350m", help="model size")
+    parser.add_argument("--model_name", type=str, default="opt", help="model name")
+    parser.add_argument("--bs_token", type=int, default=32, help="Global batch size for token")
+    parser.add_argument("--prompt_length", type=int, default=512, help="prompt length")
+    parser.add_argument("--max_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
+    parser.add_argument("--num_tokens_to_generate", type=int, default=100, help="number of tokens to generate")
+    parser.add_argument("--nccl", action='store_true', default=False, help="use nccl")
+    parser.add_argument("--warmup_tokens", type=int, default=2, help="warmup")
+    parser.add_argument("--method", type=str, default="adaqpipe", help="method of sched")
+    parser.add_argument("--strat_file_name", type=str, default=None)
+    # random seed
+    parser.add_argument("--seed", type=int, default=42, help="random seed")
+    # enable by sample flag
+    parser.add_argument("--sample-run", action='store_true', default=False, help="sample run")
+    # add bitwidth, shard_number
+    parser.add_argument('--bitwidth', default=16)
+    parser.add_argument('--num-shards', type=int, default=2) # 2 cards by default
+    # perfmode
+    parser.add_argument('--perf-mode', action='store_true', default=False)
+
+    parser.parse_args()
+    args = parser.parse_args()
+    return args
