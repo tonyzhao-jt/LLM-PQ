@@ -24,7 +24,6 @@ def handle_results(final_intermediate_result, input_ids, logits_processor) -> No
     request_id = final_intermediate_result[-2]
     if isinstance(request_id, torch.Tensor):
         request_id = request_id.item()
-
     outputs = model_pre_and_post.postprocess(final_intermediate_result, None)
     next_token_logits = outputs.logits[:, -1, :]
     next_tokens_scores = logits_processor(input_ids, next_token_logits)
@@ -115,11 +114,11 @@ if __name__ == '__main__':
         # construct input for 
         if model_name == 'opt':
             # 6 entries
-            final_intermediate = [fake_final_intemediate, None, None, None, request_id, None]
+            final_intermediate = [fake_final_intemediate, None, None, None, None, request_id, None]
         
         if model_name == 'bloom':
             # 7 entries
-            final_intermediate = [fake_final_intemediate, None, None, None, None, request_id, None]
+            final_intermediate = [fake_final_intemediate, None, None, None, None, None, request_id, None]
 
         device = torch.device("cuda:0")
         model_pre_and_post.return_dict = True

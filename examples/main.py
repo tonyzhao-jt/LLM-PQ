@@ -72,7 +72,8 @@ def handle_results(final_intermediate_result) -> None:
     next_tokens_scores = logits_processor(input_ids, next_token_logits)
     next_tokens = torch.argmax(next_tokens_scores, dim=-1)
     next_tokens = next_tokens * unfinished_sequences + pad_token_id * (1 - unfinished_sequences)
-    flag, concat_tokens = ds_scheduler.pass_scheduler(request_id, next_tokens)
+    attention_mask = final_intermediate_result[1]
+    flag, concat_tokens, attention_mask = ds_scheduler.pass_scheduler(request_id, next_tokens, attention_mask)
     if flag:
         # print(flag, concat_tokens.shape)
         request_loop_counter[request_id] += 1
@@ -82,7 +83,7 @@ def handle_results(final_intermediate_result) -> None:
             if request_loop_counter[request_id] == 0:
                 return # do nothing
             request_input_ids[request_id] = new_input_ids
-            request_token = model_pre_and_post.preprocess_one_token(new_input_ids, concat_tokens, use_cache=True, request_id=request_id)
+            request_token = model_pre_and_post.preprocess_one_token(new_input_ids, concat_tokens, attention_mask=attention_mask, use_cache=True, request_id=request_id)
             logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
             # print(request_token)
             if args.nccl:

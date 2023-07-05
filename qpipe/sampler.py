@@ -1,18 +1,25 @@
 # chatgpt generated input tokens
-prompts_128 = [
-    "The quick brown fox jumps over the lazy dog. It's a beautiful day outside, the sun is shining and the birds are chirping. I feel like going for a",
-    "In a galaxy far, far away, there was a war between good and evil. The Jedi knights fought bravely against the dark side. Luke Skywalker was",
-    "It was a dark and stormy night. The wind was howling outside and the rain was beating against the windows. I was sitting by the fireplace, reading a",
-    "I woke up this morning feeling refreshed and energized. I decided to start my day with a cup of coffee and some",
-    "Life is full of surprises. Sometimes things don't go as planned and we have to adapt to the situation. That's why it's important to always have a",
-    "The world is a big and wonderful place. There are so many things to see and do. One day, I hope to travel to",
-    "The future belongs to those who believe in the beauty of their dreams. I have a dream of",
-    "Once upon a time, there was a magical kingdom ruled by a wise and just king. The kingdom was",
-    "The sun was setting over the mountains, casting long shadows across the valley.",
-    "She stepped out of the car and looked up at the towering skyscraper above her.",
-    "The old man sat on the bench in the park, feeding breadcrumbs to the ducks in the pond.",
-    "The aroma of freshly brewed coffee filled the air as she walked into the cafe.",
-    "The waves crashed against the shore, sending spray flying into the air."
+prompts_128 = prompts = [
+    "What is he working on?",
+    "What does he have?",
+    "How can I make everyone happy?",
+    "What are you planning to do?",
+    "What is your favorite hobby?",
+    "What do you think about the latest news?",
+    "How can we improve our community?",
+    "What is the meaning of life?",
+    "What are your goals for the future?",
+    "What is the most interesting place you have ever visited?",
+    "What is the best way to learn a new skill?",
+    "What do you think about the future of technology?",
+    "How can we reduce our impact on the environment?",
+    "What is the most important lesson you have learned in life?",
+    "What is the best book you have ever read?",
+    "What is your favorite type of music?",
+    "What do you like to do in your free time?",
+    "How can we promote equality and diversity?",
+    "What is the key to a successful career?",
+    "What do you think is the biggest challenge facing our society today?"
 ]
 
 prompts_512 = [
