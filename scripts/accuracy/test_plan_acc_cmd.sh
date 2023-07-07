@@ -37,6 +37,11 @@ do
         shift
         shift
         ;;
+        -s|--device_info)
+        device_info="$2"
+        shift
+        shift
+        ;;
         -f|--sol_folder)
         sol_folder="$2"
         shift
@@ -141,7 +146,7 @@ do
                 file_name="${available_methods[i]}_${model_name}_${model_size}_bit_ass.pkl"
             fi 
         fi 
-        file_abs_path="${folder_abs_path}${file_name}"
+        file_abs_path="${folder_abs_path}/${file_name}"
         if [ -e "$file_abs_path" ]; then
             echo "File exists!"
             echo $file_abs_path

@@ -50,7 +50,7 @@ for method in available_methods:
     )
 
     folder_name = 'bit_for_gptq_test'
-    file_name = f'{method}_{model_size}_{device_info}_acc_test.pkl'
+    file_name = f'{method}_{model_name}_{model_size}_{device_info}_acc_test.pkl'
     save_with_pickle(bit_assignment, file_name, folder_name)
 
 # # load 
