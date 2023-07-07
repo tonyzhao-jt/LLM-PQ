@@ -46,6 +46,8 @@ try:
     path = os.path.join(target_storage_folder, f"{model_name}_{model_size}")
     qllm_empty_model.save_pretrained(path)
     tokenizer.save_pretrained(path)
+    # save state dict
+    torch.save(state_dict, os.path.join(path, 'state_dict_all.pth'))
     print("new weight saved")
 except:
     print("saving failed")

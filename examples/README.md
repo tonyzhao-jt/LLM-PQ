@@ -13,7 +13,7 @@ If you are only concerned with performance rather than accuracy, or if you simpl
 os.environ['SET_DECODERS_META'] = "1"
 os.environ['PERF_MODE'] = "0"
 ```
-1. The first option utilizes Hugging Face's ability to load a model without loading it onto the CPU and manually creates the shards.
+1. First option create empty decoder[None] for each device then load weight accordingly.
 2. The second option tells QPipe to randomly initialize the weights. By doing so, you can greatly reduce the CPU usage when loading the model and quickly obtain benchmark results.
 3. However, in perf model, the performance may not consistent to the weight-loadded case. 
 
