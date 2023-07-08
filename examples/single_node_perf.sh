@@ -1,13 +1,19 @@
-export CUDA_VISIBLE_DEVICES=2
-available_methods=('adaqpipe')
+export CUDA_VISIBLE_DEVICES=0
+available_methods=('adabits') # from adabits, adaqpipe, uniform, pipeedge
+# A100:
 # STRAT_FILE_NAME="sols_opt_13b_NVIDIA_A100-SXM4-40GB_1"
-STRAT_FILE_NAME="sols_opt_13b_Tesla_V100-SXM2-32GB_1"
 
+# V100: 
+# be careful when using V100, you need to recompile the bitsandbytes
+# refer LPTorch
+STRAT_FILE_NAME="sols_opt_13b_Tesla_V100-SXM2-32GB_1"
+export TRANSFORMERS_CACHE='/data/llms/'
 mkdir SINGLE_NODE_PERF_RESULT
-# Notice: 
+
+
+# Other Notice: 
     # Please run weight_convert.py first
     # Please run fake_calib (refer to readme)
-
 
 # checker
 # python3 check_strat.py --model_name opt --model_size 13b --method ${available_methods[i]} \

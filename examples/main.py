@@ -65,7 +65,8 @@ def handle_results(final_intermediate_result) -> None:
     logits_processor = request_logit_processor[request_id]
     unfinished_sequences = request_unfinished_sequences[request_id]
     # generate new tokens
-    final_intermediate_result = to_device_recursive(final_intermediate_result, 'cuda:0')
+    device = torch.cuda.current_device()
+    final_intermediate_result = to_device_recursive(final_intermediate_result, device)
     outputs = model_pre_and_post.postprocess(final_intermediate_result, None)
     
     next_token_logits = outputs.logits[:, -1, :]
