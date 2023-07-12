@@ -16,6 +16,7 @@ from qllm.models import create_empty_model
 from qllm.scheduler import DSScheduler
 from qllm.utils import batch_encode_plus, to_device_recursive, greedy_processor, get_model_size_cuda
 from qllm.models import qllm_load_pretrained_from_size
+import qllm.utils as qllm_utils
 
 # QPipe Related
 CMD_STOP = 0
@@ -108,7 +109,6 @@ def set_input_ids_globals(request_id, p_input_ids):
     request_logit_processor[request_id] = logits_processor
     request_loop_counter[request_id] = 0
     request_unfinished_sequences[request_id] = unfinished_sequences
-
 
 
 
@@ -222,7 +222,6 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
     print(f"Stage {stage_id} kv initialized")
     module.eval()
     module.on_device = f'cuda:{local_rank}'
-
     
     with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=3000)}, handle_cmd) \
         as dist_ctx:
@@ -281,23 +280,33 @@ if __name__ == '__main__':
     # set env
     if args.perf_mode:
         os.environ['SET_DECODERS_META'] = "1"
-        os.environ['PERF_MODE'] = "0"
+        os.environ['PERF_MODE'] = "1"
         loaded_llm_cpu = create_empty_model(model_name, model_size)
         # init tokenizer
         tokenizer = init_tokenizer(model_name)
     else:
-        # load weight
-        target_storage_folder = '/data/llms/converted_weights'
-        # load model 
-        if model_name == 'bloom':
-            qllm_model, tokenizer, key = qllm_load_pretrained_from_size(model_name, model_size)
-        elif model_name == 'opt':
-            # use converted weight
-            path = os.path.join(target_storage_folder, f"{model_name}_{model_size}")
-            if not os.path.exists(path):
-                raise ValueError("Please run weight_convert.py first")
-            qllm_model, tokenizer, key = qllm_load_pretrained_from_size(model_name, model_size, target_storage_folder=target_storage_folder)
-        loaded_llm_cpu = qllm_model
+        load_in_np = os.environ.get('LOAD_IN_NP', '0') == '1'
+        if load_in_np:
+            # specify the weight folder
+            os.environ['NP_WEIGHT_FOLDER'] = os.environ.get('NP_WEIGHT_FOLDER', '/data/llms/converted_weights_np') + f"/{model_name}_{model_size}"
+            # load model
+            os.environ['SET_DECODERS_META'] = "1"
+            loaded_llm_cpu = create_empty_model(model_name, model_size)
+            qllm_utils.load_np_weight_opt_non_layer(os.environ['NP_WEIGHT_FOLDER'], loaded_llm_cpu)
+            tokenizer = init_tokenizer(model_name)
+        else:
+            # case when CPU memory is abundant, direcly load the converted weight
+            target_storage_folder = '/data/llms/converted_weights'
+            # load model 
+            if model_name == 'bloom':
+                qllm_model, tokenizer, key = qllm_load_pretrained_from_size(model_name, model_size)
+            elif model_name == 'opt':
+                # use converted weight
+                path = os.path.join(target_storage_folder, f"{model_name}_{model_size}")
+                if not os.path.exists(path):
+                    raise ValueError("Please run weight_convert.py first")
+                qllm_model, tokenizer, key = qllm_load_pretrained_from_size(model_name, model_size, target_storage_folder=target_storage_folder)
+            loaded_llm_cpu = qllm_model
 
     # load the fake calibration data
     caliber = lptorch.inner_caliber

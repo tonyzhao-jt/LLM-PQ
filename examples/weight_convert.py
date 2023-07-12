@@ -8,11 +8,10 @@ from qllm.utils.argparser import model_config_argparser
 from qllm.models import qllm_load_pretrained_from_size, bare_load_pretrained_from_size, create_empty_model
 from qllm.utils import batch_encode_plus
 import torch 
-import os
 
-os.environ['TRANSFORMERS_CACHE']='/data/llms/'
 target_storage_folder = '/data/llms/converted_weights'
 # check if the folder exits, create one if not
+import os
 if not os.path.exists(target_storage_folder):
     os.makedirs(target_storage_folder)
 
@@ -47,8 +46,6 @@ try:
     path = os.path.join(target_storage_folder, f"{model_name}_{model_size}")
     qllm_empty_model.save_pretrained(path)
     tokenizer.save_pretrained(path)
-    # save state dict
-    torch.save(state_dict, os.path.join(path, 'state_dict_all.pth'))
     print("new weight saved")
 except:
     print("saving failed")
