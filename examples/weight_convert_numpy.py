@@ -10,8 +10,8 @@ import os
 from tqdm import tqdm
 import numpy as np
 
-os.environ['TRANSFORMERS_CACHE']='/data/llms/'
-target_storage_folder = '/data/llms/converted_weights_np'
+cache_dir = os.environ.get('TRANSFORMERS_CACHE', '/data/llms/')
+target_storage_folder = f'{cache_dir}/converted_weights_np'
 # check if the folder exits, create one if not
 if not os.path.exists(target_storage_folder):
     os.makedirs(target_storage_folder)

@@ -296,7 +296,8 @@ if __name__ == '__main__':
             tokenizer = init_tokenizer(model_name)
         else:
             # case when CPU memory is abundant, direcly load the converted weight
-            target_storage_folder = '/data/llms/converted_weights'
+            data_llms_folder = os.environ.get('TRANSFORMERS_CACHE', '/data/llms')
+            target_storage_folder = f'{data_llms_folder}/converted_weights'
             # load model 
             if model_name == 'bloom':
                 qllm_model, tokenizer, key = qllm_load_pretrained_from_size(model_name, model_size)

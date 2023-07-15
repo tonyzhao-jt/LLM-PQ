@@ -9,7 +9,8 @@ from qllm.models import qllm_load_pretrained_from_size, bare_load_pretrained_fro
 from qllm.utils import batch_encode_plus
 import torch 
 
-target_storage_folder = '/data/llms/converted_weights'
+cache_dir = os.environ.get('TRANSFORMERS_CACHE', '/data/llms/')
+target_storage_folder = f'{cache_dir}/converted_weights'
 # check if the folder exits, create one if not
 import os
 if not os.path.exists(target_storage_folder):
