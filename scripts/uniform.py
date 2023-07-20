@@ -2,23 +2,23 @@
 # uniform_8: int8 uniform partition
 # uniform_16: fp16 uniform partition
 from qllm.models.OPT.opt import model_cards
-import qpipe
-from qpipe.partitioner.helper import (
+import shaq
+from shaq.partitioner.helper import (
     init_parameters_and_cost_models, 
     create_device_mesh_and_mem,
     get_single_device_mem_constraints,
     get_device_info,
 )
 
-from qpipe.partitioner.utils import (
+from shaq.partitioner.utils import (
     assign_uniform_bit
 )
 
-from qpipe.cost_model import (
+from shaq.cost_model import (
     estimate_all_layer_mem
 )
 
-from qpipe.utils import (
+from shaq.utils import (
     save_with_pickle,
     partition_a_into_b_bins,
     get_default_decode_bz
@@ -36,10 +36,10 @@ import numpy as np
 
 # setup ilp configs
 args = common_argparser()
-unit = qpipe._globals.MEM_UNIT
+unit = shaq._globals.MEM_UNIT
 
 def generate_uniform_partition(model_mem_estimator, T, max_device_mem, num_devices, num_hidden_layers, D, bz_pack, bit=8):
-    time_mult_times = qpipe._globals.TIME_MULT_TIMES
+    time_mult_times = shaq._globals.TIME_MULT_TIMES
     (global_bz, prefill_bz, bz_decode_max)= bz_pack 
     bit_assignment = {}
     assign_uniform_bit(T, bit, bit_assignment)
@@ -80,7 +80,7 @@ def generate_uniform_partition(model_mem_estimator, T, max_device_mem, num_devic
 '''
     Initiailization
 '''
-from qpipe.partitioner import gen_config
+from shaq.partitioner import gen_config
 # global variables
 global_bz, micro_bz = None, None
 s, n = None, None
@@ -117,10 +117,10 @@ def main(args):
     # generation configs
     config = args.config
 
-    gamma = qpipe._globals.gamma # expected generated tokens
-    theta = qpipe._globals.theta # control the concern for accuracy
+    gamma = shaq._globals.gamma # expected generated tokens
+    theta = shaq._globals.theta # control the concern for accuracy
     mu_n = int(gamma * n)
-    available_bits = qpipe._globals.AVAILABLE_BITS # we now can do hardware-aware quantization with 8:tc and 8:tc-li
+    available_bits = shaq._globals.AVAILABLE_BITS # we now can do hardware-aware quantization with 8:tc and 8:tc-li
     D, max_device_mem = create_device_mesh_and_mem(device_names, device_numbers)
     # max_device_mem can be used to check whether OOM or not
     use_profiler_prediction = args.use_profiler_prediction # use regression model to predict or load predictor
@@ -147,7 +147,7 @@ def main(args):
     prefill_bz = bz_decode_max
     bz_pack = (global_bz, prefill_bz, bz_decode_max)
 
-    available_bits = qpipe._globals.AVAILABLE_BITS_WO_INFO # wo info
+    available_bits = shaq._globals.AVAILABLE_BITS_WO_INFO # wo info
     bit = args.uniform_bit
     result = generate_uniform_partition(model_mem_estimator, T, max_device_mem, num_devices, num_hidden_layers, D,\
                                           bz_pack, bit)

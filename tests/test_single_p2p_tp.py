@@ -19,25 +19,25 @@ from qllm.models import create_empty_model
 CMD_STOP = 0
 CMD_SCHED = 1
 
-import qpipe 
-from qpipe import (
+import shaq 
+from shaq import (
     init_random_seed,
     fetch_prompts
 )
-from qpipe.logger import logger
+from shaq.logger import logger
 # dist
-from qpipe.p2p import (
+from shaq.p2p import (
     init_env, DistP2pContext,
     handle_cmd, stop_event,
     create_device_mesh
 )
 
-from qpipe.rpc import (
+from shaq.rpc import (
     set_device_map,
 )
 
-from qpipe.thread import ThreadSafeCounter
-from qpipe.p2p.dist_pipe import (
+from shaq.thread import ThreadSafeCounter
+from shaq.p2p.dist_pipe import (
     dist_p2p_pipeline_stage_factory
 )
 
@@ -109,17 +109,17 @@ def process_mesh_and_set_env(rank, device_mesh):
     all_ranks_involved = list(set(value for sublist in device_mesh.values() for value in sublist))
     for head_stage_id, stage_ranks in device_mesh.items():
         if rank in stage_ranks:
-            stage_id = qpipe._globals.__STAGE__ID__ = head_stage_id
+            stage_id = shaq._globals.__STAGE__ID__ = head_stage_id
         if len(stage_ranks) > 0:
             # init inder qllm tp group
             res = qllm_tp_utils.register_tp_group_and_update_strategy(stage_ranks, sharding_strategy)
             if res is not None:
                 _, tp_index, tp_small_world_size = res
                 qllm_tp_utils.disable_broadcast() # disable broadcast inside layer, do single broadcast outside (in begining of pipiline stage)
-                qpipe._globals.__TP__LOCAL__RANK__ = tp_index
-                qpipe._globals.__TENSOR__MODEL__PARALLEL__GROUP__ = qllm_tp_utils.get_tp_group()
-                qpipe._globals.__TP__LOCAL__WORLD__SIZE__ = tp_small_world_size
-                qpipe._globals.__TP__GROUP__RANKS__ = stage_ranks
+                shaq._globals.__TP__LOCAL__RANK__ = tp_index
+                shaq._globals.__TENSOR__MODEL__PARALLEL__GROUP__ = qllm_tp_utils.get_tp_group()
+                shaq._globals.__TP__LOCAL__WORLD__SIZE__ = tp_small_world_size
+                shaq._globals.__TP__GROUP__RANKS__ = stage_ranks
                 if tp_index == 0:
                     print('init tp group', stage_ranks)
     return stage_id, head_stage_ranks, all_ranks_involved
@@ -157,11 +157,11 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
 
     # init stage
     stage_id, head_stage_ranks, all_ranks_involved = process_mesh_and_set_env(rank, device_mesh)
-    qpipe._globals.__DEVICE__INDEX__ = local_rank
+    shaq._globals.__DEVICE__INDEX__ = local_rank
     device = torch.device(f'cuda:{local_rank}')
-    qpipe._globals.__GLOBAL__RANK__ = rank    
+    shaq._globals.__GLOBAL__RANK__ = rank    
     if args.nccl:
-        qpipe._globals.__USE_NCCL__ = True
+        shaq._globals.__USE_NCCL__ = True
     rpc_opts = rpc.TensorPipeRpcBackendOptions(rpc_timeout=60) # the loading of weight takes a lot of time
     stages_2d, rpc_opts = set_device_map(rank, device_mesh, hard_device_mesh, rpc_opts)
 
@@ -180,14 +180,14 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
         module._shard_model_current(shard_config, f'cuda:{local_rank}')
         if len(current_stage_ranks) > 0: # TP is initialized
             dist.barrier(qllm_tp_utils.get_tp_group())
-        logger.info(f"Stage {stage_id} - {qpipe._globals.__TP__LOCAL__RANK__} module sharded")
+        logger.info(f"Stage {stage_id} - {shaq._globals.__TP__LOCAL__RANK__} module sharded")
 
         for request_id in range(request_numbers):
             module.init_kv_cache(bs_token, prompt_length, num_tokens_to_generate, request_id)
-        logger.info(f"Stage {stage_id} - {qpipe._globals.__TP__LOCAL__RANK__} kv initialized")
+        logger.info(f"Stage {stage_id} - {shaq._globals.__TP__LOCAL__RANK__} kv initialized")
         module.eval()
         module.on_device = f'cuda:{local_rank}' # set device for the module
-    qpipe._globals.__CURRENT__SHARDED__MODEL__ = module # set module
+    shaq._globals.__CURRENT__SHARDED__MODEL__ = module # set module
     dist.barrier()
 
     # Embedding Execution. Prepare data.
@@ -201,7 +201,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
             data_chunks.append(request_token)
         # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
         batch_size = len(data_chunks)
-        logger.info(f"Stage {stage_id} - {qpipe._globals.__TP__LOCAL__RANK__} data prepared")
+        logger.info(f"Stage {stage_id} - {shaq._globals.__TP__LOCAL__RANK__} data prepared")
     dist.barrier()
 
     # # ALERT: Temporarily disable TP
@@ -217,7 +217,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
         if rank in same_row_ranks:
             break
     
-    qpipe._globals.__ROW__FIRST__RANK__ = same_row_ranks[0]
+    shaq._globals.__ROW__FIRST__RANK__ = same_row_ranks[0]
     
     with DistP2pContext(('gloo',), { 'world_size': world_size, 'rank': rank, 'timeout': timedelta(seconds=1800)}, handle_cmd) \
         as dist_ctx:

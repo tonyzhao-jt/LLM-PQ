@@ -5,7 +5,7 @@ import qllm.utils as qllm_utils
 import torch
 import time
 import pandas as pd
-from qpipe.utils import get_device_name_and_mem
+from shaq.utils import get_device_name_and_mem
 def parse_args():
     parser = argparse.ArgumentParser(description='Profile a transformer model')
     parser.add_argument('--model-name', type=str, default='opt', help='model name')
@@ -56,7 +56,7 @@ from transformers import (
     AutoTokenizer
 )
 
-from qpipe import (
+from shaq import (
     fetch_prompts
 )
     

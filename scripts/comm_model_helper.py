@@ -1,5 +1,5 @@
 import argparse
-from qpipe.partitioner.helper import get_device_info
+from shaq.partitioner.helper import get_device_info
 parser = argparse.ArgumentParser()
 parser.add_argument('--model_size', type=str, required=True)
 parser.add_argument('--device_names',  nargs='+', type=str, required=True)

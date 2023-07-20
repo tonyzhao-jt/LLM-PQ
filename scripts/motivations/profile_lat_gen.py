@@ -1,7 +1,7 @@
 # profile latency
 # load an OPTSharded Decoder
-from qpipe.profiler import profile_lat
-from qpipe.utils import get_device_name_and_mem
+from shaq.profiler import profile_lat
+from shaq.utils import get_device_name_and_mem
 from qllm.models import create_empty_decoder
 import os 
 import argparse

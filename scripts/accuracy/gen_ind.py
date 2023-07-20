@@ -1,7 +1,7 @@
 import pickle
 import torch
 import numpy as np
-from qpipe.utils import (
+from shaq.utils import (
     save_with_pickle, get_available_bits_pair
 )
 

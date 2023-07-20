@@ -1,10 +1,10 @@
 import argparse
 from qllm.models import create_model_config
-from qpipe.partitioner.helper import (
+from shaq.partitioner.helper import (
     get_device_info,
 )
-from qpipe.partitioner import gen_config
-import qpipe
+from shaq.partitioner import gen_config
+import shaq
 def verbose_device_info(device_names, device_numbers, device_info):
     print(f"device_names {device_names}")
     print(f"device_numbers {device_numbers}")
@@ -52,7 +52,7 @@ def common_argparser():
     args = parser.parse_args()
 
     # temporary memory control
-    qpipe._globals.TIME_MULT_TIMES = args.time_mult_times
+    shaq._globals.TIME_MULT_TIMES = args.time_mult_times
 
     # modelname and size
     model_name = args.model_name
@@ -64,8 +64,8 @@ def common_argparser():
     gen_config.global_bz = args.global_bz
     gen_config.s = args.s
     gen_config.n = args.n
-    qpipe._globals.gamma = args.gamma
-    qpipe._globals.theta = args.theta
+    shaq._globals.gamma = args.gamma
+    shaq._globals.theta = args.theta
 
     # checks
     device_names = args.device_names # ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']

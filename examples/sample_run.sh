@@ -1,12 +1,13 @@
 export CUDA_VISIBLE_DEVICES=0
-export TRANSFORMERS_CACHE='/mnt/bn/zjtnaslq/llms/'
+export TRANSFORMERS_CACHE='/data/llms/'
+export CALIB_ROOT_FOLDER="${ROOT_DIR}/examples/"
 export NP_WEIGHT_FOLDER="${TRANSFORMERS_CACHE}/converted_weights_np/"
 # CPU Not Enough
 export LOAD_IN_NP="1"
 # python3 weight_convert_numpy.py --model-size 125m # run this in other node has enough cpu memory, then scp to the target device
 
 MODEL_NAME='opt'
-MODEL_SIZE="30b"
+MODEL_SIZE="125m"
 PROMPT_LEGNTH=128
 # PROMPT_LEGNTH=1024
 BS=8
@@ -18,6 +19,15 @@ NUM_TOKENS_TO_GENERATE=1
 MAX_TOKENS_TO_GENERATE=100 # make sure it always larger than previous
 
 NUM_SHARDS=1
+# shaq direct run
+# shaq-dist --nnodes=1 --nproc_per_node=$NUM_SHARDS --master_port 1234 \
+#     --model_name $MODEL_NAME --model_size $MODEL_SIZE\
+#     --sample-run --bs_token $BS --bitwidth $BITWIDTH --prompt_length $PROMPT_LEGNTH --num-shards $NUM_SHARDS \
+#     --num_tokens_to_generate $NUM_TOKENS_TO_GENERATE --max_tokens_to_generate $MAX_TOKENS_TO_GENERATE \
+#     2>&1 | tee "text_res/sample_${MODEL_NAME}_${MODEL_SIZE}_run_${BITWIDTH}_${PROMPT_LEGNTH}_${NUM_TOKENS_TO_GENERATE}.txt"
+# pkill torchrun
+# pkill python3
+# run by torch
 torchrun --nnodes=1 --nproc_per_node=$NUM_SHARDS --master_port 1234 main.py \
     --model_name $MODEL_NAME --model_size $MODEL_SIZE\
     --sample-run --bs_token $BS --bitwidth $BITWIDTH --prompt_length $PROMPT_LEGNTH --num-shards $NUM_SHARDS \

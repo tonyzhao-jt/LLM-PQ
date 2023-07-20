@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from torch.utils import cpp_extension
 
-package_name = 'qpipe'
+package_name = 'shaq'
 setup(
     name=package_name,
     cmdclass={
@@ -11,7 +11,16 @@ setup(
         exclude=['notebook', 'scripts', 'tests', 'bench', 'result']),
     entry_points={
         'console_scripts': [
-            f'{package_name} = {package_name}.algo_entry:main'
+            f'{package_name}-algo = {package_name}.algo.entry:algo_main',
+            f'{package_name}-dist = {package_name}.entrypoints:run_dist'
         ]
-    }
+    },
+    install_requires=[
+        'torch'
+    ],
+    # temporaryly write like that, later reconstruct the package to make it as a simple entry points
+    package_data={
+        f'{package_name}': ['dist_runtime/entry.py', 'dist_runtime/utils.py'],
+    },
 )
+

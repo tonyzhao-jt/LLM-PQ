@@ -1,31 +1,31 @@
 # qpipe algorithm has a hyper parameter theta to determine the concern for the precision
 # higher theta means more concern for the precision, lower theta means more concern for the latency/throughput
 from qllm.models.OPT.opt import model_cards
-from qpipe.partitioner.indicator import (
+from shaq.partitioner.indicator import (
     assign_omega_uniform
 )
-from qpipe.partitioner.utils import (
+from shaq.partitioner.utils import (
     create_device_mesh_grid,
     interpret_ilp_result_i_j_b
 )
 
-from qpipe.cost_model import (
+from shaq.cost_model import (
     estimate_single_layer_mem
 )
 
-import qpipe
+import shaq
 import pickle
 import numpy as np 
-from qpipe.partitioner.helper import (
+from shaq.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
     calculate_max_throughputs_and_lat
 )
 
-from qpipe.cost_model import price as price_model
+from shaq.cost_model import price as price_model
 
-unit = qpipe._globals.MEM_UNIT
-time_mult_times = qpipe._globals.TIME_MULT_TIMES
+unit = shaq._globals.MEM_UNIT
+time_mult_times = shaq._globals.TIME_MULT_TIMES
 
 # device configuration
 device_names = ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']

@@ -24,14 +24,14 @@ from qllm.utils import (
 from qllm.models import create_empty_model
 import qllm.tp.utils as qllm_tp_utils
 
-import qpipe 
-from qpipe import (
+import shaq 
+from shaq import (
     init_random_seed,
     fetch_prompts
 )
-from qpipe.logger import logger
+from shaq.logger import logger
 
-from qpipe.rpc import (
+from shaq.rpc import (
     init_env, 
     DistConfig, set_device_map,
     DistRpcContext,
@@ -40,10 +40,10 @@ from qpipe.rpc import (
     rpc_opt_factory
 )
 
-from qpipe.logger import logger
-from qpipe.thread import ThreadSafeCounter
-from qpipe.partitioner import get_shard_strategy
-from qpipe.pipe import (
+from shaq.logger import logger
+from shaq.thread import ThreadSafeCounter
+from shaq.partitioner import get_shard_strategy
+from shaq.pipe import (
     dist_rpc_pipeline_factory
 )
 
@@ -74,7 +74,7 @@ def handle_results(final_intermediate_result) -> None:
     input_ids = request_input_ids[request_id]
     logits_processor = request_logit_processor[request_id]
     # generate new tokens
-    device = f'cuda:{qpipe._globals.__DEVICE__INDEX__}'
+    device = f'cuda:{shaq._globals.__DEVICE__INDEX__}'
     final_intermediate_result = to_device_recursive(final_intermediate_result, device)
     outputs = model_pre_and_post.postprocess(final_intermediate_result, None)
     
@@ -86,7 +86,7 @@ def handle_results(final_intermediate_result) -> None:
     if request_loop_counter[request_id] < num_tokens_to_generate:
         request_input_ids[request_id] = new_input_ids
         request_token = model_pre_and_post.preprocess_one_token(new_input_ids, next_tokens, use_cache=True, request_id=request_id)
-        if qpipe._globals.__GLOBAL__RANK__ == 0:
+        if shaq._globals.__GLOBAL__RANK__ == 0:
             logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
         # enqueue the request_token tensor
         if args.nccl:
@@ -137,7 +137,7 @@ def init_tokenizer():
         return AutoTokenizer.from_pretrained("bigscience/bloom")
 
 def get_model_rref():
-    return rpc.RRef(qpipe._globals.__CURRENT__SHARDED__MODEL__)
+    return rpc.RRef(shaq._globals.__CURRENT__SHARDED__MODEL__)
 
 
 def process_mesh_and_set_env(rank, device_mesh):
@@ -146,17 +146,17 @@ def process_mesh_and_set_env(rank, device_mesh):
     all_ranks_involved = list(set(value for sublist in device_mesh.values() for value in sublist))
     for head_stage_id, stage_ranks in device_mesh.items():
         if rank in stage_ranks:
-            stage_id = qpipe._globals.__STAGE__ID__ = head_stage_id
+            stage_id = shaq._globals.__STAGE__ID__ = head_stage_id
         if len(stage_ranks) > 0:
             # init inder qllm tp group
             res = qllm_tp_utils.register_tp_group_and_update_strategy(stage_ranks, sharding_strategy)
             if res is not None:
                 _, tp_index, tp_small_world_size = res
                 qllm_tp_utils.disable_broadcast() # disable broadcast inside layer, do single broadcast outside (in begining of pipiline stage)
-                qpipe._globals.__TP__LOCAL__RANK__ = tp_index
-                qpipe._globals.__TENSOR__MODEL__PARALLEL__GROUP__ = qllm_tp_utils.get_tp_group()
-                qpipe._globals.__TP__LOCAL__WORLD__SIZE__ = tp_small_world_size
-                qpipe._globals.__TP__GROUP__RANKS__ = stage_ranks
+                shaq._globals.__TP__LOCAL__RANK__ = tp_index
+                shaq._globals.__TENSOR__MODEL__PARALLEL__GROUP__ = qllm_tp_utils.get_tp_group()
+                shaq._globals.__TP__LOCAL__WORLD__SIZE__ = tp_small_world_size
+                shaq._globals.__TP__GROUP__RANKS__ = stage_ranks
                 if tp_index == 0:
                     print('init tp group', stage_ranks)
     return stage_id, head_stage_ranks, all_ranks_involved
@@ -186,9 +186,9 @@ def run_pipeline_rpc(loaded_llm_cpu, dist_cfg, sharding_strategy=None) -> None:
 
     # init stage
     stage_id, head_stage_ranks, all_ranks_involved = process_mesh_and_set_env(rank, device_mesh)
-    qpipe._globals.__DEVICE__INDEX__ = local_rank
+    shaq._globals.__DEVICE__INDEX__ = local_rank
     device = torch.device(f'cuda:{local_rank}')
-    qpipe._globals.__GLOBAL__RANK__ = rank    
+    shaq._globals.__GLOBAL__RANK__ = rank    
     rpc_opts = rpc_opt_factory(rpc_timeout=60)
     stages_2d, rpc_opts = set_device_map(rank, device_mesh, hard_device_mesh, rpc_opts)
 
@@ -207,14 +207,14 @@ def run_pipeline_rpc(loaded_llm_cpu, dist_cfg, sharding_strategy=None) -> None:
         module._shard_model_current(shard_config, f'cuda:{local_rank}')
         if len(current_stage_ranks) > 0: # TP is initialized
             dist.barrier(qllm_tp_utils.get_tp_group())
-        logger.info(f"Stage {stage_id} - {qpipe._globals.__TP__LOCAL__RANK__} module sharded")
+        logger.info(f"Stage {stage_id} - {shaq._globals.__TP__LOCAL__RANK__} module sharded")
 
         for request_id in range(request_numbers):
             module.init_kv_cache(bs_token, prompt_length, num_tokens_to_generate, request_id)
-        logger.info(f"Stage {stage_id} - {qpipe._globals.__TP__LOCAL__RANK__} kv initialized")
+        logger.info(f"Stage {stage_id} - {shaq._globals.__TP__LOCAL__RANK__} kv initialized")
         module.eval()
         module.on_device = f'cuda:{local_rank}' # set device for the module
-    qpipe._globals.__CURRENT__SHARDED__MODEL__ = module # set module
+    shaq._globals.__CURRENT__SHARDED__MODEL__ = module # set module
     dist.barrier()
 
     # Embedding Execution. Prepare data.
@@ -232,7 +232,7 @@ def run_pipeline_rpc(loaded_llm_cpu, dist_cfg, sharding_strategy=None) -> None:
             data_chunks.append(request_token)
         # print("chunk size", get_iter_variable_size(data_chunks, unit='MB'))
         batch_size = len(data_chunks)
-        logger.info(f"Stage {stage_id} - {qpipe._globals.__TP__LOCAL__RANK__} data prepared")
+        logger.info(f"Stage {stage_id} - {shaq._globals.__TP__LOCAL__RANK__} data prepared")
     dist.barrier()
     # ALERT: Temporarily disable TP
     empty_model_tp_configs()

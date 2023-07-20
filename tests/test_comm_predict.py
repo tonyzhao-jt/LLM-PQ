@@ -1,5 +1,5 @@
-from qpipe.cost_model import CommCostModel
-from qpipe.utils import get_size_cpu
+from shaq.cost_model import CommCostModel
+from shaq.utils import get_size_cpu
 comm_cost_model = CommCostModel(comm_cost_model_folder='/workspace/qpipe/scripts/')
 comm_cost_model.print_model_available_keys()
 

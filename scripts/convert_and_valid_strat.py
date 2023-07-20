@@ -1,16 +1,16 @@
 from qllm.models.OPT.opt import model_cards
 
-import qpipe 
+import shaq 
 
-from qpipe.cost_model import (
+from shaq.cost_model import (
     estimate_single_layer_mem,
 )
 
-from qpipe.utils import (
+from shaq.utils import (
     save_with_pickle
 )
 
-from qpipe.partitioner.helper import (
+from shaq.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
     create_device_mesh_and_mem,
@@ -22,9 +22,9 @@ from qpipe.partitioner.helper import (
 import pickle
 import os 
 
-unit = qpipe._globals.MEM_UNIT
-time_mult_times = qpipe._globals.TIME_MULT_TIMES
-slo_rate = qpipe._globals.SLO_RATE
+unit = shaq._globals.MEM_UNIT
+time_mult_times = shaq._globals.TIME_MULT_TIMES
+slo_rate = shaq._globals.SLO_RATE
 
 # first make sure the partition is within the memory budget
 def check_memory_budget_single_device(device_rank, p_partition_result, p_bit_assign):

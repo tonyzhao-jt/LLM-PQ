@@ -1,13 +1,13 @@
 # profile latency
 # load an OPTSharded Decoder
-from qpipe.profiler import profile_lat
-from qpipe.utils import get_device_name_and_mem
+from shaq.profiler import profile_lat
+from shaq.utils import get_device_name_and_mem
 from qllm.models import create_empty_decoder
 import os 
 import argparse
 import pandas as pd 
 import copy 
-import qpipe
+import shaq
 def parse_args():
     parser = argparse.ArgumentParser(description='Profile a transformer model')
     parser.add_argument('--model-name', type=str, default='opt', help='model name')
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     generated_seq_length = args.generated_seq_length
     file_path = os.path.dirname(os.path.realpath(__file__))
     device_name, device_mem, _ = get_device_name_and_mem()
-    available_bits = qpipe._globals.AVAILABLE_BITS
+    available_bits = shaq._globals.AVAILABLE_BITS
 
     file_name = device_name + "_" + str(model_size) + ".csv"
 

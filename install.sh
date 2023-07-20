@@ -9,3 +9,7 @@ pip install .
 
 # update gptq folder
 cd scripts/accuracy/rand && bash update.sh
+cd $ROOT_DIR
+# update the gurobi license
+cd scripts/gurobi_license && bash cp_gurobi.sh
+cd $ROOT_DIR

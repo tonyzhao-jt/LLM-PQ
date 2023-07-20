@@ -11,19 +11,19 @@ from qllm.utils import (
     to_device_recursive,
 )
 
-from qpipe import (
+from shaq import (
     init_random_seed,
     fetch_prompts
 )
 
-from qpipe.rpc import (
+from shaq.rpc import (
     init_env, DistConfig, set_device_map,
     DistRpcContext
 )
-from qpipe.logger import logger
-from qpipe.thread import ThreadSafeCounter
-from qpipe.partitioner import get_shard_strategy
-from qpipe.pipe import (
+from shaq.logger import logger
+from shaq.thread import ThreadSafeCounter
+from shaq.partitioner import get_shard_strategy
+from shaq.pipe import (
     dist_rpc_pipeline_factory
 )
 

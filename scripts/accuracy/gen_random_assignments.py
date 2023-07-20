@@ -1,7 +1,7 @@
 # based on the config to generate the random assignments
 import random
 import pickle
-from qpipe.utils import (
+from shaq.utils import (
     save_with_pickle,
 )
 
