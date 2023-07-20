@@ -1,7 +1,7 @@
 from utils import common_argparser, get_final_strat_file_name
 import pickle
-import qpipe
-from qpipe.partitioner.helper import (
+import shaq
+from shaq.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
     create_device_mesh_and_mem,
@@ -32,7 +32,7 @@ print(device_info)
 print(sol)
 
 # run simulation
-from qpipe.partitioner import gen_config
+from shaq.partitioner import gen_config
 global_bz = gen_config.global_bz
 micro_bz = gen_config.micro_bz
 s = gen_config.s
@@ -40,7 +40,7 @@ n = gen_config.n
 model_size = args.model_size # '66b'
 device_names = args.device_names # ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']
 device_numbers = args.device_numbers # [2, 3]
-gamma = qpipe._globals.gamma # expected generated tokens
+gamma = shaq._globals.gamma # expected generated tokens
 mu_n = int(gamma * n)
 # generation configs
 config = args.config

@@ -1,28 +1,28 @@
 # take a model, given the compression rate (reduce memory required)
 # given different types of inidcator, test the accuracy of them in the gptq
 
-import qpipe
-from qpipe.partitioner.helper import (
+import shaq
+from shaq.partitioner.helper import (
     create_mem_estimator
 )
-from qpipe.partitioner.utils import (
+from shaq.partitioner.utils import (
     assign_uniform_bit, 
     estimate_min_max_mem,
 )
 
-from qpipe.cost_model import (
+from shaq.cost_model import (
     get_mem_with_layer_bit_pair
 )
 
-from qpipe.partitioner.indicator import (
+from shaq.partitioner.indicator import (
     assign_omega_uniform,
     assign_omega_constant
 )
-from qpipe.utils import (
+from shaq.utils import (
     save_with_pickle, get_available_bits_pair_decoupled
 )
 
-from qpipe.logger import logger
+from shaq.logger import logger
 import pickle
 from qllm.models import opt
 from qllm.models import bloom
@@ -47,13 +47,13 @@ parser.add_argument('-it', '--indicator_type', type=str, default='uniform')
 parser.add_argument('--file_name', type=str, default=None)
 args = parser.parse_args()
 
-unit = qpipe._globals.MEM_UNIT
-time_mult_times = qpipe._globals.TIME_MULT_TIMES
+unit = shaq._globals.MEM_UNIT
+time_mult_times = shaq._globals.TIME_MULT_TIMES
 # model size
 model_name = args.model_name # 'opt'
 model_size = args.model_size # '66b'
 
-from qpipe.partitioner import gen_config
+from shaq.partitioner import gen_config
 # generation configs
 global_bz = gen_config.global_bz
 micro_bz = gen_config.micro_bz

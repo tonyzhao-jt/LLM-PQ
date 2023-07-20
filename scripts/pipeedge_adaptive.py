@@ -1,19 +1,19 @@
 # qllm libs
 from qllm.models.OPT.opt import model_cards
 # qpipe libs
-import qpipe
-from qpipe.partitioner.indicator import (
+import shaq
+from shaq.partitioner.indicator import (
     assign_omega_uniform
 )
-from qpipe.partitioner.utils import (
+from shaq.partitioner.utils import (
     interpret_ilp_result_i_j_b
 )
-from qpipe.cost_model import (
+from shaq.cost_model import (
     estimate_single_layer_mem,
     get_mem_with_layer_bit_pair
 )
-from qpipe.cost_model import price as price_model
-from qpipe.partitioner.helper import (
+from shaq.cost_model import price as price_model
+from shaq.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
     create_device_mesh_and_mem,
@@ -22,7 +22,7 @@ from qpipe.partitioner.helper import (
     force_zero
 )
 
-from qpipe.utils import (
+from shaq.utils import (
     save_with_pickle,
     get_default_decode_bz,
     get_available_bits_pair,
@@ -47,9 +47,9 @@ import pulp
 import gurobipy as gp
 
 
-unit = qpipe._globals.MEM_UNIT
-time_mult_times = qpipe._globals.TIME_MULT_TIMES
-slo_rate = qpipe._globals.SLO_RATE
+unit = shaq._globals.MEM_UNIT
+time_mult_times = shaq._globals.TIME_MULT_TIMES
+slo_rate = shaq._globals.SLO_RATE
 
 
 def get_latency_with_layer_device_bit_pair(current_D, bit_pairs, lat_cost_model, b, i):
@@ -109,7 +109,7 @@ def solve_ilp_adaptive_q(j, num_layers, allocated_mem, device_mem, M, BITs, omeg
     has_tc_bit = has_tc(device_name)
     if not has_tc_bit:
         # reset the available bits
-        new_BITs = get_available_bits_pair(qpipe._globals.AVAILABLE_BITS_WO_INFO)
+        new_BITs = get_available_bits_pair(shaq._globals.AVAILABLE_BITS_WO_INFO)
         # get the index of new_bits in the original BITs
         new_BITs_idx = [BITs.index(bit_pair) for bit_pair in new_BITs]
         force_zero(B, num_layers, new_BITs_idx, prob)
@@ -258,7 +258,7 @@ def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack, 
 '''
     Initiailization
 '''
-from qpipe.partitioner import gen_config
+from shaq.partitioner import gen_config
 # global variables
 global_bz, micro_bz = None, None
 s, n = None, None
@@ -298,10 +298,10 @@ def main(args):
     # generation configs
     config = args.config
 
-    gamma = qpipe._globals.gamma # expected generated tokens
-    theta = qpipe._globals.theta # control the concern for accuracy
+    gamma = shaq._globals.gamma # expected generated tokens
+    theta = shaq._globals.theta # control the concern for accuracy
     mu_n = int(gamma * n)
-    available_bits = qpipe._globals.AVAILABLE_BITS # we now can do hardware-aware quantization with 8:tc and 8:tc-li
+    available_bits = shaq._globals.AVAILABLE_BITS # we now can do hardware-aware quantization with 8:tc and 8:tc-li
     all_available_pairs = get_available_bits_pair(available_bits)
     D, max_device_mem = create_device_mesh_and_mem(device_names, device_numbers)
     # max_device_mem can be used to check whether OOM or not

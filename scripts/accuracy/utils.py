@@ -1,5 +1,5 @@
 import argparse
-import qpipe
+import shaq
 import os 
 def simple_model_info_parser():
     root_folder = os.environ.get('ROOT_DIR') if os.environ.get('ROOT_DIR') else '/workspace/qpipe'
@@ -26,4 +26,4 @@ def model_config_and_decoder_layers(model_name, model_size):
     return config, num_layers
 
 def get_available_candidate_bits():
-    return qpipe._globals.AVAILABLE_BITS
+    return shaq._globals.AVAILABLE_BITS

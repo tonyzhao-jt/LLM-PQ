@@ -1,19 +1,19 @@
 # qllm libs
 from qllm.models.OPT.opt import model_cards
 # qpipe libs
-import qpipe
-from qpipe.partitioner.indicator import (
+import shaq
+from shaq.partitioner.indicator import (
     assign_omega_uniform
 )
-from qpipe.partitioner.utils import (
+from shaq.partitioner.utils import (
     interpret_ilp_result_i_j_b
 )
-from qpipe.cost_model import (
+from shaq.cost_model import (
     estimate_single_layer_mem,
     get_mem_with_layer_bit_pair
 )
-from qpipe.cost_model import price as price_model
-from qpipe.partitioner.helper import (
+from shaq.cost_model import price as price_model
+from shaq.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
     create_device_mesh_and_mem,
@@ -23,7 +23,7 @@ from qpipe.partitioner.helper import (
     get_latency_with_layer_device_bit_pair
 )
 
-from qpipe.utils import (
+from shaq.utils import (
     save_with_pickle,
     get_default_decode_bz,
     get_available_bits_pair,
@@ -45,8 +45,8 @@ import numpy as np
 import pulp
 import gurobipy as gp
 
-unit = qpipe._globals.MEM_UNIT
-slo_rate = qpipe._globals.SLO_RATE
+unit = shaq._globals.MEM_UNIT
+slo_rate = shaq._globals.SLO_RATE
 
 
 
@@ -111,7 +111,7 @@ def get_comm(D, comm_cost_model, comm_size):
 
 
 def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack):
-    time_mult_times = qpipe._globals.TIME_MULT_TIMES
+    time_mult_times = shaq._globals.TIME_MULT_TIMES
     model_mem_estimator, comm_cost_model, lat_cost_model = cost_model_pack
     global_bz, prefill_bz, bz_decode_max = bz_pack
     L = num_hidden_layers # in partition, regard as a whole
@@ -156,7 +156,7 @@ def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack):
 '''
     Initiailization
 '''
-from qpipe.partitioner import gen_config
+from shaq.partitioner import gen_config
 # global variables
 global_bz, micro_bz = None, None
 s, n = None, None
@@ -216,13 +216,13 @@ def main(args):
     # generation configs
     config = args.config
 
-    gamma = qpipe._globals.gamma # expected generated tokens
-    theta = qpipe._globals.theta # control the concern for accuracy
+    gamma = shaq._globals.gamma # expected generated tokens
+    theta = shaq._globals.theta # control the concern for accuracy
     mu_n = int(gamma * n)
-    available_bits = qpipe._globals.AVAILABLE_BITS_WO_INFO # we now can do hardware-aware quantization with 8:tc and 8:tc-li
+    available_bits = shaq._globals.AVAILABLE_BITS_WO_INFO # we now can do hardware-aware quantization with 8:tc and 8:tc-li
     if args.adabits_tc:
         print("Use AdaBits-TC")
-        available_bits = qpipe._globals.AVAILABLE_BITS
+        available_bits = shaq._globals.AVAILABLE_BITS
     D, max_device_mem = create_device_mesh_and_mem(device_names, device_numbers)
     # max_device_mem can be used to check whether OOM or not
     use_profiler_prediction = args.use_profiler_prediction # use regression model to predict or load predictor

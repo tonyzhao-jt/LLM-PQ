@@ -10,15 +10,15 @@ from utils import (
     FP16_ENOUGH, NOT_AVAILABLE,
     get_final_strat_file_name
 )
-import qpipe
-from qpipe.partitioner.helper import (
+import shaq
+from shaq.partitioner.helper import (
     get_device_info,
 )
-from qpipe.utils import save_with_pickle, has_tc
+from shaq.utils import save_with_pickle, has_tc
 import logging
 logger = logging.getLogger(__name__)
 
-from qpipe.partitioner.helper import (
+from shaq.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
     create_device_mesh_and_mem,
@@ -26,8 +26,8 @@ from qpipe.partitioner.helper import (
     lat_prediction,
     get_latency_with_layer_device_bit_pair
 )
-from qpipe.partitioner import gen_config
-from qpipe.cost_model import (
+from shaq.partitioner import gen_config
+from shaq.cost_model import (
     estimate_single_layer_mem,
 )
 
@@ -45,7 +45,7 @@ def check_minimum_bit_of_sols(sol):
 
 # first make sure the partition is within the memory budget
 def check_memory_budget_single_device(device_rank, device_name, layers_range, bit_assignment, model_mem_estimator, bs_pack):
-    time_mult_times = qpipe._globals.TIME_MULT_TIMES
+    time_mult_times = shaq._globals.TIME_MULT_TIMES
     i, j = layers_range
     prefill_bz, bz_decode_max = bs_pack
     # k % 2 means shard
@@ -212,7 +212,7 @@ def main(args):
     model_size = args.model_size # '66b'
     device_names = args.device_names # ['Tesla_V100-SXM2-32GB', 'NVIDIA_A100-SXM4-40GB']
     device_numbers = args.device_numbers # [2, 3]
-    gamma = qpipe._globals.gamma # expected generated tokens
+    gamma = shaq._globals.gamma # expected generated tokens
     mu_n = int(gamma * n)
     # generation configs
     config = args.config
@@ -236,7 +236,7 @@ def main(args):
     sol_adaqpipe = adaqpipe_main(args)
     # sol_pipeedge_adaptive = pipeedge_adaptive_main(args)
     # sort by bit number, decsending
-    no_info_bits = copy.deepcopy(qpipe._globals.AVAILABLE_BITS)[::-1]
+    no_info_bits = copy.deepcopy(shaq._globals.AVAILABLE_BITS)[::-1]
     # no_info_bits.sort(reverse=True)
     # if args.adabits_tc:
     #     no_info_bits = copy.deepcopy(qpipe._globals.AVAILABLE_BITS)[::-1]

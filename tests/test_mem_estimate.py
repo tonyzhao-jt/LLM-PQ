@@ -1,4 +1,4 @@
-from qpipe.partitioner.helper import create_mem_estimator
+from shaq.partitioner.helper import create_mem_estimator
 from qllm.models.OPT.opt import model_cards
 b = 16
 s = 512

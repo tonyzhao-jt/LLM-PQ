@@ -1,23 +1,23 @@
 
-from qpipe.partitioner.utils import (
+from shaq.partitioner.utils import (
     assign_uniform_bit, 
 )
 
-from qpipe.partitioner.helper import (
+from shaq.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
     create_device_mesh_and_mem,
     get_device_info
 )
 
-from qpipe.partitioner.helper import (
+from shaq.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_slo
 )
 from qllm.models.OPT.opt import model_cards
 
 # help input the config
-from qpipe.partitioner import gen_config
+from shaq.partitioner import gen_config
 # generation configs
 global_bz = gen_config.global_bz
 micro_bz = gen_config.micro_bz

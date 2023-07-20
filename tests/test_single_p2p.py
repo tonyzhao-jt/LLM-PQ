@@ -18,21 +18,21 @@ from qllm.scheduler import DSScheduler
 CMD_STOP = 0
 CMD_SCHED = 1
 
-import qpipe
-from qpipe import (
+import shaq
+from shaq import (
     init_random_seed,
     fetch_prompts
 )
-from qpipe.logger import logger
+from shaq.logger import logger
 # dist
-from qpipe.p2p import (
+from shaq.p2p import (
     init_env, DistP2pContext,
     handle_cmd, stop_event,
     create_device_mesh,
     new_nccl_group
 )
-from qpipe.thread import ThreadSafeCounter
-from qpipe.p2p.dist_pipe import (
+from shaq.thread import ThreadSafeCounter
+from shaq.p2p.dist_pipe import (
     dist_p2p_pipeline_stage_factory, SimpleQueueThread, ConditionQueue
 )
 
@@ -228,8 +228,8 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
         # new a nccl group
         if args.nccl:
             nccl_group = new_nccl_group()
-            qpipe._globals.__PIPELINE__MODEL__PARALLEL__GROUP__ = nccl_group
-            qpipe._globals.__DEVICE__INDEX__ = local_rank
+            shaq._globals.__PIPELINE__MODEL__PARALLEL__GROUP__ = nccl_group
+            shaq._globals.__DEVICE__INDEX__ = local_rank
         with dist_p2p_pipeline_stage_factory(stage_ranks, data_rank, rank, stage_id, module,
                                                         handle_results) as stage_ctx:
             

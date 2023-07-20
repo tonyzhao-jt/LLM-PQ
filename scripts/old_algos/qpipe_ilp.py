@@ -1,19 +1,19 @@
 # qllm libs
 from qllm.models.OPT.opt import model_cards
 # qpipe libs
-import qpipe
-from qpipe.partitioner.indicator import (
+import shaq
+from shaq.partitioner.indicator import (
     assign_omega_uniform
 )
-from qpipe.partitioner.utils import (
+from shaq.partitioner.utils import (
     interpret_ilp_result_i_j_b
 )
-from qpipe.cost_model import (
+from shaq.cost_model import (
     estimate_single_layer_mem,
     get_mem_with_layer_bit_pair
 )
-from qpipe.cost_model import price as price_model
-from qpipe.partitioner.helper import (
+from shaq.cost_model import price as price_model
+from shaq.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
     create_device_mesh_and_mem,
@@ -21,7 +21,7 @@ from qpipe.partitioner.helper import (
     get_slo
 )
 
-from qpipe.utils import (
+from shaq.utils import (
     save_with_pickle
 )
 
@@ -45,9 +45,9 @@ parser.add_argument('--device_numbers',  nargs='+', type=int, required=True)
 parser.add_argument('--SLO-aware',  action='store_true', help='add slo into constraints')
 args = parser.parse_args()
 
-unit = qpipe._globals.MEM_UNIT
-time_mult_times = qpipe._globals.TIME_MULT_TIMES
-slo_rate = qpipe._globals.SLO_RATE
+unit = shaq._globals.MEM_UNIT
+time_mult_times = shaq._globals.TIME_MULT_TIMES
+slo_rate = shaq._globals.SLO_RATE
 
 # model size
 model_size = args.model_size # '66b'
@@ -289,7 +289,7 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits):
 '''
     Initiailization
 '''
-from qpipe.partitioner import gen_config
+from shaq.partitioner import gen_config
 # generation configs
 global_bz = gen_config.global_bz
 micro_bz = gen_config.micro_bz

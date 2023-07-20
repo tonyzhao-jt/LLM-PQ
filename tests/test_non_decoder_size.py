@@ -15,26 +15,26 @@ from qllm.utils import (
     get_iter_variable_size,
 )
 
-from qpipe import (
+from shaq import (
     init_random_seed,
     fetch_prompts
 )
 
-from qpipe.rpc import (
+from shaq.rpc import (
     init_env, DistConfig, set_device_map,
     DistRpcContext
 )
-from qpipe.logger import logger
-from qpipe.thread import ThreadSafeCounter
-from qpipe.partitioner import get_shard_strategy
-from qpipe.pipe import (
+from shaq.logger import logger
+from shaq.thread import ThreadSafeCounter
+from shaq.partitioner import get_shard_strategy
+from shaq.pipe import (
     dist_rpc_pipeline_factory
 )
 
 import lptorch
 import pickle
 from qllm.models.OPT.opt import model_cards
-from qpipe.utils import get_cuda_occupation_by_command
+from shaq.utils import get_cuda_occupation_by_command
 if __name__ == '__main__':
 
     # load the LLM from QLLM

@@ -1,10 +1,10 @@
-from qpipe.profiler import profile_comm
+from shaq.profiler import profile_comm
 import torch.distributed as dist
 import pickle
 import os 
-from qpipe.rpc import init_env_gloo
-import qpipe
-from qpipe.p2p import (
+from shaq.rpc import init_env_gloo
+import shaq
+from shaq.p2p import (
     new_nccl_group
 )
 import argparse
@@ -30,8 +30,8 @@ if __name__ == "__main__":
     # new a nccl group
     if args.nccl:
         nccl_group = new_nccl_group()
-        qpipe._globals.__PIPELINE__MODEL__PARALLEL__GROUP__ = nccl_group
-        qpipe._globals.__DEVICE__INDEX__ = local_rank
+        shaq._globals.__PIPELINE__MODEL__PARALLEL__GROUP__ = nccl_group
+        shaq._globals.__DEVICE__INDEX__ = local_rank
     if local_rank == '0':
         # check if the comm_cost_model folder exists
         if not os.path.exists('comm_cost_model'):

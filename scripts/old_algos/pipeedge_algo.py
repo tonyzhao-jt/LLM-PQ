@@ -2,15 +2,15 @@
 # qllm libs
 from qllm.models.OPT.opt import model_cards
 # qpipe libs
-import qpipe
-from qpipe.partitioner.utils import (
+import shaq
+from shaq.partitioner.utils import (
     assign_uniform_bit
 )
-from qpipe.cost_model import (
+from shaq.cost_model import (
     estimate_single_layer_mem,
     estimate_all_layer_mem
 )
-from qpipe.partitioner.helper import (
+from shaq.partitioner.helper import (
     init_parameters_and_cost_models, 
     get_single_device_mem_constraints,
     create_device_mesh_and_mem,
@@ -18,7 +18,7 @@ from qpipe.partitioner.helper import (
     get_slo
 )
 
-from qpipe.utils import (
+from shaq.utils import (
     save_with_pickle
 )
 
@@ -37,8 +37,8 @@ parser.add_argument('--bit', type=int, default=8)
 parser.add_argument('--adaptive', action='store_true')
 args = parser.parse_args()
 
-unit = qpipe._globals.MEM_UNIT
-time_mult_times = qpipe._globals.TIME_MULT_TIMES
+unit = shaq._globals.MEM_UNIT
+time_mult_times = shaq._globals.TIME_MULT_TIMES
 
 # model size
 model_size = args.model_size # '66b'
@@ -153,7 +153,7 @@ def interpret_result(T):
 '''
     Initiailization
 '''
-from qpipe.partitioner import gen_config
+from shaq.partitioner import gen_config
 # generation configs
 global_bz = gen_config.global_bz
 micro_bz = gen_config.micro_bz

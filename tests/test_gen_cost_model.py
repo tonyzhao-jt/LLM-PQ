@@ -2,9 +2,9 @@
     Test the generation of the latency cost model
 '''
 
-from qpipe.cost_model import LatCostModel
-from qpipe.partitioner import gen_config
-from qpipe.partitioner.helper import (
+from shaq.cost_model import LatCostModel
+from shaq.partitioner import gen_config
+from shaq.partitioner.helper import (
     lat_prediction
 )
 global_bz = gen_config.global_bz
