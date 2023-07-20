@@ -45,8 +45,10 @@ OMEGA_FILE=/workspace/qpipe/scripts/accuracy/generated_ind/gen_opt_30b_ind.pkl
 python3 algo_entry.py --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
- --omega_file $OMEGA_FILE --ilp_seed 120 \
- --theta 0.001  --global_bz 32 --group 4  --debug --ilp_time_limit 160 --use_profiler_prediction 
+ --omega_file $OMEGA_FILE \
+ --theta 0.001  --global_bz 32 --group 4  --debug --ilp_time_limit 160 \
+ --fit  --use_profiler_prediction \
+ --debug
 
 # case 5
 model_size=66b
