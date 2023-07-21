@@ -53,7 +53,8 @@ def run_simu(gen_config, sol, lat_cost_model, comm_cost_model, use_profiler_pred
     decode_time = decode_sum + decode_result * (decode_micro_bs_num - 1) * (mu_n - 1)
     # latency equals
     e2e_lat = prefill_time + decode_time
-    print(prefill_time, decode_time, e2e_lat)
+
+    print("Prefill Time {:.2f}ms, Decode Time {:.2f}ms, E2E Latency {:.2f}ms".format(prefill_time, decode_time, e2e_lat))
     # remove maps
     if maps is not None:
         comm_cost_model.clear_device_rank_map() 
