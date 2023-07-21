@@ -5,6 +5,9 @@ from ..partitioner.helper import (
 )
 from ..partitioner import gen_config
 from .. import _globals 
+import os
+
+ROOT_DIR = os.environ.get('ROOT_DIR', '/workspace/shaq')
 def verbose_device_info(device_names, device_numbers, device_info):
     print(f"device_names {device_names}")
     print(f"device_numbers {device_numbers}")
@@ -19,10 +22,10 @@ def common_argparser():
     parser.add_argument('--SLO-aware',  action='store_true', help='add slo into constraints')
     parser.add_argument('--omega_file', type=str, default=None)
     parser.add_argument('--use_profiler_prediction', action='store_true', help='use profiler prediction')
-    parser.add_argument('--comm_cost_model_dir', type=str, default='/workspace/qpipe/scripts/comm_cost_model/')
-    parser.add_argument('--lat_profile_dir', type=str, default='/workspace/qpipe/scripts/lat_profiled_result')
-    parser.add_argument('--lat_prepost_profile_dir', type=str, default='/workspace/qpipe/scripts/lat_prepost_profiled_result')
-    parser.add_argument('--store_folder', type=str, default='/workspace/qpipe/scripts/part_strategy')
+    parser.add_argument('--comm_cost_model_dir', type=str, default=f'{ROOT_DIR}/scripts/comm_cost_model/')
+    parser.add_argument('--lat_profile_dir', type=str, default=f'{ROOT_DIR}/scripts/lat_profiled_result')
+    parser.add_argument('--lat_prepost_profile_dir', type=str, default=f'{ROOT_DIR}/scripts/lat_prepost_profiled_result')
+    parser.add_argument('--store_folder', type=str, default=f'{ROOT_DIR}/scripts/part_strategy')
     # ilp control
     # different seed result in different performance
     parser.add_argument('--ilp_seed', type=int, default=42)

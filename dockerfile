@@ -11,7 +11,7 @@ RUN pip install -U scikit-learn scipy matplotlib statsmodels
 # ana
 RUN pip install torch_tb_profiler
 
-ENV ROOT_DIR=/workspace/qpipe
+ENV ROOT_DIR=/workspace/shaq
 
 CMD echo "===========END========="
 CMD /bin/bash
