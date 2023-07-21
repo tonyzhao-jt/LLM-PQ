@@ -12,6 +12,7 @@ setup(
     entry_points={
         'console_scripts': [
             f'{package_name}-algo = {package_name}.algo.entry:algo_main',
+            f'{package_name}-algo-check = {package_name}.algo.checker:check_strat_file',
             f'{package_name}-dist = {package_name}.entrypoints:run_dist'
         ]
     },

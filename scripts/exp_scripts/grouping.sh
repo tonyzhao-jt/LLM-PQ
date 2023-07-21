@@ -11,7 +11,7 @@ ABLATION_FOLDER="${PWD}/ablation/"
 shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
- --omega_file $OMEGA_FILE --ilp_time_limit 300 \
+ --omega_file $OMEGA_FILE --ilp_seed 120 --ilp_time_limit 600 \
  --theta 1  --global_bz 32 --group $GROUP_SIZE --debug --fit \
  --fname-suffix "group${GROUP_SIZE}" 2>&1 | tee "${ABLATION_FOLDER}${model_size}_GROUP_SIZE${GROUP_SIZE}"
 
@@ -26,7 +26,7 @@ ABLATION_FOLDER="${PWD}/ablation/"
 shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
- --omega_file $OMEGA_FILE --ilp_time_limit 300 \
+ --omega_file $OMEGA_FILE --ilp_seed 120 --ilp_time_limit 600 \
  --theta 1  --global_bz 32 --group $GROUP_SIZE --debug --fit \
  --fname-suffix "group${GROUP_SIZE}" 2>&1 | tee "${ABLATION_FOLDER}${model_size}_GROUP_SIZE${GROUP_SIZE}"
 
@@ -41,6 +41,6 @@ ABLATION_FOLDER="${PWD}/ablation/"
 shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
- --omega_file $OMEGA_FILE --ilp_time_limit 300 \
+ --omega_file $OMEGA_FILE --ilp_seed 120 --ilp_time_limit 600 \
  --theta 1  --global_bz 32 --group $GROUP_SIZE --debug --fit \
  --fname-suffix "group${GROUP_SIZE}" 2>&1 | tee "${ABLATION_FOLDER}${model_size}_GROUP_SIZE${GROUP_SIZE}"
