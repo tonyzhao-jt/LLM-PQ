@@ -1,0 +1,283 @@
+/opt/conda/lib/python3.10/site-packages/pulp/pulp.py:1352: UserWarning: Spaces are not permitted in the name. Converted to '_'
+  warnings.warn("Spaces are not permitted in the name. Converted to '_'")
+device_names ['Tesla_T4', 'Tesla_V100-SXM2-32GB']
+device_numbers [3, 1]
+device_info Tesla_T4_3_Tesla_V100-SXM2-32GB_1
+Est model:  Tesla_T4_2_7168_28672_3.pkl
+prefill MSE: 874.4513|decode MSE: 0.5868|
+Est model:  Tesla_T4_2_7168_28672_4.pkl
+prefill MSE: 1158.8437|decode MSE: 2.5892|
+Est model:  Tesla_T4_2_7168_28672_8:tc-li.pkl
+prefill MSE: 13.1951|decode MSE: 60.5422|
+Est model:  Tesla_T4_2_7168_28672_16.pkl
+prefill MSE: 14.8919|decode MSE: 0.0310|
+Est model:  Tesla_T4_2_9216_36864_3.pkl
+prefill MSE: 2742.4023|decode MSE: 1.8751|
+Est model:  Tesla_T4_2_9216_36864_4.pkl
+prefill MSE: 3223.0469|decode MSE: 3.6209|
+Est model:  Tesla_T4_2_9216_36864_8:tc-li.pkl
+prefill MSE: 32.3148|decode MSE: 255.5071|
+Est model:  Tesla_T4_2_9216_36864_16.pkl
+prefill MSE: 68.0786|decode MSE: 0.0333|
+Est model:  Tesla_T4_2_5120_20480_3.pkl
+prefill MSE: 706.0849|decode MSE: 0.2297|
+Est model:  Tesla_T4_2_5120_20480_4.pkl
+prefill MSE: 718.1520|decode MSE: 0.5785|
+Est model:  Tesla_T4_2_5120_20480_8:tc-li.pkl
+prefill MSE: 17.5006|decode MSE: 17.7137|
+Est model:  Tesla_T4_2_5120_20480_16.pkl
+prefill MSE: 343.2962|decode MSE: 0.0609|
+Est model:  Tesla_V100-SXM2-32GB_2_14336_57344_3.pkl
+prefill MSE: 244.1874|decode MSE: 0.1617|
+Est model:  Tesla_V100-SXM2-32GB_2_14336_57344_4.pkl
+prefill MSE: 292.3369|decode MSE: 0.1692|
+Est model:  Tesla_V100-SXM2-32GB_2_14336_57344_8:tc-li.pkl
+prefill MSE: 29.4631|decode MSE: 0.1303|
+Est model:  Tesla_V100-SXM2-32GB_2_14336_57344_16.pkl
+prefill MSE: 909.6151|decode MSE: 0.0409|
+Est model:  Tesla_V100-SXM2-32GB_2_7168_28672_3.pkl
+prefill MSE: 15.5508|decode MSE: 0.0747|
+Est model:  Tesla_V100-SXM2-32GB_2_7168_28672_4.pkl
+prefill MSE: 15.3923|decode MSE: 0.1286|
+Est model:  Tesla_V100-SXM2-32GB_2_7168_28672_8:tc-li.pkl
+prefill MSE: 17.1854|decode MSE: 0.1287|
+Est model:  Tesla_V100-SXM2-32GB_2_7168_28672_16.pkl
+prefill MSE: 23.7516|decode MSE: 0.0006|
+Est model:  Tesla_V100-SXM2-32GB_2_5120_20480_3.pkl
+prefill MSE: 4.1599|decode MSE: 0.0287|
+Est model:  Tesla_V100-SXM2-32GB_2_5120_20480_4.pkl
+prefill MSE: 4.4266|decode MSE: 0.0383|
+Est model:  Tesla_V100-SXM2-32GB_2_5120_20480_8:tc-li.pkl
+prefill MSE: 6.6599|decode MSE: 0.2267|
+Est model:  Tesla_V100-SXM2-32GB_2_5120_20480_16.pkl
+prefill MSE: 7.1557|decode MSE: 0.0027|
+Est model:  Tesla_V100-SXM2-32GB_2_9216_36864_3.pkl
+prefill MSE: 31.7105|decode MSE: 0.0190|
+Est model:  Tesla_V100-SXM2-32GB_2_9216_36864_4.pkl
+prefill MSE: 18.0841|decode MSE: 0.0329|
+Est model:  Tesla_V100-SXM2-32GB_2_9216_36864_8:tc-li.pkl
+prefill MSE: 2.5541|decode MSE: 0.0561|
+Est model:  Tesla_V100-SXM2-32GB_2_9216_36864_16.pkl
+prefill MSE: 263.9227|decode MSE: 0.0038|
+Loading model:  Tesla_T4_2_7168_28672_3.pkl
+prefill MSE: 874.4513|decode MSE: 0.5868|
+Loading model:  Tesla_T4_2_7168_28672_4.pkl
+prefill MSE: 1158.8437|decode MSE: 2.5892|
+Loading model:  Tesla_T4_2_7168_28672_8:tc-li.pkl
+prefill MSE: 13.1951|decode MSE: 60.5422|
+Loading model:  Tesla_T4_2_7168_28672_16.pkl
+prefill MSE: 14.8919|decode MSE: 0.0310|
+Loading model:  Tesla_T4_2_9216_36864_3.pkl
+prefill MSE: 2742.4023|decode MSE: 1.8751|
+Loading model:  Tesla_T4_2_9216_36864_4.pkl
+prefill MSE: 3223.0469|decode MSE: 3.6209|
+Loading model:  Tesla_T4_2_9216_36864_8:tc-li.pkl
+prefill MSE: 32.3148|decode MSE: 255.5071|
+Loading model:  Tesla_T4_2_9216_36864_16.pkl
+prefill MSE: 68.0786|decode MSE: 0.0333|
+Loading model:  Tesla_T4_2_5120_20480_3.pkl
+prefill MSE: 706.0849|decode MSE: 0.2297|
+Loading model:  Tesla_T4_2_5120_20480_4.pkl
+prefill MSE: 718.1520|decode MSE: 0.5785|
+Loading model:  Tesla_T4_2_5120_20480_8:tc-li.pkl
+prefill MSE: 17.5006|decode MSE: 17.7137|
+Loading model:  Tesla_T4_2_5120_20480_16.pkl
+prefill MSE: 343.2962|decode MSE: 0.0609|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_3.pkl
+prefill MSE: 244.1874|decode MSE: 0.1617|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_4.pkl
+prefill MSE: 292.3369|decode MSE: 0.1692|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_8:tc-li.pkl
+prefill MSE: 29.4631|decode MSE: 0.1303|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_16.pkl
+prefill MSE: 909.6151|decode MSE: 0.0409|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_3.pkl
+prefill MSE: 15.5508|decode MSE: 0.0747|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_4.pkl
+prefill MSE: 15.3923|decode MSE: 0.1286|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_8:tc-li.pkl
+prefill MSE: 17.1854|decode MSE: 0.1287|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_16.pkl
+prefill MSE: 23.7516|decode MSE: 0.0006|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_3.pkl
+prefill MSE: 4.1599|decode MSE: 0.0287|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_4.pkl
+prefill MSE: 4.4266|decode MSE: 0.0383|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_8:tc-li.pkl
+prefill MSE: 6.6599|decode MSE: 0.2267|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_16.pkl
+prefill MSE: 7.1557|decode MSE: 0.0027|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_3.pkl
+prefill MSE: 31.7105|decode MSE: 0.0190|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_4.pkl
+prefill MSE: 18.0841|decode MSE: 0.0329|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_8:tc-li.pkl
+prefill MSE: 2.5541|decode MSE: 0.0561|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_16.pkl
+prefill MSE: 263.9227|decode MSE: 0.0038|
+Verified all regress models, maximum mse:  3223.0469450352034
+Set parameter WLSAccessID
+Set parameter WLSSecret
+Set parameter LicenseID to value 965996
+Academic license - for non-commercial use only - registered to juntaozh@connect.hku.hk
+Set parameter TimeLimit to value 300
+Gurobi Optimizer version 10.0.2 build v10.0.2rc0 (linux64)
+
+CPU model: AMD EPYC 7H12 64-Core Processor, instruction set [SSE2|AVX|AVX2]
+Thread count: 128 physical cores, 256 logical processors, using up to 32 threads
+
+Academic license - for non-commercial use only - registered to juntaozh@connect.hku.hk
+Optimize a model with 244 rows, 960 columns and 2496 nonzeros
+Model fingerprint: 0xd6f6fc2f
+Variable types: 0 continuous, 960 integer (0 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+03]
+  Objective range  [2e-09, 8e-01]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 3e+04]
+Found heuristic solution: objective 3.3429261
+Presolve removed 192 rows and 192 columns
+Presolve time: 0.00s
+Presolved: 52 rows, 768 columns, 1536 nonzeros
+Variable types: 0 continuous, 768 integer (768 binary)
+Found heuristic solution: objective 1.3575230
+
+Root relaxation: objective 6.063189e-03, 101 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0    0.00606    0    7    1.35752    0.00606   100%     -    0s
+H    0     0                       0.4974313    0.00606  98.8%     -    0s
+H    0     0                       0.0062696    0.00606  3.29%     -    0s
+H    0     0                       0.0062535    0.00606  3.04%     -    0s
+H    0     0                       0.0062270    0.00606  2.63%     -    0s
+     0     0    0.00622    0   10    0.00623    0.00622  0.17%     -    0s
+     0     0    0.00622    0    8    0.00623    0.00622  0.17%     -    0s
+H    0     0                       0.0061813    0.00618  0.00%     -    0s
+     0     0    0.00618    0    6    0.00618    0.00618  0.00%     -    0s
+
+Cutting planes:
+  Gomory: 3
+  Cover: 4
+  MIR: 3
+  StrongCG: 1
+  GUB cover: 3
+  RLT: 4
+
+Explored 1 nodes (213 simplex iterations) in 0.05 seconds (0.01 work units)
+Thread count was 32 (of 256 available processors)
+
+Solution count 7: 0.00618131 0.006227 0.00625347 ... 3.34293
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 6.181311280324e-03, best bound 6.181311280324e-03, gap 0.0000%
+/opt/conda/lib/python3.10/site-packages/pulp/pulp.py:1352: UserWarning: Spaces are not permitted in the name. Converted to '_'
+  warnings.warn("Spaces are not permitted in the name. Converted to '_'")
+Gurobi status= 2
+Adabits result found
+mem_j = 9580.0
+mem_j = 11880.0
+mem_j = 11828.0
+mem_j = 28308.0
+Try (32, 1, 8)
+Set parameter TimeLimit to value 300
+Gurobi Optimizer version 10.0.2 build v10.0.2rc0 (linux64)
+
+CPU model: AMD EPYC 7H12 64-Core Processor, instruction set [SSE2|AVX|AVX2]
+Thread count: 128 physical cores, 256 logical processors, using up to 32 threads
+
+Academic license - for non-commercial use only - registered to juntaozh@connect.hku.hk
+Optimize a model with 268 rows, 970 columns and 4064 nonzeros
+Model fingerprint: 0x515aadfb
+Variable types: 10 continuous, 960 integer (0 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+03]
+  Objective range  [2e-09, 2e+02]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [4e-02, 3e+04]
+Presolve removed 201 rows and 241 columns
+Presolve time: 0.01s
+Presolved: 67 rows, 729 columns, 2902 nonzeros
+Variable types: 9 continuous, 720 integer (720 binary)
+Found heuristic solution: objective 183561.20421
+
+Root relaxation: objective 1.116167e+05, 237 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0 111616.745    0   14 183561.204 111616.745  39.2%     -    0s
+H    0     0                    182324.14122 111616.745  38.8%     -    0s
+H    0     0                    142243.02264 111616.745  21.5%     -    0s
+     0     0 111616.745    0   23 142243.023 111616.745  21.5%     -    0s
+H    0     0                    131026.45245 111616.745  14.8%     -    0s
+H    0     0                    129461.72642 111616.745  13.8%     -    0s
+     0     0 111616.745    0   16 129461.726 111616.745  13.8%     -    0s
+     0     0 111616.745    0   18 129461.726 111616.745  13.8%     -    0s
+     0     0 111616.745    0   21 129461.726 111616.745  13.8%     -    0s
+     0     0 113092.216    0   23 129461.726 113092.216  12.6%     -    0s
+     0     0 113092.216    0   22 129461.726 113092.216  12.6%     -    0s
+     0     0 113092.216    0   24 129461.726 113092.216  12.6%     -    0s
+     0     0 113092.216    0   26 129461.726 113092.216  12.6%     -    0s
+     0     0 113092.216    0   22 129461.726 113092.216  12.6%     -    0s
+     0     2 113092.216    0   19 129461.726 113092.216  12.6%     -    0s
+H   34    64                    129461.72636 113092.216  12.6%   6.1    0s
+H   36    64                    129461.71917 113092.216  12.6%   6.1    0s
+H   62    64                    124647.23307 113092.216  9.27%   7.8    0s
+H 7358  6777                    124647.23300 113092.216  9.27%   4.2    0s
+H 7391  6777                    124647.23226 113092.216  9.27%   4.2    0s
+H 7403  6777                    124647.22432 113092.216  9.27%   4.2    0s
+H11102  9402                    124647.22328 119004.401  4.53%   3.7    1s
+H11241  9040                    124647.22326 119004.431  4.53%   4.1    3s
+H11252  8588                    124647.22316 119004.431  4.53%   4.1    3s
+H25654 15538                    124647.22311 119004.431  4.53%   6.6    3s
+ 59433 40262 120625.259  284   22 124647.223 119004.440  4.53%   6.3    5s
+H59596 38356                    124647.22310 119046.567  4.49%   6.4    9s
+ 65395 42252     cutoff  106      124647.223 119046.568  4.49%   6.8   10s
+ 300376 212271 119046.705  131   17 124647.223 119046.631  4.49%   5.8   15s
+ 530915 425384 119240.333   87   20 124647.223 119046.637  4.49%   6.4   20s
+ 811131 633436 119049.438  110   17 124647.223 119046.645  4.49%   6.2   25s
+H990847 768978                    124647.22308 119046.647  4.49%   7.2   29s
+ 1012138 791345 119505.474  320   13 124647.223 119046.647  4.49%   7.1   30s
+ 1236410 968411 119059.998  169   15 124647.223 119046.651  4.49%   7.2   35s
+H1331362 1051301                    124647.22307 119046.652  4.49%   7.2   38s
+ 1439017 1138500 119530.325  128   14 124647.223 119046.654  4.49%   7.1   40s
+ 1692811 1346530 119393.676   86   20 124647.223 119046.656  4.49%   7.0   45s
+ 1888832 1492605 119246.638  160   15 124647.223 119046.657  4.49%   7.3   50s
+ 2135551 1684941 119229.251  129   17 124647.223 119046.659  4.49%   7.3   55s
+ 2391314 1885524 121892.426  265   10 124647.223 119046.661  4.49%   7.2   60s
+ 2558800 2018870 119316.068  239   14 124647.223 119046.662  4.49%   7.2   65s
+ 2782830 2189589 119059.457  196   15 124647.223 119046.664  4.49%   7.3   70s
+ 2996483 2377106 119169.787  225   16 124647.223 119046.665  4.49%   7.2   75s
+ 3270342 2605512 124192.301  247    9 124647.223 119046.666  4.49%   7.1   80s
+ 3504838 2782049 121242.516  292   11 124647.223 119046.668  4.49%   7.2   85s
+ 3707215 2939178 119229.171  101   20 124647.223 119046.669  4.49%   7.3   90s
+ 3928431 3127870 119316.094  216   14 124647.223 119046.670  4.49%   7.2   95s
+ 4133933 3283868 119059.425  147   17 124647.223 119046.671  4.49%   7.2  100s
+ 4375385 3479058 119342.589  106   19 124647.223 119046.673  4.49%   7.1  105s
+ 4655063 3707893 119393.811  152   14 124647.223 119046.675  4.49%   7.0  110s
+ 4872342 3878961 124008.971  358   12 124647.223 119046.675  4.49%   6.9  115s
+ 5141159 4102595 123197.403  296   12 124647.223 119046.677  4.49%   6.8  120s
+ 5331358 4258591 121441.849  363   12 124647.223 119046.678  4.49%   6.9  125s
+ 5586674 4431861 119086.459  147   15 124647.223 119046.679  4.49%   6.8  130s
+ 5880914 4656208 121271.821  272   10 124647.223 119046.680  4.49%   6.7  135s
+ 6095505 4816584 119310.949  169   18 124647.223 119046.681  4.49%   6.7  140s
+ 6362215 5012497 119409.451  135   17 124647.223 119046.682  4.49%   6.7  145s
+ 6638140 5225223 120919.479  146   15 124647.223 119046.683  4.49%   6.6  150s
+ 6893730 5410173 119046.707  119   24 124647.223 119046.684  4.49%   6.6  155s
+ 7127765 5592444 120980.702  271   14 124647.223 119046.684  4.49%   6.5  160s
+ 7411036 5805211 119240.312  110   20 124647.223 119046.685  4.49%   6.5  165s
+ 7657845 5986316 124563.400  263   10 124647.223 119046.686  4.49%   6.4  170s
+ 7925820 6188144 122271.112  330    6 124647.223 119046.686  4.49%   6.3  175s
+ 8226823 6427560 120789.603  261   10 124647.223 119046.687  4.49%   6.3  180s
+ 8459670 6598140 120613.393  117   13 124647.223 119046.687  4.49%   6.3  185s
+ 8685236 6771850 119590.473  103   14 124647.223 119046.688  4.49%   6.2  190s
+ 8959930 6982634 119229.270  183   17 124647.223 119046.688  4.49%   6.2  195s
+ 9205331 7172378 123440.708  234    8 124647.223 119046.689  4.49%   6.2  200s
+ 9428902 7354758 119229.235  118   17 124647.223 119046.690  4.49%   6.2  205s
+ 9695626 7538911 119229.342  157   16 124647.223 119046.690  4.49%   6.1  210s
+ 9951142 7734140 121005.518  275   10 124647.223 119046.691  4.49%   6.1  215s
+ 10194392 7924414 120248.705  273   12 124647.223 119046.691  4.49%   6.1  220s
+ 10425093 8101279     cutoff  131      124647.223 119046.692  4.49%   6.1  225s
+ 10618483 8244387     cutoff  162      124647.223 119046.692  4.49%   6.1  230s

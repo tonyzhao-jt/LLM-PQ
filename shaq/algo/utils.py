@@ -31,7 +31,7 @@ def common_argparser():
     parser.add_argument('--ilp_seed', type=int, default=42)
     parser.add_argument('--group_size', type=int, default=1) # when search space is too large, need to group
     parser.add_argument('--ilp_tolerance', type=float, default=None)
-    parser.add_argument('--ilp_time_limit', type=int, default=20)
+    parser.add_argument('--ilp_time_limit', type=int, default=None)
     parser.add_argument('--adapp_group_size', type=int, default=1)
     # algo control
     parser.add_argument('--pe_bit', type=int, default=8)
@@ -53,6 +53,8 @@ def common_argparser():
     parser.add_argument('--fname', type=str, default=None)
     # choose from 'adabits' 'adaqpipe' 'pipeedge' 'uniform'
     parser.add_argument('--test_method', type=str, default='adabits', help='test method')
+    # storage control
+    parser.add_argument('--fname-suffix', type=str, default=None) # add suffix to generated solution plan
     args = parser.parse_args()
 
     # temporary memory control
@@ -159,3 +161,13 @@ def convert_to_shaq_result2partitions(res):
             }
 
     res['use_plan'] = sharding_strategy
+
+
+def create_ilp_solver(verbose_ilp, ilp_time_limit, ilp_tolerance):
+    args = {"msg": verbose_ilp, "timeLimit": ilp_time_limit, "MIPGap": ilp_tolerance}
+    if ilp_tolerance is None:
+        args.pop("MIPGap")
+    if ilp_time_limit is None:
+        args.pop("timeLimit")
+    solver = pulp.GUROBI(msg=verbose_ilp, timeLimit=ilp_time_limit)
+    return solver

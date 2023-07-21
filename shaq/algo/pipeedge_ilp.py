@@ -22,7 +22,8 @@ from ..utils import (
 
 from .utils import (
     common_argparser, ilp_env,
-    FP16_ENOUGH, NOT_AVAILABLE
+    FP16_ENOUGH, NOT_AVAILABLE,
+    create_ilp_solver
 )
 from ..partitioner import gen_config
 
@@ -32,6 +33,7 @@ import os
 # setup ilp configs
 import pulp
 import gurobipy as gp
+from .mem_utils import get_device_topo_available_mem_with_order, get_M_with_bitwidth_pair
 
 unit = _globals.MEM_UNIT
 slo_rate = _globals.SLO_RATE
@@ -57,11 +59,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, comm):
         prob += LAT_max >= LAT[j]
         prob += LAT_max >= comm[j] 
     
-    # Solve the problem
-    # prob.solve(pulp.apis.PULP_CBC_CMD())
-    # solver = pulp.GUROBI(msg=True, threads=0, timeLimit=100, MIPGap=0.003)
-    # solver = pulp.GUROBI()
-    solver = pulp.GUROBI(msg=verbose_ilp, timeLimit=ilp_time_limit)
+    solver = create_ilp_solver(verbose_ilp, ilp_time_limit, ilp_tolerance)
     status = prob.solve(solver)
 
     if status == pulp.LpStatusOptimal:
@@ -107,23 +105,10 @@ def prepare_for_ilp(num_hidden_layers, D, chosen_bit, cost_model_pack, bz_pack):
     '''
         Constraint related
     '''
-    # device memory
-    M_d = np.array([get_single_device_mem_constraints(device_name) for d_rank, device_name in D.items()]) 
 
-    # only one
-    mem_bits_vector = get_mem_with_layer_bit_pair(BITs, model_mem_estimator)
-    M = np.tile(mem_bits_vector, (group_L, 1)) * group_size
-
-    # reduce the embedding size on device 0
-    post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
-    temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size_with_bz(prefill_bz, bz_decode_max, unit='MB')[0] 
-    temp_later_decode = model_mem_estimator.calculate_temp_tensor_size_next_i(unit='MB')[0]
-    M_d[0] -= post_pre_mem
-    if len(M_d) > 1:
-        M_d[1:] -= temp_later_decode * time_mult_times
-    M_d[0] -= max(temp_tensor_mem, temp_later_decode * time_mult_times)
-    M_d = np.floor(M_d).astype(int) # floor
-    M = np.ceil(M).astype(int) # ceil
+    # get memory requirement of each layer
+    M = get_M_with_bitwidth_pair(BITs, model_mem_estimator, group_L, group_size)
+    M_d = get_device_topo_available_mem_with_order(D, model_mem_estimator, prefill_bz, bz_decode_max, time_mult_times=time_mult_times)
 
     # latency
     l = np.zeros((group_L, N, len(BITs)))
@@ -161,6 +146,7 @@ ilp_seed = 0
 ilp_time_limit = 20
 verbose_ilp = False
 comm_multiplier = 1
+ilp_tolerance = None
 def main(args):
     global global_bz, micro_bz, s, n
     global model_size, device_info

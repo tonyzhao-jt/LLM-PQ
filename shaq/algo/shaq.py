@@ -38,8 +38,10 @@ import pulp
 import gurobipy as gp
 from .utils import (
     common_argparser, ilp_env,
-    FP16_ENOUGH, NOT_AVAILABLE
+    FP16_ENOUGH, NOT_AVAILABLE,
+    create_ilp_solver
 )
+from .mem_utils import get_device_topo_available_mem_with_order, get_M_with_bitwidth_pair
 unit = _globals.MEM_UNIT
 slo_rate = _globals.SLO_RATE
 
@@ -86,14 +88,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
         prob += T_prefill >= T_prefill_j[j]
         prob += T_decode >= T_decode_j[j]
 
-    # Solve the problem
-    # prob.solve(pulp.apis.PULP_CBC_CMD())
-    if ilp_tolerance is not None:
-        solver = pulp.GUROBI(msg=verbose_ilp, timeLimit=ilp_time_limit, MIPGap=ilp_tolerance)
-    else:
-        solver = pulp.GUROBI(msg=verbose_ilp, timeLimit=ilp_time_limit)
-    # solver = pulp.GUROBI()
-    # solver = pulp.GUROBI(msg=True)
+    solver = create_ilp_solver(verbose_ilp, ilp_time_limit, ilp_tolerance)
     status = prob.solve(solver)
 
     if status == pulp.LpStatusOptimal:
@@ -142,20 +137,9 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
     '''
         Constraint related
     '''
-    M_d = np.array([get_single_device_mem_constraints(device_name) for d_rank, device_name in current_D.items()]) 
-    mem_bits_vector = get_mem_with_layer_bit_pair(BITs, model_mem_estimator)
-    M = np.tile(mem_bits_vector, (group_L, 1)) * group_size # repeat the mem_bits_vector for group_L times
-
-    # reduce the embedding size on device 0
-    post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
-    temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size_with_bz(prefill_bz, bz_decode_max, unit='MB')[0] 
-    temp_later_decode = model_mem_estimator.calculate_temp_tensor_size_next_i(unit='MB')[0]
-    M_d[0] -= post_pre_mem
-    if len(M_d) > 1:
-        M_d[1:] -= temp_later_decode * time_mult_times
-    M_d[0] -= max(temp_tensor_mem, temp_later_decode * time_mult_times)
-    M_d = np.floor(M_d).astype(int) # floor
-    M = np.ceil(M).astype(int) # ceil
+    # get memory requirement of each layer
+    M = get_M_with_bitwidth_pair(BITs, model_mem_estimator, group_L, group_size)
+    M_d = get_device_topo_available_mem_with_order(D, model_mem_estimator, prefill_bz, bz_decode_max, time_mult_times=time_mult_times)
 
     # latency table for prefill and decode
     # latency
@@ -286,7 +270,7 @@ def enumerate_best_result(args):
             # test 
             bz_pack = (global_bz, prefill_bz, bz_decode_max)
             res = solve_ilp_for_best(T, current_D, cost_model_pack, bz_pack)
-            # print(res['obj'], best_plan['obj'])
+            print(res['obj'], best_plan['obj'])
             if res['obj'] < best_plan['obj']:
                 print("Better Plan Generated")
                 best_plan = {

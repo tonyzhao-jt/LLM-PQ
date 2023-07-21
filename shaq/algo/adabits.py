@@ -31,8 +31,10 @@ from ..partitioner.helper import (
 )
 from .utils import (
     common_argparser, ilp_env,
-    FP16_ENOUGH, NOT_AVAILABLE
+    FP16_ENOUGH, NOT_AVAILABLE,
+    create_ilp_solver
 )
+from .mem_utils import get_device_topo_available_mem_with_order, get_M_with_bitwidth_pair
 import os 
 # default libs
 import pickle
@@ -63,7 +65,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
         prob += pulp.lpSum([z[(i, j, b)] * M[i][b] for i in range(L) for b in range(B)]) <= M_d[j]
     
     # Solve the problem
-    solver = pulp.GUROBI(msg=verbose_ilp, timeLimit=ilp_time_limit)
+    solver = create_ilp_solver(verbose_ilp, ilp_time_limit, ilp_tolerance)
     status = prob.solve(solver)
     # prob.solve(pulp.GUROBI())
     # prob.solve()
@@ -108,20 +110,10 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits, bz_pack, model_mem_est
     group_L = L // group_size
     N = len(D) # number of devices
     BITs = get_available_bits_pair(available_bits)
-    M_d = np.array([get_single_device_mem_constraints(device_name) for d_rank, device_name in D.items()]) 
-    mem_bits_vector = get_mem_with_layer_bit_pair(BITs, model_mem_estimator)
-    M = np.tile(mem_bits_vector, (group_L, 1)) * group_size # repeat the mem_bits_vector for group_L times
-
-    # reduce the embedding size on device 0
-    post_pre_mem = model_mem_estimator.calculate_prepost_mem(unit='MB')[0]
-    temp_tensor_mem = model_mem_estimator.calculate_temp_tensor_size_with_bz(prefill_bz, bz_decode_max, unit='MB')[0] 
-    temp_later_decode = model_mem_estimator.calculate_temp_tensor_size_next_i(unit='MB')[0]
-    M_d[0] -= post_pre_mem
-    if len(M_d) > 1:
-        M_d[1:] -= temp_later_decode * time_mult_times
-    M_d[0] -= max(temp_tensor_mem, temp_later_decode * time_mult_times)
-    M_d = np.floor(M_d).astype(int) # floor
-    M = np.ceil(M).astype(int) # ceil
+    
+    # get memory requirement of each layer
+    M = get_M_with_bitwidth_pair(BITs, model_mem_estimator, group_L, group_size)
+    M_d = get_device_topo_available_mem_with_order(D, model_mem_estimator, prefill_bz, bz_decode_max, time_mult_times=time_mult_times)
 
     # omega
     omega = assign_omega_uniform(group_L, BITs)
@@ -180,6 +172,7 @@ ilp_seed = 0
 ilp_time_limit = 20
 verbose_ilp = False
 comm_multiplier = 1
+ilp_tolerance = None
 def main(args):
     global global_bz, micro_bz, s, n
     global model_size, device_info
