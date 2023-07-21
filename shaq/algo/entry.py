@@ -202,6 +202,8 @@ def algo_main():
     sols['n'] = n
     sols['gloabl_bz'] = global_bz
     sols['prompt_length'] = s
+    sols['model_name'] = model_name
+    sols['model_size'] = model_size
     # store the solution
     # with device_names and model_name and model_size
     file_name = get_final_strat_file_name(model_name, model_size, device_info)

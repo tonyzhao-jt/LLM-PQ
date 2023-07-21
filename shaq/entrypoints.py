@@ -14,26 +14,31 @@ def run_dist():
     has_strat_file = False
     master_addr = None
     master_port = None
+    no_auto = False
     for i, arg in enumerate(args):
         if arg.startswith("--nnodes=") or arg.startswith("--nproc_per_node=") or arg.startswith("--node_rank="):
-            if i > idx_of_torchrun_args:
+            if i >= idx_of_torchrun_args:
                 idx_of_torchrun_args = i + 1
         elif arg.startswith("--master_addr"):
             master_addr = args[i+1]
-            if i > idx_of_torchrun_args:
+            if i >= idx_of_torchrun_args:
                 idx_of_torchrun_args = i + 2
         elif arg.startswith("--master_port"):
             master_port = args[i+1]
-            if i > idx_of_torchrun_args:
+            if i >= idx_of_torchrun_args:
                 idx_of_torchrun_args = i + 2
         elif arg.startswith("--strat_file_name"):
             has_strat_file = True
             strat_file_name = args[i+1]
         elif arg.startswith("--method"):
             method_name = args[i+1]
-    
+        elif arg.startswith("--no_auto"):
+            no_auto = True
+    # if no auto, pop from the args
+    if no_auto:
+        args.pop(args.index("--no_auto"))
     # check whether has the strat file, if has, then reorgnize the torch run args
-    if has_strat_file:
+    if has_strat_file and not no_auto:
         print("Strategy file detected, reconstructing torchrun args")
         sol_file = f"{strat_file_name}.pkl"
         root_dir = os.environ['ROOT_DIR']
@@ -84,10 +89,12 @@ def run_dist():
         new_args.append("--node_rank")
         new_args.append(str(rank))
         args = new_args + args[idx_of_torchrun_args:]
-        idx_of_torchrun_args = len(args) + 1
-            
+        idx_of_torchrun_args = len(args)
+        
     # Modify the arguments as needed
     args.insert(0, "torchrun")
+    idx_of_torchrun_args += 1
+
     # append user-specified arguments before script path
     # script_path = os.path.join(os.getcwd(), "shaq", "dist_runtime", "entry.py")
     script_path = pkg_resources.resource_filename("shaq", "dist_runtime/entry.py")
