@@ -169,5 +169,5 @@ def create_ilp_solver(verbose_ilp, ilp_time_limit, ilp_tolerance):
         args.pop("MIPGap")
     if ilp_time_limit is None:
         args.pop("timeLimit")
-    solver = pulp.GUROBI(msg=verbose_ilp, timeLimit=ilp_time_limit)
+    solver = pulp.GUROBI(**args)
     return solver

@@ -63,3 +63,4 @@ if __name__ == '__main__':
 
     caliber.save_fake_calib_data(f'fake_calib_{model_name}_{model_size}.pkl')
     caliber.load_fake_calib_data(f'fake_calib_{model_name}_{model_size}.pkl')
+    print("calib generated for model", model_name, model_size)

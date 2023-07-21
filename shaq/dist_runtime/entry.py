@@ -305,7 +305,7 @@ if __name__ == '__main__':
         # get sols info
         sol = sols[args.method]
         sharding_strategy = sol['use_plan']
-        print(sharding_strategy)
+        # print(sharding_strategy)
         prefill_bs = sol['prefill_bz']
         decoder_bss = sol['bz_decode_bss']
         prompt_length = args.prompt_length if sols.get('prompt_length') is None else sols['prompt_length']

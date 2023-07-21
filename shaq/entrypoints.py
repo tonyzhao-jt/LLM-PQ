@@ -56,12 +56,13 @@ def run_dist():
         device_rank_list = {}
         for device_rank, device_name_ in D.items():
             if device_name_ not in device_rank_list:
-                device_rank_list[device_name_] = 0
+                device_rank_list[device_name_] = 1
+                if device_name == device_name_:
+                    rank = device_rank_tmp
                 device_rank_tmp += 1
             else:
                 device_rank_list[device_name_] += 1
-            if device_name == device_name_:
-                rank = device_rank_tmp
+            
         nnodes = len(device_rank_list)
         # current device index
         assert device_name in device_rank_list, "Run on the wrong device, please check the device"
@@ -89,8 +90,8 @@ def run_dist():
         new_args.append("--node_rank")
         new_args.append(str(rank))
         args = new_args + args[idx_of_torchrun_args:]
-        idx_of_torchrun_args = len(args)
-        
+        idx_of_torchrun_args = len(new_args)
+
     # Modify the arguments as needed
     args.insert(0, "torchrun")
     idx_of_torchrun_args += 1
