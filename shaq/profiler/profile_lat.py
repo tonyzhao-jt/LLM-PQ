@@ -11,6 +11,24 @@ import numpy as np
 
 from qllm.models import return_config_name
 from qllm.models.BLOOM.utils import build_alibi_tensor, _prepare_attn_mask
+import torch.nn as nn
+
+class DecoderStacked(nn.Module):
+    def __init__(self, decoder_layer, num_layers, model_type='opt'):
+        super().__init__()
+        self.layers = nn.ModuleList([copy.deepcopy(decoder_layer) for _ in range(num_layers)])
+        self.num_layers = num_layers
+        self.model_type = model_type
+    
+    @torch.inference_mode()
+    def forward(self, hidden_states, attention_mask=None, alibi=None):
+        if self.model_type == 'opt':
+            for layer in self.layers:
+                hidden_states = layer(hidden_states)[0]
+        elif self.model_type == 'bloom':
+            for layer in self.layers:
+                hidden_states = layer(hidden_states, attention_mask=attention_mask, alibi=alibi)[0]
+        return hidden_states
 
 def remove_outliers(latencies, threshold=3):
     """Remove outlier latencies using the Z-score method."""
@@ -105,21 +123,24 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
             attention_mod.kv_status[request_id][0] = past_seq_length
             attention_mod.kv_status[request_id][1] = input_seq_length
 
+        
+        num_stacks = 4
+        decoder_stacked = DecoderStacked(decoder_layer, num_stacks, model_type=model_name)
         with torch.no_grad():
             if model_name.lower() == 'opt':
                 # Warmup
                 for i in range(warmup):
-                    decoder_layer(hidden_states)
+                    decoder_stacked(hidden_states)
 
                 torch.cuda.synchronize()
                 # start = perf_counter()
                 start = time.time()
                 for i in range(repeat):
-                    decoder_layer(hidden_states)
+                    decoder_stacked(hidden_states)
                 torch.cuda.synchronize()
                 # end = perf_counter()
                 end = time.time()
-                lat_avg = (end - start) / repeat * 1000 # in ms
+                lat_avg = (end - start) / num_stacks / repeat * 1000 # in ms
                 # # Measure latency
                 # latencies = []
                 # for i in range(repeat):
@@ -177,6 +198,7 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
     
     # del all the instances
     del decoder_layer
+    del decoder_stacked
     if 0 in shard_strategy['shard']:
         del attention_mod
     del fake_input
