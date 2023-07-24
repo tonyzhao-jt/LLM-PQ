@@ -6,6 +6,7 @@ from ..partitioner.helper import (
 from ..partitioner import gen_config
 from .. import _globals 
 import os
+import numpy as np 
 
 ROOT_DIR = os.environ.get('ROOT_DIR', '/workspace/shaq')
 def verbose_device_info(device_names, device_numbers, device_info):
@@ -39,6 +40,9 @@ def common_argparser():
     parser.add_argument('--adabits_tc', action='store_true', help='use adabit-tc') # case when all device support tc
     parser.add_argument('--init_pack', default=None)
     parser.add_argument('--uniform-hybrid', default=True)
+    # shaq-efficient
+    parser.add_argument('--shaq-efficient', action='store_true', help='use shaq-efficient')
+    parser.add_argument('--shaq-ef-incremental', action='store_true', help='use shaq-efficient-increment')
     # experiment setup control
     parser.add_argument('--s', type=int, default=512) # prompt legnth
     parser.add_argument('--n', type=int, default=100) # max_tokens
@@ -171,3 +175,24 @@ def create_ilp_solver(verbose_ilp, ilp_time_limit, ilp_tolerance):
         args.pop("timeLimit")
     solver = pulp.GUROBI(**args)
     return solver
+
+def get_comm_payload_size(cost_model, s, prefill_bz, bz_decode_max, comm_multiplier):
+    comm_size_prefill = cost_model.h1 * s * prefill_bz * 2 / 1024 / 1024 * comm_multiplier
+    comm_size_decode = cost_model.h1 * 1 * bz_decode_max * 2 / 1024 / 1024 * comm_multiplier
+    return comm_size_prefill, comm_size_decode
+
+def get_comm_cost(current_D, comm_cost_model, comm_size):
+    device_length = len(current_D)
+    comm = np.zeros(device_length)
+    for idx in range(device_length):
+        comm[idx] = comm_cost_model.predict_comm_time(idx, (idx + 1) % device_length, comm_size)
+    return comm
+
+
+import itertools
+def get_combinations(input_list, num_objects):
+    """
+    This function takes a list and a number of objects to choose from the list.
+    It returns all possible combinations of the list for the given number of objects.
+    """
+    return list(itertools.combinations(input_list, num_objects))

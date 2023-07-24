@@ -59,7 +59,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, comm):
         prob += LAT_max >= LAT[j]
         prob += LAT_max >= comm[j] 
     
-    solver = create_ilp_solver(verbose_ilp, ilp_time_limit, ilp_tolerance)
+    solver = create_ilp_solver(verbose_ilp, ilp_time_limit, None)
     status = prob.solve(solver)
 
     if status == pulp.LpStatusOptimal:
@@ -237,7 +237,8 @@ def main(args):
         'plan': res['plan'],
         'obj': res['obj'],
         'D': D,
-        'maps': None
+        'maps': None,
+        'name': 'pipeedge'
     }
     return best_plan
     # print(result)

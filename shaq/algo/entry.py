@@ -1,5 +1,6 @@
 from .adabits import main as adaptive_bits_main
 from .shaq import main as shaq_main
+from .shaq_efficient import main as shaq_ef_main
 from .pipeedge_ilp import main as pipeedge_ilp_main
 from .uniform import main as uniform_main
 from .. import _globals 
@@ -8,7 +9,8 @@ from .utils import (
     common_argparser, ilp_env,
     FP16_ENOUGH, NOT_AVAILABLE,
     get_final_strat_file_name,
-    convert_to_shaq_result2partitions
+    convert_to_shaq_result2partitions,
+
 )
 from ..utils import save_with_pickle, has_tc
 from ..partitioner.helper import (
@@ -131,7 +133,10 @@ def algo_main():
     sol_adabits = adaptive_bits_main(args)
     # check how long shaq takes
     start = time.time()
-    sol_shaq = shaq_main(args)
+    if args.shaq_efficient:
+        sol_shaq = shaq_ef_main(args)
+    else:
+        sol_shaq = shaq_main(args)
     end = time.time()
     # sol_pipeedge_adaptive = pipeedge_adaptive_main(args)
     # sort by bit number, decsending
