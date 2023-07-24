@@ -8,6 +8,8 @@ import argparse
 import pandas as pd 
 import copy 
 import shaq
+import qllm.utils as qllm_utils
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Profile a transformer model')
     parser.add_argument('--model-name', type=str, default='opt', help='model name')
@@ -20,6 +22,7 @@ def parse_args():
     parser.add_argument('--repeat', type=int, default=100, help='Number of iterations to profile')
     parser.add_argument('--warmup', type=int, default=10, help='Number of warmup iterations')
     parser.add_argument('--bit', type=str, default='8:tc', help='Precision bit setting')
+    parser.add_argument('--num-stacks', type=int, default=4, help='Number of repeat stacks')
     args = parser.parse_args()
     return args
 
@@ -35,6 +38,7 @@ if __name__ == '__main__':
     warmup = args.warmup
     bit = args.bit
     step = args.step 
+    num_stacks = args.num_stacks
 
     generated_seq_length = args.generated_seq_length
     file_path = os.path.dirname(os.path.realpath(__file__))
@@ -44,6 +48,17 @@ if __name__ == '__main__':
     file_name = device_name + "_" + str(model_size) + ".csv"
 
     decoder_layer, (h1, h2), config = create_empty_decoder(model_name, model_size)
+    # must set, else bitsandbyyes profiled wrongly
+    np_weight_folder_path = os.environ.get('NP_WEIGHT_FOLDER', False)
+    assert np_weight_folder_path, "Please set NP_WEIGHT_FOLDER"
+    weight_path = os.path.join(np_weight_folder_path,f"{model_name}_{model_size}") 
+    assert os.path.exists(weight_path), f"Please convert the weight file to {weight_path}"
+    layer_idx = 6 # randomly set
+    if model_name == 'opt':
+        decoder_layer = qllm_utils.load_np_weight_opt_layer(weight_path, layer_idx, decoder_layer)
+    elif model_name == 'bloom':
+        decoder_layer, = qllm_utils.load_np_weight_bloom_layer(weight_path, layer_idx, decoder_layer)
+    decoder_layer = decoder_layer.float()
     # print(h1, h2)
     def convert_to_int(x):
         if type(x) is float:
@@ -76,7 +91,7 @@ if __name__ == '__main__':
                 # profile latency
                 lat_avg, mem_weight, mem_kv, mem_embedding = profile_lat.profile_decoder_layer(config, decoder_layer, shard=shard, batch_size=bz, \
                                     input_seq_length=input_seq_length, past_seq_length=past_seq_length + i, bit=bit, \
-                                        warmup=warmup, repeat=repeat, verbose=True)
+                                        warmup=warmup, repeat=repeat, verbose=True, num_stacks=num_stacks)
                 mem_all = mem_weight + mem_kv + mem_embedding
                 # not available for pandas < 1.3.5
                 # check pandas version to select which code piece
