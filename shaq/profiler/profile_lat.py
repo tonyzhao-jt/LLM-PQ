@@ -163,7 +163,7 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
                 torch.cuda.synchronize()
                 # end = perf_counter()
                 end = time.time()
-                lat_avg = (end - start) / repeat * 1000
+                lat_avg = (end - start) / num_stacks / repeat * 1000
                 # latencies = []
                 # for i in range(repeat):
                 #     torch.cuda.synchronize()

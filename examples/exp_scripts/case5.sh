@@ -6,16 +6,15 @@ export OMP_NUM_THREADS=20
 # CPU Not Enough
 export LOAD_IN_NP="1"
 
-STRAT_FILE_NAME="sols_opt_30b_Tesla_T4_3_Tesla_V100-SXM2-32GB_1group2"
+STRAT_FILE_NAME="sols_opt_66b_Tesla_T4_4_Tesla_V100-SXM2-32GB_2"
 
 storage_folder="MULTI_NODE_PERF_RESULT"
 mkdir $storage_folder
 
-# case 3 result has order problem
 # method='shaq' # from adabits, shaq, uniform, pipeedge
-# MASTER_ADDR=<>
-method='pipeedge' # from adabits, shaq, uniform, pipeedge
-MASTER_ADDR=<>
+# MASTER_ADDR=
+method='shaq' # from adabits, shaq, uniform, pipeedge
+MASTER_ADDR=
 MASTER_PORT=1234
 
 shaq-dist --master_addr $MASTER_ADDR --master_port $MASTER_PORT\

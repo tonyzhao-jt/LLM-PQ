@@ -12,6 +12,8 @@ model_size = args.model_size
 device_info = args.device_info
 sol_folder = args.sol_folder
 sol_file_path = f'{sol_folder}/sols_{model_name}_{model_size}_{device_info}.pkl'
+if args.user_abs_file_path:
+    sol_file_path = f'{sol_folder}/{args.user_abs_file_path}.pkl'
 with open(sol_file_path, 'rb') as f:
     sols = pickle.load(f)
 for method in available_methods:
@@ -51,6 +53,9 @@ for method in available_methods:
 
     folder_name = 'bit_for_gptq_test'
     file_name = f'{method}_{model_name}_{model_size}_{device_info}_acc_test.pkl'
+    if args.user_abs_file_path:
+        file_name_front = args.user_abs_file_path.split('.pkl')[0]
+        file_name = f'{method}_{file_name_front}_acc_test.pkl'
     save_with_pickle(bit_assignment, file_name, folder_name)
 
 # # load 

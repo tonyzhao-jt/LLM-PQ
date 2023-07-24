@@ -8,9 +8,10 @@ def simple_model_info_parser():
     parser.add_argument('--model-name', type=str, default='opt')
     parser.add_argument('--device-info', type=str, default=None)
     parser.add_argument('--sol-folder', type=str, default=f'{root_folder}/scripts/part_strategy')
+    parser.add_argument('--user_abs_file_path', type=str, default='')
     args = parser.parse_args()
     # available method
-    args.available_methods = ['adabits', 'adaqpipe', 'pipeedge', 'uniform']
+    args.available_methods = ['adabits', 'shaq', 'pipeedge', 'uniform']
     return args
 
 def model_config_and_decoder_layers(model_name, model_size):

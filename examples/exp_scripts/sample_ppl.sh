@@ -1,11 +1,9 @@
 # required
-model_storage_path='/data/llms/'
-export TRANSFORMERS_CACHE=$model_storage_path
 model_name='opt'
-model_size="66b" # must match with the following, else error.
-user_abs_file_path="sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2"
+model_size="13b"
+user_abs_file_path="sols_opt_13b_Tesla_V100-SXM2-32GB_1"
 # setups
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=2
 sample_acc_dir="${PWD}/sample_acc"
 mkdir $sample_acc_dir
 cd "$ROOT_DIR/scripts/accuracy"

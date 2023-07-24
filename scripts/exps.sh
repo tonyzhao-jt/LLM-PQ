@@ -51,7 +51,7 @@ shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --theta 1  --global_bz 32 --group 4  --debug --ilp_time_limit 160 --fit
+ --theta 1  --global_bz 32 --debug --ilp_time_limit 160 --fit
 
 # case 5
 model_size=66b
@@ -116,7 +116,7 @@ shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --theta 1 --global_bz 32 --ilp_time_limit 160 --group 4 --adapp_group_size 2  --fit --debug 
+ --theta 1 --global_bz 32 --ilp_time_limit 160 --group 4 --fit --debug  
 
 # uniform cases
 # case10
