@@ -78,6 +78,7 @@ def parse_args():
     parser.add_argument('--num-shards', type=int, default=2) # 2 cards by default
     # perfmode
     parser.add_argument('--perf-mode', action='store_true', default=False)
+    parser.add_argument('--no_auto', action='store_true', default=False)
 
     parser.parse_args()
     args = parser.parse_args()

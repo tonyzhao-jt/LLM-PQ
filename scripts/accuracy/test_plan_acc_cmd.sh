@@ -1,8 +1,6 @@
 #!/bin/bash
 # usage: ./test_plan_acc_cmd.sh -n mymodel -s 125m -f /path/to/folder -g 2
 # Set default values
-model_storage_path='/data/llms/'
-export TRANSFORMERS_CACHE=$model_storage_path
 # Check if the LLM_PATH environmental variable is set
 if [ -n "$LLM_PATH" ]; then
     model_storage_path="$LLM_PATH"
@@ -16,6 +14,7 @@ folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test/"
 available_methods=('adaqpipe')
 zeroshot=false
 
+user_abs_file_path=""
 
 mixed_mode=false
 adafile_mode=false
@@ -39,6 +38,11 @@ do
         ;;
         -s|--device_info)
         device_info="$2"
+        shift
+        shift
+        ;;
+        -s|--user_abs_file_path)
+        user_abs_file_path="$2"
         shift
         shift
         ;;
@@ -103,6 +107,9 @@ if [ ! -d "$adafile" ]; then
 else 
     echo "Weight bit: $wbit"
 fi 
+if [ ! -d "$user_abs_file_path" ]; then 
+    echo "use abs file path ${user_abs_file_path}"
+fi 
 echo "Storage path: $storage_path"
 
 export TRANSFORMERS_CACHE=$model_storage_path
@@ -122,7 +129,7 @@ fi
 if [ "$adafile_mode" = true ]; then
     if [ -n "$device_info" ]; then
         python3 convert_sol_to_gptq_bits.py --model-name ${model_name} --model-size ${model_size} \
-                --device-info ${device_info} --sol-folder ${sol_folder}
+                --device-info ${device_info} --sol-folder ${sol_folder} --user_abs_file_path ${user_abs_file_path}
     fi
 fi
 cd ${ROOT_DIR}/3rd_party/gptq # main folder
@@ -137,7 +144,11 @@ do
         echo "Adabits file loaded"
         echo "run ${available_methods[i]} perplexity accuracy test"
         if [ -n "$device_info" ]; then
-            file_name="${available_methods[i]}_${model_name}_${model_size}_${device_info}_acc_test.pkl"
+            if [ -n "$user_abs_file_path" ]; then
+                file_name="${available_methods[i]}_${user_abs_file_path}_acc_test.pkl"
+            else
+                file_name="${available_methods[i]}_${model_name}_${model_size}_${device_info}_acc_test.pkl"
+            fi
         else 
             # echo $TEST_RATIO
             if [ -n "$TEST_RATIO" ]; then 
@@ -150,22 +161,22 @@ do
         if [ -e "$file_abs_path" ]; then
             echo "File exists!"
             echo $file_abs_path
+            if [ "$zeroshot" = true ]; then
+                # zeroshot test
+                # echo ${PWD}
+                cd zeroShot
+                python3 main.py ${pretrained_config} c4 --wbits 4 --task piqa,arc_easy,lambada \
+                --ada-file ${file_abs_path} 2>&1 | tee "${storage_path}/${file_name}.txt"
+            else
+                # pp text
+                python3 ${model_name}.py ${pretrained_config} c4 --wbits ${wbit} \
+                --ada-file ${file_abs_path} 2>&1 | tee "${storage_path}/${file_name}.txt"
+            fi
         else
             echo "File does not exist."
             echo $file_abs_path
-            exit 1
         fi
-        if [ "$zeroshot" = true ]; then
-            # zeroshot test
-            # echo ${PWD}
-            cd zeroShot
-            python3 main.py ${pretrained_config} c4 --wbits 4 --task piqa,arc_easy,lambada \
-             --ada-file ${file_abs_path} 2>&1 | tee "${storage_path}/${file_name}.txt"
-        else
-            # pp text
-            python3 ${model_name}.py ${pretrained_config} c4 --wbits ${wbit} \
-            --ada-file ${file_abs_path} 2>&1 | tee "${storage_path}/${file_name}.txt"
-        fi
+        
     else
         # if [ -f $file_abs_path ]; then
         file_name="${storage_path}/${model_name}_${model_size}_${device_info}_${wbit}.pkl"
