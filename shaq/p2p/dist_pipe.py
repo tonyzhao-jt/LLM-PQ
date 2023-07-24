@@ -238,6 +238,8 @@ class TensorWorkThread(threading.Thread):
                 tensor_in = self._queue_in.get(block=False)
                 self._queue_in.condition.notify_all()
             
+            # start = time.time()
+            # torch.cuda.synchronize(self.on_device)
             if self.on_device is not None:
                 tensor_in = to_device(tensor_in, self.on_device) # move to gpu if needed
                 tensor_out = self._callback.decode(tensor_in)
@@ -245,6 +247,9 @@ class TensorWorkThread(threading.Thread):
                     tensor_out = to_device(tensor_out, 'cpu') # move to cpu / test
             else:
                 tensor_out = self._callback(tensor_in)
+            # torch.cuda.synchronize(self.on_device)
+            # end = time.time()
+            # print(self.on_device, end-start)
 
             if tensor_out is not None:
                 # Sender thread must be running to avoid indefinite blocking

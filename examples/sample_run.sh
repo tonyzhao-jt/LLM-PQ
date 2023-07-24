@@ -1,4 +1,3 @@
-export CUDA_VISIBLE_DEVICES=0
 export TRANSFORMERS_CACHE='/data/llms/'
 export CALIB_ROOT_FOLDER="${ROOT_DIR}/examples/"
 export NP_WEIGHT_FOLDER="${TRANSFORMERS_CACHE}/converted_weights_np/"
@@ -10,15 +9,15 @@ MODEL_NAME='opt'
 MODEL_SIZE="125m"
 PROMPT_LEGNTH=128
 # PROMPT_LEGNTH=1024
-BS=8
-BITWIDTH=16
-NUM_TOKENS_TO_GENERATE=1
+BS=32
+BITWIDTH=4
+NUM_TOKENS_TO_GENERATE=100
 # NUM_TOKENS_TO_GENERATE=32
 # NUM_TOKENS_TO_GENERATE=50
 # NUM_TOKENS_TO_GENERATE=100
 MAX_TOKENS_TO_GENERATE=100 # make sure it always larger than previous
 
-NUM_SHARDS=1
+NUM_SHARDS=4
 # shaq direct run
 shaq-dist --nnodes=1 --nproc_per_node=$NUM_SHARDS --master_port 1234 \
     --model_name $MODEL_NAME --model_size $MODEL_SIZE\

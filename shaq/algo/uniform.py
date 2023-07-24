@@ -187,7 +187,8 @@ def main(args):
             'plan': res['plan'],
             'obj': res['obj'],
             'D': D,
-            'maps': None
+            'maps': None,
+            'name': 'uniform',
         }
         if optimal_sol is None:
             optimal_sol = best_plan

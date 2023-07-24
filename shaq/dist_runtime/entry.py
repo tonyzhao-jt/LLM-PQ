@@ -20,6 +20,7 @@ from qllm.scheduler import DSScheduler
 from qllm.utils import batch_encode_plus, to_device_recursive, greedy_processor, get_model_size_cuda
 from qllm.models import qllm_load_pretrained_from_size, get_decoder_layer_nums
 import qllm.utils as qllm_utils
+from qllm.models import init_tokenizer
 
 # QPipe Related
 CMD_STOP = 0
@@ -115,12 +116,6 @@ def set_input_ids_globals(request_id, p_input_ids):
 
 
 
-def init_tokenizer(model_name):
-    if model_name == 'opt':
-        return AutoTokenizer.from_pretrained("facebook/opt-66b")
-    elif model_name == 'bloom':
-        return AutoTokenizer.from_pretrained("bigscience/bloom")
-
 def run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=None):
     global lock_queue, work_queue, simple_queue_thread, num_tokens_to_generate
     if sample_num is not None:
@@ -215,6 +210,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
     
     # sharded module init
     shard_config = sharding_strategy[rank]
+    print(f"current_device_strategy: {rank}", shard_config)
     module = loaded_llm_cpu
     module._shard_model_current(shard_config, f'cuda:{local_rank}')
     print(f"Stage {stage_id} module sharded")
@@ -274,15 +270,16 @@ if __name__ == '__main__':
     if args.sample_run:
         # uniform partition and uniform bitwidth samples
         # but also not use the hybrid batch size
-        prefill_bs = args.bs_token 
-        decoder_bss = [args.bs_token] 
+        num_shards = args.num_shards
+        prefill_bs = args.bs_token // num_shards
+        decoder_bss = [args.bs_token // num_shards] * num_shards
+    
         bs_token = args.bs_token
         # set by default
         num_tokens_to_generate = args.num_tokens_to_generate
         max_tokens_to_generate = args.max_tokens_to_generate
         prompt_length = args.prompt_length
         # sharing strategy
-        num_shards = args.num_shards
         bitwidth = args.bitwidth
         decoder_layer_nums = get_decoder_layer_nums(args.model_name, args.model_size)
         sharding_strategy = create_uniform_sharding_strategies(num_shards, decoder_layer_nums, bitwidth)
@@ -294,10 +291,12 @@ if __name__ == '__main__':
         strat_folder = f'{root_dir}/scripts/part_strategy'
         sols_path = f'{strat_folder}/{sol_file}'
         sols = pickle.load(open(sols_path, "rb"))
-        model_name = sols['model_name']
-        model_size = sols['model_size']
-        args.model_name = model_name
-        args.model_size = model_size
+        # handle the old version
+        if 'model_name' in sols:
+            model_name = sols['model_name']
+            model_size = sols['model_size']
+            args.model_name = model_name
+            args.model_size = model_size
         num_tokens_to_generate = sols['mu_n']
         max_tokens_to_generate = sols['n']
         bs_token = sols['gloabl_bz'] # how many sentence in a batch
@@ -305,7 +304,6 @@ if __name__ == '__main__':
         # get sols info
         sol = sols[args.method]
         sharding_strategy = sol['use_plan']
-        # print(sharding_strategy)
         prefill_bs = sol['prefill_bz']
         decoder_bss = sol['bz_decode_bss']
         prompt_length = args.prompt_length if sols.get('prompt_length') is None else sols['prompt_length']
@@ -318,12 +316,11 @@ if __name__ == '__main__':
         - when you only concerns the performance rather than accuracy
     '''
     # set env
+    tokenizer, key = init_tokenizer(model_name, model_size)
     if args.perf_mode:
         os.environ['SET_DECODERS_META'] = "1"
         os.environ['PERF_MODE'] = "1"
         loaded_llm_cpu = create_empty_model(model_name, model_size)
-        # init tokenizer
-        tokenizer = init_tokenizer(model_name)
     else:
         load_in_np = os.environ.get('LOAD_IN_NP', '0') == '1'
         if load_in_np:
@@ -333,7 +330,6 @@ if __name__ == '__main__':
             os.environ['SET_DECODERS_META'] = "1"
             loaded_llm_cpu = create_empty_model(model_name, model_size)
             qllm_utils.load_np_weight_opt_non_layer(os.environ['NP_WEIGHT_FOLDER'], loaded_llm_cpu)
-            tokenizer = init_tokenizer(model_name)
         else:
             # case when CPU memory is abundant, direcly load the converted weight
             data_llms_folder = os.environ.get('TRANSFORMERS_CACHE', '/data/llms')
@@ -362,6 +358,7 @@ if __name__ == '__main__':
     # hybrid micro-batch scheduler
     chunk_size = len(decoder_bss)
     ds_scheduler = DSScheduler(prefill_bs, decoder_bss)
+    print(prefill_bs, decoder_bss)
     # configs
     infer_configs = (bs_token, prompt_length, num_tokens_to_generate, chunk_size)
     loaded_llm_cpu._verify_shard_strategy(sharding_strategy)

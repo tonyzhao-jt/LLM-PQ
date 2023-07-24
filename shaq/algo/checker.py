@@ -20,3 +20,5 @@ def check_strat_file():
     print(sol['D'])
     print("Use plan:")
     print(sol['use_plan'])
+    print("Partition Result:")
+    print(sol['plan']['partition_result'])

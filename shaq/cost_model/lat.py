@@ -341,6 +341,9 @@ class LatCostModel:
                             profiled_data_device_decode = profiled_data_device[~prefill_index]
 
                             X = self.fetch_prefill_variables_in_data(profiled_data_device_prefill)
+                            if len(X) == 0:
+                                print(f"Cannot find profiled data for {model_name}, skip")
+                                continue
                             y = profiled_data_device_prefill['lat_avg'].values
                             model_prefill = LinearRegression().fit(X, y)
                             err = self.fit_metric(model_prefill, X, y, phase='prefill')
@@ -348,6 +351,9 @@ class LatCostModel:
 
                             # decode stage
                             X = self.fetch_decode_variables_in_data(profiled_data_device_decode)
+                            if len(X) == 0:
+                                print(f"Cannot find profiled data for {model_name}, skip")
+                                continue
                             y = profiled_data_device_decode['lat_avg'].values
                             model_decode = LinearRegression().fit(X, y)
                             err_dec = self.fit_metric(model_decode, X, y, phase='decode')
@@ -405,12 +411,18 @@ class LatCostModel:
                         
 
                         X = self.fetch_prefill_variables_in_data(profiled_data_device_prefill)
+                        if len(X) == 0:
+                            print(f"Cannot find profiled data for {model_name}, skip")
+                            continue
                         y = profiled_data_device_prefill['lat_avg'].values
                         model_prefill = LinearRegression().fit(X, y)
                         self.fit_metric(model_prefill, X, y, phase='prefill')
 
                         # decode stage
                         X = self.fetch_decode_variables_in_data(profiled_data_device_decode)
+                        if len(X) == 0:
+                            print(f"Cannot find profiled data for {model_name}, skip")
+                            continue
                         y = profiled_data_device_decode['lat_avg'].values
                         model_decode = LinearRegression().fit(X, y)
                         self.fit_metric(model_decode, X, y, phase='decode')

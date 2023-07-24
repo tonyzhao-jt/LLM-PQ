@@ -4,7 +4,7 @@ import os
 import pkg_resources
 import pickle
 import socket
-from .utils import get_device_name_and_mem
+from .utils import get_device_name_and_mem, convert_D_to_ranked_device
 def run_dist():
     # Get the arguments passed to the shaq-dist command
     args = sys.argv[1:]
@@ -51,18 +51,7 @@ def run_dist():
         # ref
         # {0: 'Tesla_T4', 1: 'Tesla_T4', 2: 'Tesla_T4', 3: 'Tesla_V100-SXM2-32GB'}
         # get index order of devices
-        rank = 0
-        device_rank_tmp = 0
-        device_rank_list = {}
-        for device_rank, device_name_ in D.items():
-            if device_name_ not in device_rank_list:
-                device_rank_list[device_name_] = 1
-                if device_name == device_name_:
-                    rank = device_rank_tmp
-                device_rank_tmp += 1
-            else:
-                device_rank_list[device_name_] += 1
-            
+        device_rank_list, rank = convert_D_to_ranked_device(D, device_name=device_name)
         nnodes = len(device_rank_list)
         # current device index
         assert device_name in device_rank_list, "Run on the wrong device, please check the device"

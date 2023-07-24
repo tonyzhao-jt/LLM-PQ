@@ -65,7 +65,7 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
         prob += pulp.lpSum([z[(i, j, b)] * M[i][b] for i in range(L) for b in range(B)]) <= M_d[j]
     
     # Solve the problem
-    solver = create_ilp_solver(verbose_ilp, ilp_time_limit, ilp_tolerance)
+    solver = create_ilp_solver(verbose_ilp, ilp_time_limit, None)
     status = prob.solve(solver)
     # prob.solve(pulp.GUROBI())
     # prob.solve()
@@ -283,7 +283,8 @@ def main(args):
         'plan': res['plan'],
         'obj': res['obj'],
         'D': D,
-        'maps': None
+        'maps': None,
+        'name': 'adabits'
     }
     # device_info = get_device_info(device_names, device_numbers)
     # file_name = f'adaptive_bit_' + model_size + '_' + device_info + '.pkl'

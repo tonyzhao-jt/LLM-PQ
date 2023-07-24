@@ -2,12 +2,16 @@ import math
 from ..partitioner.helper import (
     lat_prediction,
 )
+from .utils import get_comm_payload_size
 def calculate_max_stage_lat(D, use_plan, \
                                        cost_model_pack, b, s=1, i=1, use_profiler_prediction=False, comm_size=0):
     lat_cost_model, comm_cost_model = cost_model_pack
 
     minmax_lat = 0
     stage_sum = 0
+
+    stage_lat_list = []
+    comm_lat_list = []
     for device_rank, shard_strategy in use_plan.items():
         stage_lat = 0
         D_name = D[device_rank]
@@ -22,7 +26,10 @@ def calculate_max_stage_lat(D, use_plan, \
         # minmax throughput
         minmax_lat = max(minmax_lat, stage_lat, t_comm)
         stage_sum += stage_lat
-    return minmax_lat, stage_sum
+        stage_lat_list.append(stage_lat)
+        comm_lat_list.append(t_comm)
+    
+    return (minmax_lat, stage_sum), (stage_lat_list, comm_lat_list)
 
 def run_simu(gen_config, sol, lat_cost_model, comm_cost_model, use_profiler_prediction, mu_n, comm_multiplier):
     D = sol['D']
@@ -38,15 +45,23 @@ def run_simu(gen_config, sol, lat_cost_model, comm_cost_model, use_profiler_pred
     s = gen_config.s
     n = gen_config.n
 
-    comm_size_prefill = lat_cost_model.h1 * s * prefill_bz * 2 / 1024 / 1024 * comm_multiplier
-    comm_size_decode = lat_cost_model.h1 * 1 * bz_decode_max * 2 / 1024 / 1024 * comm_multiplier
+    comm_size_prefill, comm_size_decode = get_comm_payload_size(lat_cost_model, s, prefill_bz, bz_decode_max, comm_multiplier)
+    # comm_size_prefill = lat_cost_model.h1 * s * prefill_bz * 2 / 1024 / 1024 * comm_multiplier
+    # comm_size_decode = lat_cost_model.h1 * 1 * bz_decode_max * 2 / 1024 / 1024 * comm_multiplier
 
+    sol_name = sol['name']
+    # if sol_name == 'shaq':
+    #     import pdb; pdb.set_trace()
     # average throughput should equals to 
-    prefill_result, prefill_sum = calculate_max_stage_lat(D, use_plan, \
+    (prefill_result, prefill_sum), (prefill_lat_list, prefill_comm_lat_list) = calculate_max_stage_lat(D, use_plan, \
                                                     cost_model_pack, prefill_bz, s, 0, use_profiler_prediction, comm_size_prefill)
-    decode_result, decode_sum = calculate_max_stage_lat(D, use_plan, \
+    (decode_result, decode_sum), (decode_lat_list, decode_comm_lat_list) = calculate_max_stage_lat(D, use_plan, \
                                                     cost_model_pack, bz_decode_max, 1, s + int(mu_n / 2), use_profiler_prediction,  comm_size_decode)
     
+    # print("Prefill cost stage", prefill_lat_list, prefill_comm_lat_list)
+    # print("Decode cost stage", decode_lat_list, decode_comm_lat_list)
+    print("Prefill cost stage", prefill_lat_list)
+    print("Decode cost stage", decode_lat_list)
     prefill_micro_bs_num = math.ceil(global_bz / prefill_bz)
     decode_micro_bs_num = math.ceil(global_bz / bz_decode_max)
     prefill_time = prefill_sum + prefill_result * (prefill_micro_bs_num - 1)
