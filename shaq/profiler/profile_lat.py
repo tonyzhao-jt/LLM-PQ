@@ -39,7 +39,7 @@ def remove_outliers(latencies, threshold=3):
 
 # inf = float('inf')
 def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_seq_length=1, past_seq_length=2048, bit=8,\
-                        mem_unit='MB', warmup=10, repeat=100, verbose=True):
+                        mem_unit='MB', warmup=10, repeat=100, verbose=True, num_stacks=4):
 
     decoder_layer = copy.deepcopy(decoder_layer)
     # construct fake input, fake KV
@@ -124,7 +124,6 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
             attention_mod.kv_status[request_id][1] = input_seq_length
 
         
-        num_stacks = 4
         decoder_stacked = DecoderStacked(decoder_layer, num_stacks, model_type=model_name)
         with torch.no_grad():
             if model_name.lower() == 'opt':
@@ -155,12 +154,12 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
                 alibi = alibi.cuda().to(torch_dtype)
                 # Warmup
                 for i in range(warmup):
-                    decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
+                    decoder_stacked(hidden_states, attention_mask=causal_mask, alibi=alibi)
                 torch.cuda.synchronize()
                 # Measure latency
                 start = time.time()
                 for i in range(repeat):
-                    decoder_layer(hidden_states, attention_mask=causal_mask, alibi=alibi)
+                    decoder_stacked(hidden_states, attention_mask=causal_mask, alibi=alibi)
                 torch.cuda.synchronize()
                 # end = perf_counter()
                 end = time.time()
