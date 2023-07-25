@@ -2,6 +2,7 @@
 # usage: ./test_plan_acc_cmd.sh -n mymodel -s 125m -f /path/to/folder -g 2
 # Set default values
 # Check if the LLM_PATH environmental variable is set
+
 if [ -n "$LLM_PATH" ]; then
     model_storage_path="$LLM_PATH"
 fi
@@ -111,8 +112,6 @@ if [ ! -d "$user_abs_file_path" ]; then
     echo "use abs file path ${user_abs_file_path}"
 fi 
 echo "Storage path: $storage_path"
-
-export TRANSFORMERS_CACHE=$model_storage_path
 
 if [[ "${model_name}" == "opt" ]]; then
     model_prefix="facebook/opt-"

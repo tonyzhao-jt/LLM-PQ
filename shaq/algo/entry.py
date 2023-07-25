@@ -1,6 +1,7 @@
 from .adabits import main as adaptive_bits_main
 from .shaq import main as shaq_main
 from .shaq_efficient import main as shaq_ef_main
+from .shaq_heuristic import main as shaq_h_main
 from .pipeedge_ilp import main as pipeedge_ilp_main
 from .uniform import main as uniform_main
 from .. import _globals 
@@ -134,7 +135,8 @@ def algo_main():
     # check how long shaq takes
     start = time.time()
     if args.shaq_efficient:
-        sol_shaq = shaq_ef_main(args)
+        # sol_shaq = shaq_ef_main(args)
+        sol_shaq = shaq_h_main(args)
     else:
         sol_shaq = shaq_main(args)
     end = time.time()

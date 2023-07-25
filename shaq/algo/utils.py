@@ -42,7 +42,6 @@ def common_argparser():
     parser.add_argument('--uniform-hybrid', default=True)
     # shaq-efficient
     parser.add_argument('--shaq-efficient', action='store_true', help='use shaq-efficient')
-    parser.add_argument('--shaq-ef-incremental', action='store_true', help='use shaq-efficient-increment')
     # experiment setup control
     parser.add_argument('--s', type=int, default=512) # prompt legnth
     parser.add_argument('--n', type=int, default=100) # max_tokens
