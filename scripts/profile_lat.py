@@ -49,15 +49,26 @@ if __name__ == '__main__':
 
     decoder_layer, (h1, h2), config = create_empty_decoder(model_name, model_size)
     # must set, else bitsandbyyes profiled wrongly
-    np_weight_folder_path = os.environ.get('NP_WEIGHT_FOLDER', False)
-    assert np_weight_folder_path, "Please set NP_WEIGHT_FOLDER"
-    weight_path = os.path.join(np_weight_folder_path,f"{model_name}_{model_size}") 
-    assert os.path.exists(weight_path), f"Please convert the weight file to {weight_path}"
-    layer_idx = 6 # randomly set
+    # np_weight_folder_path = os.environ.get('NP_WEIGHT_FOLDER', False)
+    # assert np_weight_folder_path, "Please set NP_WEIGHT_FOLDER"
+    # weight_path = os.path.join(np_weight_folder_path,f"{model_name}_{model_size}") 
+    # assert os.path.exists(weight_path), f"Please convert the weight file to {weight_path}"
+    # layer_idx = 6 # randomly set
+    # if model_name == 'opt':
+    #     decoder_layer = qllm_utils.load_np_weight_opt_layer(weight_path, layer_idx, decoder_layer)
+    # elif model_name == 'bloom':
+    #     decoder_layer, = qllm_utils.load_np_weight_bloom_layer(weight_path, layer_idx, decoder_layer)
     if model_name == 'opt':
+        np_weight_folder_path = os.environ.get('NP_WEIGHT_FOLDER', False)
+        assert np_weight_folder_path, "Please set NP_WEIGHT_FOLDER"
+        weight_path = os.path.join(np_weight_folder_path,f"{model_name}_{model_size}") 
+        assert os.path.exists(weight_path), f"Please convert the weight file to {weight_path}"
+        layer_idx = 6 # randomly set
         decoder_layer = qllm_utils.load_np_weight_opt_layer(weight_path, layer_idx, decoder_layer)
     elif model_name == 'bloom':
-        decoder_layer, = qllm_utils.load_np_weight_bloom_layer(weight_path, layer_idx, decoder_layer)
+        # decoder_layer, = qllm_utils.load_np_weight_bloom_layer(weight_path, layer_idx, decoder_layer)
+        # decoder_layer, = qllm_utils.load_np_weight_bloom_layer(weight_path, layer_idx, decoder_layer)
+        print("bloom temporarily not able to load ")
     decoder_layer = decoder_layer.float()
     # print(h1, h2)
     def convert_to_int(x):

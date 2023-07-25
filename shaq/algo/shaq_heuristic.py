@@ -50,6 +50,14 @@ unit = _globals.MEM_UNIT
 import itertools
 
 from .MinMaxHeap import MinMaxHeap
+from collections import defaultdict
+def rename_device_name(D):
+    ref_D = {}
+    cnt = defaultdict(int)
+    for rank, device_name in D.items():
+        cnt[device_name] += 1
+        ref_D[device_name + str(cnt[device_name])] = rank
+    return ref_D
 def reset_device_rank_index(D, current_D):
     # D is the previous rank index
     ref_D = rename_device_name(D)
@@ -265,6 +273,7 @@ def change_partition_result(partition_result:dict, pioneer_rank, straggler_rank,
 
 
 def exchange_precisions(original_bit_assignment:dict, pioneer_layer_idx:int, straggler_idxs:list, conversion:list):
+    original_bit_assignment = original_bit_assignment.copy()
     num_convert = len(straggler_idxs)
     layer_num = len(original_bit_assignment) // 2
     original_bitwidths_values = list(original_bit_assignment.values())
@@ -327,7 +336,7 @@ convert_pairs = [
     ('8:tc-li', [4, 2]),
 ]
 
-def shaq_h_main(num_hidden_layers, cost_model_pack, bz_pack, current_D):
+def shaq_h_inernal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D):
     (global_bz, prefill_bz, bz_decode_max) = bz_pack 
     current_D = D 
     group_L, N, BITs, M_d, M, (l_prefill, l_decode), omega, (comm_prefill, comm_decode) \
@@ -572,7 +581,7 @@ def enumerate_best_result(args):
             comm_cost_model.set_device_rank_map(maps)
             # test 
             bz_pack = (global_bz, prefill_bz, bz_decode_max)
-            res = shaq_h_main(num_hidden_layers, cost_model_pack, bz_pack, current_D)
+            res = shaq_h_inernal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D)
             print(res['obj'], best_plan['obj'])
             if res['obj'] < best_plan['obj']:
                 print("Better Plan Generated")

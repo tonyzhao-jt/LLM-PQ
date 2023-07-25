@@ -16,7 +16,14 @@ import torch.nn as nn
 class DecoderStacked(nn.Module):
     def __init__(self, decoder_layer, num_layers, model_type='opt'):
         super().__init__()
-        self.layers = nn.ModuleList([copy.deepcopy(decoder_layer) for _ in range(num_layers)])
+        self.layers = nn.ModuleList([copy.deepcopy(decoder_layer).cuda() for _ in range(num_layers)])
+        self.layers = self.layers
+        for layer in self.layers:
+            if hasattr(decoder_layer, 'self_attention'):
+                attention_mod = layer.self_attention
+            else:
+                attention_mod = layer.self_attn
+            attention_mod.kv_cache_to_device(torch.device('cuda'))
         self.num_layers = num_layers
         self.model_type = model_type
     
@@ -108,7 +115,6 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
         #     hidden_states = hidden_states.to(torch.int8)
         
         hidden_states = hidden_states.cuda()
-        decoder_layer = decoder_layer.cuda()
         if 0 in shard_strategy['shard']:
             # init kv cache 
             request_id = 1
@@ -123,7 +129,6 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
             attention_mod.kv_status[request_id][0] = past_seq_length
             attention_mod.kv_status[request_id][1] = input_seq_length
 
-        
         decoder_stacked = DecoderStacked(decoder_layer, num_stacks, model_type=model_name)
         with torch.no_grad():
             if model_name.lower() == 'opt':
