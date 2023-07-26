@@ -47,23 +47,43 @@ unit = _globals.MEM_UNIT
 def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
     prob = pulp.LpProblem("max Latency Minimization Problem", pulp.LpMinimize)
     # Create a new PuLP model
+    # use it to ensure the result to be contiguous
+
 
     B = len(BITs)
     z = pulp.LpVariable.dicts("z", [(i, j, b) for i in range(L) for j in range(N) for b in range(B)], cat=pulp.LpBinary)
     y = pulp.LpVariable.dicts("y", [(i, b) for i in range(L) for b in range(B)], cat=pulp.LpBinary)
+    x = pulp.LpVariable.dicts("x", [(i, j) for i in range(L) for j in range(N)], cat=pulp.LpBinary)
 
     # Define the objective function
     prob += pulp.lpSum([omega[i][b] * y[(i, b)] for i in range(L) for b in range(B)])
 
     # Define the constraints
     for i in range(L):
-        prob += pulp.lpSum([z[(i, j, b)] for j in range(N) for b in range(B)]) == 1
-    for i in range(L):
         for b in range(B):
             prob += pulp.lpSum([z[(i, j, b)] for j in range(N)]) == y[(i, b)]
+    for i in range(L):
+        for j in range(N):
+            prob += pulp.lpSum([z[(i, j, b)] for b in range(B)]) == x[(i, j)]
+    
+    for i in range(L):
+        prob += pulp.lpSum([x[(i, j)] for j in range(N)]) == 1
+    for i in range(L):
+        prob += pulp.lpSum([y[(i, b)] for b in range(B)]) == 1
+    for i in range(L):
+        prob += pulp.lpSum([z[(i, j, b)] for j in range(N) for b in range(B)]) == 1
     for j in range(N):
         prob += pulp.lpSum([z[(i, j, b)] * M[i][b] for i in range(L) for b in range(B)]) <= M_d[j]
     
+    
+    prob += x[(0,0)] == 1 # the first layer must lie in the first device
+    prob += x[(L-1,N-1)] == 1
+    if N > 1:
+        for i in range(1, L):
+            for j in range(N-1):
+                for k in range(j+1, N):
+                    prob += x[(i,j)] + x[(i-1,k)] <= 1
+            
     # Solve the problem
     solver = create_ilp_solver(verbose_ilp, ilp_time_limit, None)
     status = prob.solve(solver)
@@ -92,6 +112,11 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
                 for b in range(B):
                     mem_j += z[(i, j, b)].varValue * M[i][b]
             print("mem_j = {}".format(mem_j))
+        
+        # for i in range(L):
+        #     print()
+        #     for j in range(N):
+        #         print(x[(i,j)].varValue, end='|')
             
         return result, pulp.value(prob.objective) 
     else:

@@ -57,6 +57,8 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
     B = len(BITs)
     z = pulp.LpVariable.dicts("z", [(i, j, b) for i in range(L) for j in range(N) for b in range(B)], cat=pulp.LpBinary)
     y = pulp.LpVariable.dicts("y", [(i, b) for i in range(L) for b in range(B)], cat=pulp.LpBinary)
+    x = pulp.LpVariable.dicts("x", [(i, j) for i in range(L) for j in range(N)], cat=pulp.LpBinary)
+
     T_prefill_j = pulp.LpVariable.dicts("T_prefill_j", [j for j in range(N)], lowBound=0, cat=pulp.LpContinuous)
     T_decode_j = pulp.LpVariable.dicts("T_decode_j", [j for j in range(N)], lowBound=0, cat=pulp.LpContinuous)
     T_prefill = pulp.LpVariable("T_prefill", lowBound=0, cat=pulp.LpContinuous)
@@ -73,12 +75,21 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
           + theta * pulp.lpSum([omega[i][b] * y[(i, b)] for i in range(L) for b in range(B)])
 
     force_zero(l_prefill, z, prob)
-    # Define the constraints
-    for i in range(L):
-        prob += pulp.lpSum([z[(i, j, b)] for j in range(N) for b in range(B)]) == 1
+     # Define the constraints
     for i in range(L):
         for b in range(B):
             prob += pulp.lpSum([z[(i, j, b)] for j in range(N)]) == y[(i, b)]
+    for i in range(L):
+        for j in range(N):
+            prob += pulp.lpSum([z[(i, j, b)] for b in range(B)]) == x[(i, j)]
+    
+    for i in range(L):
+        prob += pulp.lpSum([x[(i, j)] for j in range(N)]) == 1
+    for i in range(L):
+        prob += pulp.lpSum([y[(i, b)] for b in range(B)]) == 1
+    for i in range(L):
+        prob += pulp.lpSum([z[(i, j, b)] for j in range(N) for b in range(B)]) == 1
+        
     for j in range(N):
         prob += pulp.lpSum([z[(i, j, b)] * M[i][b] for i in range(L) for b in range(B)]) <= M_d[j]
         prob += pulp.lpSum([z[(i, j, b)] * l_prefill[i][j][b] for i in range(L) for b in range(B)]) <= T_prefill_j[j]
@@ -88,6 +99,14 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, l, omega, comm, theta, bz_pack):
         prob += T_decode_j[j] >= comm_decode[j]
         prob += T_prefill >= T_prefill_j[j]
         prob += T_decode >= T_decode_j[j]
+    
+    prob += x[(0,0)] == 1 # the first layer must lie in the first device
+    prob += x[(L-1,N-1)] == 1
+    if N > 1:
+        for i in range(1, L):
+            for j in range(N-1):
+                for k in range(j+1, N):
+                    prob += x[(i,j)] + x[(i-1,k)] <= 1
 
     solver = create_ilp_solver(verbose_ilp, ilp_time_limit, ilp_tolerance)
     status = prob.solve(solver)

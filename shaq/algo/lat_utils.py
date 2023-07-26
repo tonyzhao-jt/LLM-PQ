@@ -3,6 +3,14 @@ from ..partitioner.helper import (
     lat_prediction,
 )
 from .utils import get_comm_payload_size
+
+def stage_pure_exe_latency(D_name, bits, lat_cost_model, b, s, i, use_profiler_prediction=False):
+    stage_lat = 0
+    for _, bit in enumerate(bits):
+        atten_bit, ffn_bit = bit
+        stage_lat += lat_prediction(lat_cost_model, D_name, b, s, i, atten_bit, ffn_bit, use_profiler_prediction=use_profiler_prediction)
+    return stage_lat
+
 def calculate_max_stage_lat(D, use_plan, \
                                        cost_model_pack, b, s=1, i=1, use_profiler_prediction=False, comm_size=0):
     lat_cost_model, comm_cost_model = cost_model_pack
@@ -13,13 +21,9 @@ def calculate_max_stage_lat(D, use_plan, \
     stage_lat_list = []
     comm_lat_list = []
     for device_rank, shard_strategy in use_plan.items():
-        stage_lat = 0
         D_name = D[device_rank]
-        for layer_idx, layer_spec in shard_strategy.items():
-            shard = layer_spec['shard']
-            bit = layer_spec['bits']
-            atten_bit, ffn_bit = bit
-            stage_lat += lat_prediction(lat_cost_model, D_name, b, s, i, atten_bit, ffn_bit, use_profiler_prediction=use_profiler_prediction)
+        bits = [layer_spec['bits'] for layer_idx, layer_spec in shard_strategy.items()]
+        stage_lat = stage_pure_exe_latency(D_name, bits, lat_cost_model, b, s, i, use_profiler_prediction=use_profiler_prediction)
         # next stage
         next_stage = (device_rank + 1) % len(D)
         t_comm = comm_cost_model.predict_comm_time(device_rank, next_stage, comm_size)

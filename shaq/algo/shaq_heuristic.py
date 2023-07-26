@@ -38,7 +38,12 @@ from .utils import (
     get_comm_payload_size, get_comm_cost,
     get_combinations
 )
+
+import copy
+
 from .mem_utils import get_device_topo_available_mem_with_order, get_M_with_bitwidth_pair
+from .mem_utils import check_memory_budget
+from .lat_utils import stage_pure_exe_latency
 import os 
 # default libs
 import pickle
@@ -69,28 +74,49 @@ def reset_device_rank_index(D, current_D):
         maps[ref_current_rank] = original_rank
     return maps
 
+
 def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
     prob = pulp.LpProblem("max Latency Minimization Problem", pulp.LpMinimize)
     # Create a new PuLP model
+    # use it to ensure the result to be contiguous
+
 
     B = len(BITs)
     z = pulp.LpVariable.dicts("z", [(i, j, b) for i in range(L) for j in range(N) for b in range(B)], cat=pulp.LpBinary)
     y = pulp.LpVariable.dicts("y", [(i, b) for i in range(L) for b in range(B)], cat=pulp.LpBinary)
+    x = pulp.LpVariable.dicts("x", [(i, j) for i in range(L) for j in range(N)], cat=pulp.LpBinary)
 
     # Define the objective function
     prob += pulp.lpSum([omega[i][b] * y[(i, b)] for i in range(L) for b in range(B)])
 
     # Define the constraints
     for i in range(L):
-        prob += pulp.lpSum([z[(i, j, b)] for j in range(N) for b in range(B)]) == 1
-    for i in range(L):
         for b in range(B):
             prob += pulp.lpSum([z[(i, j, b)] for j in range(N)]) == y[(i, b)]
+    for i in range(L):
+        for j in range(N):
+            prob += pulp.lpSum([z[(i, j, b)] for b in range(B)]) == x[(i, j)]
+    
+    for i in range(L):
+        prob += pulp.lpSum([x[(i, j)] for j in range(N)]) == 1
+    for i in range(L):
+        prob += pulp.lpSum([y[(i, b)] for b in range(B)]) == 1
+    for i in range(L):
+        prob += pulp.lpSum([z[(i, j, b)] for j in range(N) for b in range(B)]) == 1
     for j in range(N):
         prob += pulp.lpSum([z[(i, j, b)] * M[i][b] for i in range(L) for b in range(B)]) <= M_d[j]
     
+    
+    prob += x[(0,0)] == 1 # the first layer must lie in the first device
+    prob += x[(L-1,N-1)] == 1
+    if N > 1:
+        for i in range(1, L):
+            for j in range(N-1):
+                for k in range(j+1, N):
+                    prob += x[(i,j)] + x[(i-1,k)] <= 1
+            
     # Solve the problem
-    solver = create_ilp_solver(verbose_ilp, ilp_time_limit, ilp_tolerance)
+    solver = create_ilp_solver(verbose_ilp, ilp_time_limit, None)
     status = prob.solve(solver)
     # prob.solve(pulp.GUROBI())
     # prob.solve()
@@ -117,11 +143,17 @@ def solve_ilp_pulp(L, N, BITs, M, M_d, omega):
                 for b in range(B):
                     mem_j += z[(i, j, b)].varValue * M[i][b]
             print("mem_j = {}".format(mem_j))
+        
+        # for i in range(L):
+        #     print()
+        #     for j in range(N):
+        #         print(x[(i,j)].varValue, end='|')
             
         return result, pulp.value(prob.objective) 
     else:
         print("Not Feasible for adabits")
         return NOT_AVAILABLE, 1e10
+
 
 
 
@@ -198,32 +230,36 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
 # objective
 # object 1
 
+from ..partitioner.helper import (
+    lat_prediction,
+)
 def get_device_e2e_lat(device_rank, partition_result, bit_assignment, \
-                        l_prefill, l_decode, record=False, device_info_dict=None):
+                        current_D, lat_cost_model, params, \
+                        record=False, device_info_dict=None):
+    D_name = current_D[device_rank]
     layer_range = partition_result[device_rank]
-    prefill_lat = 0
-    decode_lat = 0
+    bits = [(bit_assignment[2 * layer_idx], bit_assignment[2 * layer_idx + 1]) for layer_idx in range(layer_range[0], layer_range[1])]
+    prefill_bz, bz_decode_max, s, mu_n = params
+    
     for layer_idx in range(layer_range[0], layer_range[1]):
         atten_bit, ffn_bit = bit_assignment[2 * layer_idx], bit_assignment[2 * layer_idx+1]
         bit = atten_bit
         if record:
             device_info_dict[device_rank][atten_bit]['layers'].append(layer_idx)
             device_info_dict[device_rank][atten_bit]['sum'] += 1
-        prefill_lat += l_prefill[layer_idx, device_rank, available_bits.index(bit)]
-        decode_lat += l_decode[layer_idx, device_rank, available_bits.index(bit)]
+    prefill_lat = stage_pure_exe_latency(D_name, bits, lat_cost_model, prefill_bz, s, 0, use_profiler_prediction=use_profiler_prediction)
+    decode_lat = stage_pure_exe_latency(D_name, bits, lat_cost_model, bz_decode_max, 1, s + int(mu_n / 2), use_profiler_prediction=use_profiler_prediction)
     return prefill_lat, decode_lat
 
 def check_latency(partition_result:dict, bit_assignment: dict, \
-                   l_prefill, l_decode, \
-                    available_bits, \
-                    mu_n,
-                    prefill_micro_bs_num, decode_micro_bs_num):
+                    current_D, lat_cost_model, params, \
+                    prefill_micro_bs_num, decode_micro_bs_num, verbose=False):
     stage_prefill_lat = []
     stage_decode_lat = []
     # negelect the intra-node communication
+    prefill_bz, bz_decode_max, s, mu_n = params
     for rank, layer_range in partition_result.items():
-        prefill_lat, decode_lat = get_device_e2e_lat(rank, partition_result, bit_assignment, \
-                        l_prefill, l_decode)
+        prefill_lat, decode_lat = get_device_e2e_lat(rank, partition_result, bit_assignment, current_D, lat_cost_model, params)
         stage_prefill_lat.append(prefill_lat)
         stage_decode_lat.append(decode_lat)
     # sum
@@ -237,7 +273,8 @@ def check_latency(partition_result:dict, bit_assignment: dict, \
     decode_time = decode_lat + max_decode_lat * (decode_micro_bs_num - 1) * (mu_n - 1)
     # latency equals
     e2e_lat = prefill_time + decode_time
-    print(stage_decode_lat, stage_prefill_lat, e2e_lat)
+    if verbose:
+        print(stage_decode_lat, stage_prefill_lat, e2e_lat)
     return e2e_lat
 
 # object 2
@@ -253,7 +290,7 @@ def check_bitwidth_omega(bit_assignment: dict, available_bits: list, omega):
 
 
 def change_partition_result(partition_result:dict, pioneer_rank, straggler_rank, num_convert):
-    copied_partition_result = partition_result.copy()
+    copied_partition_result = copy.deepcopy(partition_result)
     # each rank value
     for rank, value in partition_result.items():
         if rank == pioneer_rank:
@@ -273,7 +310,7 @@ def change_partition_result(partition_result:dict, pioneer_rank, straggler_rank,
 
 
 def exchange_precisions(original_bit_assignment:dict, pioneer_layer_idx:int, straggler_idxs:list, conversion:list):
-    original_bit_assignment = original_bit_assignment.copy()
+    original_bit_assignment = copy.deepcopy(original_bit_assignment) 
     num_convert = len(straggler_idxs)
     layer_num = len(original_bit_assignment) // 2
     original_bitwidths_values = list(original_bit_assignment.values())
@@ -285,33 +322,44 @@ def exchange_precisions(original_bit_assignment:dict, pioneer_layer_idx:int, str
     pi_precs, straggler_precs = conversion
     candidate_bit_assignment = []
     for insert_idx in range(num_convert):
-        copied_bit_assignment = original_bitwidths.copy()
-
+        copied_bit_assignment = copy.deepcopy(original_bitwidths)
         if pioneer_layer_idx < min_straggler_layer_idx: # pioneer layer is before the straggler
             copied_bit_assignment.pop(pioneer_layer_idx)
             for _ in range(num_convert):
                 copied_bit_assignment.insert(pioneer_layer_idx, straggler_precs)
             # pop all straggler precisions
+            straggler_idxs_len = len(straggler_idxs)
+            ref_idx = 0
             pop_idx = 0
-            for ref_idx, strag_layer_idx in enumerate(straggler_idxs):
-                copied_bit_assignment.pop(strag_layer_idx + num_convert - pop_idx) # offset
-                if ref_idx == insert_idx:
-                    copied_bit_assignment.insert(strag_layer_idx + num_convert - pop_idx, pi_precs)
-                else:
-                    pop_idx += 1
+            while ref_idx < straggler_idxs_len:
+                strag_layer_idx = straggler_idxs[ref_idx]
+                try:
+                    try_insert_idx = strag_layer_idx + (num_convert - 1) + pop_idx # new idx
+                    copied_bit_assignment.pop(try_insert_idx) # offset
+                    if ref_idx == insert_idx:
+                        copied_bit_assignment.insert(try_insert_idx, pi_precs)
+                        # remove on add one equals not add
+                    else:
+                        # no insert idx, 
+                        # as asecnding, the suceed -=1
+                        pop_idx -= 1
+                except:
+                    import pdb; pdb.set_trace()
+                ref_idx += 1
         elif pioneer_layer_idx > max_straggler_layer_idx: # pioneer layer is after the straggler
             copied_bit_assignment.pop(pioneer_layer_idx)
             for _ in range(num_convert):
                 copied_bit_assignment.insert(pioneer_layer_idx - num_convert, straggler_precs)
             # pop all straggler precisions
-            pop_idx = 0
+            pop_idx = 0 # when ever an element is poped, the index should be decreased
             for ref_idx, strag_layer_idx in enumerate(straggler_idxs):
                 copied_bit_assignment.pop(strag_layer_idx)
                 if ref_idx == insert_idx:
-                    copied_bit_assignment.insert(strag_layer_idx - pop_idx, pi_precs)
+                    copied_bit_assignment.insert(strag_layer_idx + pop_idx, pi_precs)
                 else:
-                    pop_idx += 1
+                    pop_idx -= 1
         else:
+            print(pioneer_layer_idx, straggler_idxs)
             raise ValueError('pioneer layer is in the middle of straggler layers')
 
         candidate_bit_assignment.append(copied_bit_assignment)
@@ -326,7 +374,65 @@ def exchange_precisions(original_bit_assignment:dict, pioneer_layer_idx:int, str
         candidate_bit_assignment_dict_list.append(candidate_bit_assignment_dict)
     return candidate_bit_assignment_dict_list
 
+def are_dicts_equal(dict1, dict2):
+    """
+    Returns True if the two dictionaries have the same key-value pairs, False otherwise.
+    """
+    if len(dict1) != len(dict2):
+        return False
+    for key, value in dict1.items():
+        if key not in dict2 or dict2[key] != value:
+            return False
+    return True
 
+def check_new_plan_valid(old_partition, old_bit_ass, 
+                         new_partition, new_bit_ass):
+    # check if the partition has the same layer numbers
+    old_layer_sum = 0
+    new_layer_sum = 0
+    for rank, layer_range in old_partition.items():
+        old_layer_sum += layer_range[1] - layer_range[0]
+        new_layer_sum += new_partition[rank][1] - new_partition[rank][0]
+    # check bitwidth
+    assert old_layer_sum == new_layer_sum, "layer num sum should same"
+    assert len(old_bit_ass) == len(new_bit_ass), "bit assign should same"
+
+
+
+def calculate_stage_latency(current_D, partition_result, bit_assignment, \
+                            lat_cost_model, params, \
+                            comm_prefill, comm_decode, \
+                            prefill_micro_bs_num, decode_micro_bs_num, \
+                            device_info_dict=None, record=True, verbose=False):
+    prefill_bz, bz_decode_max, s, mu_n = params
+    lat_stages = []
+    # get latency of all stages
+    stage_time_dict = {}
+    stage_time_dict_decomposed = {}
+    for device_rank, device_name in current_D.items():
+        prefill_stage_lat, decode_stage_lat = get_device_e2e_lat(device_rank, partition_result, bit_assignment, \
+                    current_D, lat_cost_model, params, record=record, device_info_dict=device_info_dict)
+        
+        # communication time
+        prefill_comm = comm_prefill[device_rank]
+        decode_comm = comm_decode[device_rank]
+        # max to get the time
+        prefill_stage_lat = max(prefill_stage_lat, prefill_comm)
+        decode_stage_lat = max(decode_stage_lat, decode_comm)
+
+        # prefill_time[device_rank] = prefill_stage_lat
+        # decode_time[device_rank] = decode_stage_lat
+
+        # heap_prefill.insert((prefill_stage_lat, device_rank))
+        # heap_decode.insert((decode_stage_lat, device_rank))
+        # heap_weighted.insert((prefill_stage_lat * (prefill_micro_bs_num - 1) + (mu_n - 1) * (decode_micro_bs_num - 1) * decode_stage_lat, device_rank))
+        stage_time = prefill_stage_lat * (prefill_micro_bs_num - 1) + (mu_n - 1) * (decode_micro_bs_num - 1) * decode_stage_lat
+        stage_time_dict[device_rank] = stage_time
+        stage_time_dict_decomposed[device_rank] = (prefill_stage_lat, decode_stage_lat)
+        lat_stages.append((stage_time, device_rank))
+    if verbose:
+        print("better plan", stage_time_dict)
+    return lat_stages, (stage_time_dict, stage_time_dict_decomposed)
 
 
 # possible conversion pairs
@@ -336,7 +442,7 @@ convert_pairs = [
     ('8:tc-li', [4, 2]),
 ]
 
-def shaq_h_inernal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D):
+def shaq_h_internal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D):
     (global_bz, prefill_bz, bz_decode_max) = bz_pack 
     current_D = D 
     group_L, N, BITs, M_d, M, (l_prefill, l_decode), omega, (comm_prefill, comm_decode) \
@@ -359,61 +465,41 @@ def shaq_h_inernal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D):
         # get latency of all stages
         partition_result = res['plan']['partition_result']
         bit_assignment = res['plan']['bit_assignment']
+        res['D'] = current_D
+        res['prefill_bz'] = prefill_bz
+        res['bz_decode_max'] = bz_decode_max
+        model_mem_estimator, comm_cost_model, lat_cost_model = cost_model_pack
+        check_memory_budget(res, model_mem_estimator, name='shaq_h')
         device_num = len(current_D)
 
         # create a heap to store the latency of each stage
         # heap_weighted = MinMaxHeap(device_num)
-        lat_stages = []
         
         '''
             Collect
             rank: {
-                16: {layers: [layer_idx, layer_idx, ...], sum: n, heap: MinMaxHeap of indicator},
-                8: {layers: [layer_idx, layer_idx, ...], sum: n, heap: MinMaxHeap of indicator},
+                16: {layers: [layer_idx, layer_idx, ...], sum: n},
+                8: {layers: [layer_idx, layer_idx, ...], sum: n},
             }
         '''
-        # collect
-        # device : {
-        # }
         device_info_dict = {device_rank: {bit: {
             'layers': [],
             'sum': 0,
             # 'heap': MinMaxHeap(200) # big enough
         } for bit in available_bits} for device_rank in current_D}
+        params = (prefill_bz, bz_decode_max, s, mu_n)
 
-        # prefill_time = {}
-        # decode_time = {}
-        stage_time_dict = {}
-
-        for device_rank, device_name in current_D.items():
-            prefill_stage_lat, decode_stage_lat = get_device_e2e_lat(device_rank, partition_result, bit_assignment, \
-                        l_prefill, l_decode, record=True, device_info_dict=device_info_dict)
-            
-            # communication time
-            prefill_comm = comm_prefill[device_rank]
-            decode_comm = comm_decode[device_rank]
-            # max to get the time
-            prefill_stage_lat = max(prefill_stage_lat, prefill_comm)
-            decode_stage_lat = max(decode_stage_lat, decode_comm)
-
-            # prefill_time[device_rank] = prefill_stage_lat
-            # decode_time[device_rank] = decode_stage_lat
-
-            # heap_prefill.insert((prefill_stage_lat, device_rank))
-            # heap_decode.insert((decode_stage_lat, device_rank))
-            # heap_weighted.insert((prefill_stage_lat * (prefill_micro_bs_num - 1) + (mu_n - 1) * (decode_micro_bs_num - 1) * decode_stage_lat, device_rank))
-            stage_time = prefill_stage_lat * (prefill_micro_bs_num - 1) + (mu_n - 1) * (decode_micro_bs_num - 1) * decode_stage_lat
-            stage_time_dict[device_rank] = stage_time
-            lat_stages.append((stage_time, device_rank))
-
+        lat_stages, (stage_time_dict, stage_time_dict_decomposed) = calculate_stage_latency(current_D, partition_result, bit_assignment, \
+                            lat_cost_model, params, \
+                            comm_prefill, comm_decode, \
+                            prefill_micro_bs_num, decode_micro_bs_num, \
+                            device_info_dict=device_info_dict, record=True)
+        
         step = 1 # each time change 1 precisions
-        end_flag = False
         obj1 = check_latency(partition_result, bit_assignment, \
-                   l_prefill, l_decode, \
-                    available_bits, \
-                    mu_n,
-                    prefill_micro_bs_num, decode_micro_bs_num)
-        obj2 = current_omega = check_bitwidth_omega(bit_assignment, available_bits, omega)
+                            current_D, lat_cost_model, params, \
+                            prefill_micro_bs_num, decode_micro_bs_num)
+        obj2 = check_bitwidth_omega(bit_assignment, available_bits, omega)
         old_obj = obj1 + theta * obj2
         
         # we cannot start from pipedge as when loose the memory bound, it will place all layers to the same device(powerful device)
@@ -422,6 +508,7 @@ def shaq_h_inernal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D):
         # worst case: O(N/2 * L/2)
         # as always higher substitue lower, worst case it evenly has N/2 stragglers and pioneers, and each layer in pioneer has subL layers for conversion
         
+        optimal_obj = old_obj
         while True:
             # each time got the straggler and pioneer
             #O(NlogN)
@@ -429,8 +516,9 @@ def shaq_h_inernal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D):
             straggler = sorted_lat_stages[-1]
             # candidate pioneers
             candidate_pioneers = sorted_lat_stages[:-1]
-            out_most_end_flag = True 
             # O(N)
+            # check whether there is a pioneer that can help
+            better_candidate = None
             for pioneer in candidate_pioneers:
                 straggler_rank = straggler[1] # always stragller, if you cannot speed up straggler, you can never speed up
                 straggler_lat = straggler[0]
@@ -438,117 +526,113 @@ def shaq_h_inernal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D):
                 pioneer_lat = pioneer[0]
                 original_max_lat = max(straggler_lat, pioneer_lat)
                 # get precision numbers, and check from high to low
-                end_flag = True
-                optimal_diff = 1e10
-                optimal_obj1_new = 1e10
-                optimal_obj2_new = 1e10
-                optimal_candidate = None
-                for _ in range(step):
-                    # iterate among all possible conversion pairs O(C) ~ O(1)
-                    for pioneer_prec, (strag_prec, num_required) in convert_pairs:
-                        # first check whether this pair is possible, if not, continue
-                        if device_info_dict[pioneer_rank][pioneer_prec]['sum'] <= 0:
-                            continue
-                        if device_info_dict[straggler_rank][strag_prec]['sum'] <= num_required:
-                            continue
-                        # available, get pairs
-                        pioneer_prec_layers = device_info_dict[pioneer_rank][pioneer_prec]['layers']
-                        straggler_prec_layers = device_info_dict[straggler_rank][strag_prec]['layers']
-                        possible_straggler_layer_pairs = get_combinations(straggler_prec_layers, num_required)
-                        
-                        conversion = (pioneer_prec, strag_prec)
-                        new_partition_result = change_partition_result(partition_result, pioneer_rank, straggler_rank, num_required)
+                # iterate among all possible conversion pairs O(C) ~ O(1)
+                for pioneer_prec, (strag_prec, num_required) in convert_pairs:
+                    # first check whether this pair is possible, if not, continue
+                    if device_info_dict[pioneer_rank][pioneer_prec]['sum'] <= 0:
+                        continue
+                    if device_info_dict[straggler_rank][strag_prec]['sum'] <= num_required:
+                        continue
+                    # available, get pairs
+                    pioneer_prec_layers = device_info_dict[pioneer_rank][pioneer_prec]['layers']
+                    straggler_prec_layers = device_info_dict[straggler_rank][strag_prec]['layers']
+                    possible_straggler_layer_pairs = get_combinations(straggler_prec_layers, num_required)
+                    
+                    conversion = (pioneer_prec, strag_prec)
+                    new_partition_result = change_partition_result(partition_result, pioneer_rank, straggler_rank, num_required)
 
-
-                        # worst case O(subL)
-                        for pioneer_layer_idx in pioneer_prec_layers:
-                            # worst case O(subL!/((subL-nums)! * nums!)) << O(subL^{nums})
-                            for straggler_layer_idxs in possible_straggler_layer_pairs:
-                                # all possible new placesment O(nums)
-                                candidates = exchange_precisions(bit_assignment, pioneer_layer_idx, straggler_layer_idxs, conversion)
-                                # get best one that minimize the objective
-                                for candidate in candidates:
+                    # worst case O(subL)
+                    # find the one with smallest omega value
+                    obj1_new = None 
+                    obj2_optimal = 1e10
+                    layer_change_candidate = None
+                    for pioneer_layer_idx in pioneer_prec_layers:
+                        # worst case O(subL!/((subL-nums)! * nums!)) << O(subL^{nums})
+                        for straggler_layer_idxs in possible_straggler_layer_pairs:
+                            # all possible new placesment O(nums)
+                            # print(straggler, pioneer)
+                            candidates = exchange_precisions(bit_assignment, pioneer_layer_idx, straggler_layer_idxs, conversion)
+                            # get best one that minimize the objective
+                            for candidate in candidates:
+                                # print(are_dicts_equal(bit_assignment, candidate))
+                                # same moving resuling in the same speed. no need to repeat
+                                if obj1_new is None:
                                     try:
                                         obj1_new = check_latency(new_partition_result, candidate, \
-                                                    l_prefill, l_decode, \
-                                                    available_bits, \
-                                                    mu_n,
-                                                    prefill_micro_bs_num, decode_micro_bs_num)
+                                                            current_D, lat_cost_model, params, \
+                                                            prefill_micro_bs_num, decode_micro_bs_num)
+                                        # print("Move {} layers from {} to {}".format(num_required, straggler_rank, pioneer_rank))
+                                        # print("Latency new", obj1_new)
                                     except:
                                         import pdb; pdb.set_trace()
-                                    obj2_new = check_bitwidth_omega(candidate, available_bits, omega)
-                                    # overall objective
-                                    new_obj = obj1_new + theta * obj2_new
-                                    diff = new_obj - old_obj # smaller, better
-                                    if diff > 0 or diff > optimal_diff:
-                                        continue # not better
-                                    else:
-                                        print("Better solution found")
-                                        optimal_diff = diff 
-                                        optimal_candidate = candidate
-                                        optimal_obj1_new = obj1_new
-                                        optimal_obj2_new = obj2_new
+                                obj2_new = check_bitwidth_omega(candidate, available_bits, omega) * theta
+                                if obj2_new < obj2_optimal:
+                                    # print("new obj2:", obj2_new)
+                                    obj2_optimal = obj2_new
+                                    better_bit_assignment = candidate
+                                    better_layer_partition = new_partition_result
+                                    layer_change_candidate = (pioneer_layer_idx, straggler_layer_idxs)
+                    
+                    new_obj = obj1_new + obj2_optimal if obj1_new is not None else None
+                    if new_obj is not None and new_obj < optimal_obj:
+                        optimal_obj = new_obj
+                        # update the best one
+                        better_candidate = {
+                            'obj': new_obj,
+                            'layer_changed': layer_change_candidate,
+                            'involved_devices': [straggler_rank, pioneer_rank],
+                            'new_sol': {
+                                'partition_result': better_layer_partition,
+                                'bit_assignment': better_bit_assignment
+                            }
+                        }
                                 
-                        # has candiate for this conversion pair
-                        if optimal_candidate is not None:
-                            end_flag = False # indicate still room to improve
-                            # update
-                            bit_assignment = optimal_candidate
-                            partition_result = new_partition_result
-                            # update obj
-                            obj1 = optimal_obj1_new
-                            obj2 = optimal_obj2_new
-                            print(f'update bit assignment, obj1: {obj1_new}, obj2: {obj2_new}, diff: {diff}')
-
-                            break 
-
-                if not end_flag:
-                    # already updated. update thr group
-                    # straggler
-                    device_name = current_D[straggler_rank]
-                    prefill_stage_lat, decode_stage_lat = get_device_e2e_lat(straggler_rank, partition_result, bit_assignment, \
-                            l_prefill, l_decode, \
-                            use_profiler_prediction)
-                    # update heap
-                    prefill_comm = comm_prefill[straggler_rank]
-                    decode_comm = comm_decode[straggler_rank]
-                    # max to get the time
-                    prefill_stage_lat = max(prefill_stage_lat, prefill_comm)
-                    decode_stage_lat = max(decode_stage_lat, decode_comm)
-                    # update dict
-                    stage_time = prefill_stage_lat * (prefill_micro_bs_num - 1) + (mu_n - 1) * (decode_micro_bs_num - 1) * decode_stage_lat
-                    stage_time_dict[straggler_rank] = stage_time
-                    # pioneer
-                    device_name = current_D[pioneer_rank]
-                    prefill_stage_lat, decode_stage_lat = get_device_e2e_lat(pioneer_rank, partition_result, bit_assignment, \
-                            l_prefill, l_decode, \
-                            use_profiler_prediction)
-                    prefill_comm = comm_prefill[pioneer_rank]
-                    decode_comm = comm_decode[pioneer_rank]
-                    # max to get the time
-                    prefill_stage_lat = max(prefill_stage_lat, prefill_comm)
-                    decode_stage_lat = max(decode_stage_lat, decode_comm)
-                    # update dict
-                    stage_time = prefill_stage_lat * (prefill_micro_bs_num - 1) + (mu_n - 1) * (decode_micro_bs_num - 1) * decode_stage_lat
-                    stage_time_dict[pioneer_rank] = stage_time
-
-                    # update lat_stages
-                    lat_stages = []
-                    for rank, time in stage_time_dict.items():
-                        lat_stages.append((time, rank))
-                    
-                    out_most_end_flag = False
-                    break
+                # enumrated all possible conversion and layers already
+                # has candiate for this conversion pair
+                # in an ascending order, thus first one find then break
+                if better_candidate is not None:
+                    check_new_plan_valid(partition_result, bit_assignment, \
+                        better_candidate['new_sol']['partition_result'], better_candidate['new_sol']['bit_assignment'])
+                    # check the result
+                    print("Update")
+                    layer_change_candidate = better_candidate['layer_changed']
+                    straggler_rank, pioneer_rank = better_candidate['involved_devices']
+                    new_partition_result = better_candidate['new_sol']['partition_result']
+                    new_bit_assignment = better_candidate['new_sol']['bit_assignment']
+                    new_obj = better_candidate['obj']
+                    # update
+                    bit_assignment = new_bit_assignment
+                    partition_result = new_partition_result
+                    # update obj
+                    print(f'obj update from {optimal_obj} to {new_obj}')
+                    optimal_obj = new_obj
+                    break 
                 else:
-                    continue 
-                    
-            if out_most_end_flag:
-                break # no more improvement
+                    continue
 
+            if better_candidate is not None: # means the obj is updated
+                # continue to update the result
+                # update
+                # renew the latency
+                device_info_dict = {device_rank: {bit: {
+                    'layers': [],
+                    'sum': 0,
+                    # 'heap': MinMaxHeap(200) # big enough
+                } for bit in available_bits} for device_rank in current_D}
+                lat_stages, (stage_time_dict, stage_time_dict_decomposed) = calculate_stage_latency(current_D, partition_result, bit_assignment, \
+                            lat_cost_model, params, \
+                            comm_prefill, comm_decode, \
+                            prefill_micro_bs_num, decode_micro_bs_num, \
+                            device_info_dict=device_info_dict, record=True, verbose=True)
+                continue
+            else:
+                # no available find, done.
+                break
+                    
     
     res['plan']['partition_result'] = partition_result
     res['plan']['bit_assignment'] = bit_assignment
-    res['plan']['obj'] = obj1 + theta * obj2
+    res['obj'] = optimal_obj
     return res
     # device_info = get_device_info(device_names, device_numbers)
     # file_name = f'adaptive_bit_' + model_size + '_' + device_info + '.pkl'
@@ -581,10 +665,10 @@ def enumerate_best_result(args):
             comm_cost_model.set_device_rank_map(maps)
             # test 
             bz_pack = (global_bz, prefill_bz, bz_decode_max)
-            res = shaq_h_inernal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D)
-            print(res['obj'], best_plan['obj'])
+            res = shaq_h_internal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D)
+            # print(res['obj'], best_plan['obj'])
             if res['obj'] < best_plan['obj']:
-                print("Better Plan Generated")
+                print("Better Plan Generated", res['obj'])
                 best_plan = {
                     'prefill_bz': prefill_bz,
                     'bz_decode_max': bz_decode_max,
@@ -595,7 +679,9 @@ def enumerate_best_result(args):
                     'obj': res['obj'],
                     'D': current_D,
                     'maps': maps,
+                    'name': 'shaq'
                 }
+                check_memory_budget(best_plan, model_mem_estimator, name='shaq_h')
             comm_cost_model.clear_device_rank_map()
     # log the best plan
     print('best plan: ', best_plan)
