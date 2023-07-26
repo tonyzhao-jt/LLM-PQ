@@ -225,7 +225,7 @@ shaq-algo --model_size ${model_size} \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
  --fname-suffix "lat" \
- --theta 1 --global_bz 32 --group 1  --debug --ilp_time_limit 160  --s 128 --n 200
+ --theta 1 --global_bz 32 --group 1  --debug --ilp_time_limit 160  --s 128 --n 200 --ilp_tolerance 0.01
 
 model_size=66b
 device_names=("Tesla_V100-SXM2-32GB" "NVIDIA_A100-SXM4-40GB") 
