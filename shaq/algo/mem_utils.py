@@ -53,7 +53,6 @@ def check_memory_budget(res, model_mem_estimator, name='shaq'):
     D = res['D']
     prefill_bz = res['prefill_bz']
     bz_decode_max = res['bz_decode_max']
-    bs_pack = (prefill_bz, bz_decode_max)
     # print("verify memory budget for", name)
     D_mem = get_device_topo_available_mem_with_order(D, model_mem_estimator, prefill_bz, bz_decode_max)
     for device_rank, layers_range in partition_result.items():

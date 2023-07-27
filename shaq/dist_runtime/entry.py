@@ -85,7 +85,7 @@ def handle_results(final_intermediate_result) -> None:
         request_loop_counter[request_id] += 1
         new_input_ids = torch.cat([input_ids, concat_tokens], dim=-1)
         # new_input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
-        if request_loop_counter[request_id] < num_tokens_to_generate:
+        if request_loop_counter[request_id] <= num_tokens_to_generate:
             if request_loop_counter[request_id] == 0:
                 return # do nothing
             request_input_ids[request_id] = new_input_ids
@@ -142,7 +142,7 @@ def run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=None):
     with lock_queue.condition:
         lock_queue.put(1)
         lock_queue.condition.notify_all()
-    results_counter.wait_gte(start_count + prefill_cnt + chunk_size * (num_tokens_to_generate - 1))
+    results_counter.wait_gte(start_count + prefill_cnt + chunk_size * (num_tokens_to_generate))
 
     tok_data = perf_counter()
     latency = tok_data - tik_data

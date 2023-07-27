@@ -1,6 +1,9 @@
 def get_factors(x):
     factors = []
     for i in range(1, x + 1):
+        if i == 1:
+            # factors.append(i)
+            continue # exclude 1, always predict a negative value.
         if x % i == 0:
             # if i == 1:
             #     continue # don't include 1

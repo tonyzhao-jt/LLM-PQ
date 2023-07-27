@@ -42,7 +42,7 @@ from .utils import (
 import copy
 
 from .mem_utils import get_device_topo_available_mem_with_order, get_M_with_bitwidth_pair
-from .mem_utils import check_memory_budget
+from .mem_utils import check_memory_budget, estimate_single_device_mem
 from .lat_utils import stage_pure_exe_latency
 import os 
 # default libs
@@ -262,6 +262,8 @@ def check_latency(partition_result:dict, bit_assignment: dict, \
         prefill_lat, decode_lat = get_device_e2e_lat(rank, partition_result, bit_assignment, current_D, lat_cost_model, params)
         stage_prefill_lat.append(prefill_lat)
         stage_decode_lat.append(decode_lat)
+        if prefill_lat < 0 or decode_lat < 0:
+            return None 
     # sum
     prefill_lat = sum(stage_prefill_lat)
     decode_lat = sum(stage_decode_lat)
@@ -499,6 +501,11 @@ def shaq_h_internal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D)
         obj1 = check_latency(partition_result, bit_assignment, \
                             current_D, lat_cost_model, params, \
                             prefill_micro_bs_num, decode_micro_bs_num)
+        if obj1 is None:
+            res = {
+                'obj': float("inf"),
+            }
+            return res # the case when prediction negative value, when bs = 1, could happend
         obj2 = check_bitwidth_omega(bit_assignment, available_bits, omega)
         old_obj = obj1 + theta * obj2
         
@@ -520,7 +527,7 @@ def shaq_h_internal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D)
             # check whether there is a pioneer that can help
             better_candidate = None
             for pioneer in candidate_pioneers:
-                straggler_rank = straggler[1] # always stragller, if you cannot speed up straggler, you can never speed up
+                straggler_rank = straggler[1] # always stragler, if you cannot speed up straggler, you can never speed up
                 straggler_lat = straggler[0]
                 pioneer_rank = pioneer[1]
                 pioneer_lat = pioneer[0]
@@ -575,6 +582,17 @@ def shaq_h_internal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D)
                     
                     new_obj = obj1_new + obj2_optimal if obj1_new is not None else None
                     if new_obj is not None and new_obj < optimal_obj:
+                        # check this memory is valid or not
+                        straggler_layers_range = better_layer_partition[straggler_rank]
+                        pioneer_layers_range = better_layer_partition[pioneer_rank]
+                        strag_new_mem = estimate_single_device_mem(straggler_layers_range, better_bit_assignment, model_mem_estimator)
+                        pioneer_new_mem = estimate_single_device_mem(pioneer_layers_range, better_bit_assignment, model_mem_estimator)
+                        strag_D_mem = M_d[straggler_rank]
+                        pioneer_D_mem = M_d[pioneer_rank]
+                        # check whether convertion is valid
+                        if strag_new_mem > strag_D_mem or pioneer_new_mem > pioneer_D_mem:
+                            # print("Invalid conversion, exceed memory")
+                            continue
                         optimal_obj = new_obj
                         # update the best one
                         better_candidate = {
@@ -586,6 +604,7 @@ def shaq_h_internal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D)
                                 'bit_assignment': better_bit_assignment
                             }
                         }
+
                                 
                 # enumrated all possible conversion and layers already
                 # has candiate for this conversion pair
@@ -604,6 +623,8 @@ def shaq_h_internal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D)
                     bit_assignment = new_bit_assignment
                     partition_result = new_partition_result
                     # update obj
+                    # print("Layer changed from {} to {}".format(straggler_rank, pioneer_rank))
+                    # print("Layer changed:", layer_change_candidate)
                     print(f'obj update from {optimal_obj} to {new_obj}')
                     optimal_obj = new_obj
                     break 
@@ -624,6 +645,8 @@ def shaq_h_internal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D)
                             comm_prefill, comm_decode, \
                             prefill_micro_bs_num, decode_micro_bs_num, \
                             device_info_dict=device_info_dict, record=True, verbose=True)
+                # print("lat stages", lat_stages)
+                better_candidate = None # reset 
                 continue
             else:
                 # no available find, done.
