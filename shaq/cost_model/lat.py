@@ -233,6 +233,16 @@ class LatCostModel:
                                             (profiled_data['stage'] == stage) &
                                             (profiled_data['h1'] == h1) &
                                             (profiled_data['h2'] == h2)]
+        # if profiled data is 0 and stage is 1: decode, 
+        # then find the closest prompt length
+        if len(profiled_data_device) == 0 and stage == 1:
+            print("Cannot find profiled data for this prompt length{}, find the closest one".format(prompt_length))
+            profiled_data  = profiled_data[(profiled_data['batch_size'] == batch_size) &
+                                            (profiled_data['stage'] == stage) &
+                                            (profiled_data['h1'] == h1) &
+                                            (profiled_data['h2'] == h2)]
+            profiled_data_device = profiled_data.iloc[(profiled_data['prompt_length']-prompt_length).abs().argsort()[:1]]
+
         # lat_avg
         lat_avg = profiled_data_device['time'].values[0]
         return lat_avg

@@ -10,10 +10,10 @@ STRAT_FILE_NAME="sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2"
 storage_folder="MULTI_NODE_PERF_RESULT"
 mkdir $storage_folder
 
-method=pipeedge # from adabits, uniform, pipeedge
-MASTER_ADDR=***REMOVED***
+method=shaq # from adabits, uniform, pipeedge
+# MASTER_ADDR=***REMOVED***
 # method='shaq' # from adabits, shaq, uniform, pipeedge
-# MASTER_ADDR=net-g15
+MASTER_ADDR=net-g15
 MASTER_PORT=1234
 
 shaq-dist --master_addr $MASTER_ADDR --master_port $MASTER_PORT\

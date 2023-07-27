@@ -9,6 +9,7 @@ def stage_pure_exe_latency(D_name, bits, lat_cost_model, b, s, i, use_profiler_p
     for _, bit in enumerate(bits):
         atten_bit, ffn_bit = bit
         stage_lat += lat_prediction(lat_cost_model, D_name, b, s, i, atten_bit, ffn_bit, use_profiler_prediction=use_profiler_prediction)
+        # assert stage_lat > 0, "stage_lat should be positive, but got {}.".format(stage_lat)
     return stage_lat
 
 def calculate_max_stage_lat(D, use_plan, \
@@ -64,15 +65,18 @@ def run_simu(gen_config, sol, lat_cost_model, comm_cost_model, use_profiler_pred
     
     # print("Prefill cost stage", prefill_lat_list, prefill_comm_lat_list)
     # print("Decode cost stage", decode_lat_list, decode_comm_lat_list)
+    for cost in prefill_lat_list + decode_lat_list:
+        if cost < 0:
+            import pdb; pdb.set_trace()
     print("Prefill cost stage", prefill_lat_list)
     print("Decode cost stage", decode_lat_list)
+    # print(global_bz / prefill_bz,  prefill_bz)
     prefill_micro_bs_num = math.ceil(global_bz / prefill_bz)
     decode_micro_bs_num = math.ceil(global_bz / bz_decode_max)
     prefill_time = prefill_sum + prefill_result * (prefill_micro_bs_num - 1)
     decode_time = decode_sum + decode_result * (decode_micro_bs_num - 1) * (mu_n - 1)
     # latency equals
     e2e_lat = prefill_time + decode_time
-
     print("Prefill Time {:.2f}ms, Decode Time {:.2f}ms, E2E Latency {:.2f}ms".format(prefill_time, decode_time, e2e_lat))
     # remove maps
     if maps is not None:

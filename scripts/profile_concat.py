@@ -12,7 +12,7 @@ def parse_args():
     parser.add_argument('--model-size', type=str, default='175b', help='Size of the transformer model')
     parser.add_argument('--batch-size', type=int, default=32, help='Batch size range(1,32)')
     parser.add_argument('--prompt_length', type=int, default=1, help='Length of input sequence')
-    parser.add_argument('--step', type=int, default=1, help='Profiled step')
+    parser.add_argument('--step', type=int, default=10, help='Profiled step')
     parser.add_argument('--repeat', type=int, default=100, help='Number of iterations to profile')
     parser.add_argument('--warmup', type=int, default=10, help='Number of warmup iterations')
     parser.add_argument('--bit', type=str, default='8:tc', help='Precision bit setting')
@@ -81,6 +81,7 @@ if __name__ == '__main__':
     config = create_model_config(model_name, model_size)
     h1, h2 = return_h1_h2(config)
     device_name, device_mem, _ = get_device_name_and_mem()
+    step = args.step
 
     loaded_llm_cpu.eval()
     loaded_llm_cpu.cuda()
@@ -145,7 +146,7 @@ if __name__ == '__main__':
     else:
         df = pd.DataFrame(columns=columns)
     for stage in [0, 1]: # prefill or not
-        for prompt_length in [128, 512]:
+        for prompt_length in [128, 512, 1024]:
             for batch_size in [1, 2, 3, 4, 5, 6, 8]:
                 # check whether entry has been profiled
                 if len(df[(df['batch_size'] == batch_size) & (df['prompt_length'] == prompt_length) & (df['stage'] == stage)]) > 0:
@@ -179,8 +180,8 @@ if __name__ == '__main__':
 
     # decode
     for stage in [1]: # prefill or not
-        for prompt_length in [128, 512]:
-            for past_seq_length_i in range(10, 110, 10):
+        for prompt_length in [128, 512, 1024]:
+            for past_seq_length_i in range(10, 110, step):
                 past_seq_length = prompt_length + past_seq_length_i
                 for batch_size in [1, 2, 3, 4, 5, 6, 8]:
                     # check whether entry has been profiled

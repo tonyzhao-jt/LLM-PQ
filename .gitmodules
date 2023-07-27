@@ -4,3 +4,6 @@
 [submodule "3rd_party/gptq"]
 	path = 3rd_party/gptq
 	url = https://github.com/IST-DASLab/gptq.git
+[submodule "3rd_party/FlexGen"]
+	path = 3rd_party/FlexGen
+	url = https://github.com/FMInference/FlexGen.git

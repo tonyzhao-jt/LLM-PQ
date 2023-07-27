@@ -32,7 +32,7 @@ OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_30b_ind.pkl
 
 ABLATION_FOLDER="${PWD}/ablation/"
 
-GROUP_SIZE=2
+GROUP_SIZE=1
 shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
@@ -51,6 +51,7 @@ shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
+ --shaq-efficient \
  --theta 1  --global_bz 32 --debug --ilp_time_limit 160 --fit
 
 # case 5
@@ -63,7 +64,7 @@ shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --theta 1 --global_bz 32 --group 2 --ilp_time_limit 160 --fit --debug --ilp_tolerance 0.08
+ --theta 1 --global_bz 32 --group 2 --ilp_time_limit 160 --fit --debug 
 
 # case6
 model_size=66b
@@ -89,7 +90,7 @@ shaq-algo --model_size ${model_size} \
  --model_name bloom \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
  --time_mult_times 2 \
- --theta 1 --global_bz 32 --ilp_time_limit 1200 --debug  --fit --ilp_tolerance 0.07
+ --theta 1 --global_bz 32 --ilp_time_limit 1200 --debug  --fit 
 
 # case 8
 model_size=176b
@@ -124,12 +125,13 @@ model_size=66b
 device_names=("Tesla_V100-SXM2-32GB") 
 device_numbers=(4)  # define device numbers as a list of integers
 OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_66b_ind.pkl
-
+# use shaq-efficient for this case
 shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --theta 1 --global_bz 32 --ilp_time_limit 160 --group 4 --adapp_group_size 1  --fit --debug 
+ --shaq-efficient \ 
+ --theta 1 --global_bz 32 --ilp_time_limit 160 --group 1  --fit 
 
 # case11
 model_size=176b
@@ -184,8 +186,7 @@ shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --theta 10 --global_bz 32 --ilp_time_limit 300 --group 2 --adapp_group_size 2 --use_profiler_prediction --debug \
- --ilp_tolerance 0.166
+ --theta 10 --global_bz 32 --ilp_time_limit 300 --use_profiler_prediction --debug
 
 # 100 times
 model_size=30b
@@ -225,7 +226,7 @@ shaq-algo --model_size ${model_size} \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
  --fname-suffix "lat" \
- --theta 1 --global_bz 32 --group 1  --debug --ilp_time_limit 160  --s 128 --n 200 --ilp_tolerance 0.01
+ --theta 1 --global_bz 32 --group 1  --debug --ilp_time_limit 160  --s 128 --n 200
 
 model_size=66b
 device_names=("Tesla_V100-SXM2-32GB" "NVIDIA_A100-SXM4-40GB") 
@@ -235,8 +236,9 @@ OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_66b_ind.pkl
 shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
- --omega_file $OMEGA_FILE --ilp_seed 120 \
- --theta 1 --global_bz 32 --group 1 --ilp_time_limit 200 --debug  --s 128 --n 200 --ilp_tolerance 0.05
+ --omega_file $OMEGA_FILE --ilp_seed 150 \
+ --fname-suffix "lat" \
+ --theta 1 --global_bz 32 --group 1 --ilp_time_limit 200 --debug  --s 128 --n 200 
 
 
 # ablation for theta
@@ -260,13 +262,10 @@ shaq-algo --model_size ${model_size} \
 
 
 
-
 model_size=66b
 device_names=("Tesla_V100-SXM2-32GB" "NVIDIA_A100-SXM4-40GB") 
 device_numbers=(2 2)  # define device numbers as a list of integers
 OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_66b_ind.pkl
-
-
 
 shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
