@@ -446,7 +446,6 @@ convert_pairs = [
 
 def shaq_h_internal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D):
     (global_bz, prefill_bz, bz_decode_max) = bz_pack 
-    current_D = D 
     group_L, N, BITs, M_d, M, (l_prefill, l_decode), omega, (comm_prefill, comm_decode) \
           = prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pack, bz_pack)
     plan, obj_value = solve_ilp_pulp(group_L, N, BITs, M, M_d, omega)

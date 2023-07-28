@@ -13,6 +13,7 @@ setup(
         'console_scripts': [
             f'{package_name}-algo = {package_name}.algo.entry:algo_main',
             f'{package_name}-algo-check = {package_name}.algo.checker:check_strat_file',
+            f'{package_name}-algo-cmp = {package_name}.algo.checker:compare_bitwidth_of_two_strat',
             # f'{package_name}-algo-shaqef = {package_name}.algo.shaq_heuristic:shaq_h_main',
             f'{package_name}-algo-shaqef = {package_name}.algo.shaq_efficient:shaq_ef_main',
             f'{package_name}-dist = {package_name}.entrypoints:run_dist'
