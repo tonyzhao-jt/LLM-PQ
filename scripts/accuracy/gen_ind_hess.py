@@ -105,8 +105,11 @@ def generate_indicator_hess(model_name, model_size, folder_path):
 args = simple_model_info_parser()
 model_size = args.model_size
 model_name = args.model_name
-folder_path = "/workspace/qpipe/3rd_party/gptq/zeroShot"
+ROOT_DIR = os.environ['ROOT_DIR']
+assert ROOT_DIR is not None, "ROOT_DIR is None"
+folder_path = f"{ROOT_DIR}/3rd_party/gptq/zeroShot"
 omega, dur = generate_indicator_hess(model_name, model_size, folder_path)
+print(f"duration: {dur}")
 # store t
 folder_name = 'generated_ind'
 file_name = f'gen_{model_name}_{model_size}_hess_ind.pkl'
