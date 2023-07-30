@@ -47,7 +47,7 @@ def common_argparser():
     parser.add_argument('--n', type=int, default=100) # max_tokens
     parser.add_argument('--global_bz', type=int, default=16) # global batch size
     parser.add_argument('--theta', type=float, default=0.0001) # concern for accuracy
-    parser.add_argument('--gamma', type=float, default=0.8) # expected token numbers (x max) to generate
+    parser.add_argument('--gamma', type=float, default=1) # expected token numbers (x max) to generate
     parser.add_argument('--comm_multiplier', type=float, default=1) # multiply communication when not only the hidden space is passed.
     parser.add_argument('--time_mult_times', type=float, default=1)
     # D related

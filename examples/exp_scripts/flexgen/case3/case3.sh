@@ -60,3 +60,24 @@ peak gpu mem: 11.340 GB
 prefill latency: 18.89 s        prefill throughput: 867.24 token/s
 decode latency: 225.32 s        decode throughput: 11.22 token/s
 total latency: 244.21 s total throughput: 10.48 token/s
+
+
+
+
+# 100
+python3 cost_model.py --model facebook/opt-30b --prompt-len 512 --gen-len 100 \
+                     --gpu-batch-size 8 --gpu-mem 15 --cpu-mem 100 --nvme-mem 0 \
+                      --num-gpu-batches 4 --partition_nums 4 --alpha-g 0.7
+# 63 37 0 100 0 100
+python3 cost_model.py --model facebook/opt-30b --prompt-len 512 --gen-len 100 \
+                     --gpu-batch-size 8 --gpu-mem 32 --cpu-mem 200 --nvme-mem 0 \
+                      --num-gpu-batches 4 --partition_nums 4
+# 100 0 100 0 100 0
+
+
+python3 cost_model.py --model facebook/opt-30b --prompt-len 512 --gen-len 100 \
+                     --gpu-batch-size 8 --gpu-mem 15 --cpu-mem 100 --nvme-mem 0 \
+                      --num-gpu-batches 4 --partition_nums 4 --alpha-g 0.7 --compress-w
+
+# 100 0 97 3 0 100
+# 100 0 100 0 100 0

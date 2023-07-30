@@ -16,7 +16,8 @@ setup(
             f'{package_name}-algo-cmp = {package_name}.algo.checker:compare_bitwidth_of_two_strat',
             # f'{package_name}-algo-shaqef = {package_name}.algo.shaq_heuristic:shaq_h_main',
             f'{package_name}-algo-shaqef = {package_name}.algo.shaq_efficient:shaq_ef_main',
-            f'{package_name}-dist = {package_name}.entrypoints:run_dist'
+            f'{package_name}-dist = {package_name}.entrypoints:run_dist',
+            f'{package_name}-sole = {package_name}.entrypoints:run_sole'
         ]
     },
     install_requires=[
@@ -24,7 +25,7 @@ setup(
     ],
     # temporaryly write like that, later reconstruct the package to make it as a simple entry points
     package_data={
-        f'{package_name}': ['dist_runtime/entry.py', 'dist_runtime/utils.py'],
+        f'{package_name}': ['dist_runtime/entry.py', 'dist_runtime/entry_sole.py', 'dist_runtime/utils.py'],
     },
 )
 

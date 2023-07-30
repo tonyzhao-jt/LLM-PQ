@@ -1,4 +1,4 @@
-method='shaq' # from adabits, shaq, uniform, pipeedge
+method='adabits' # from adabits, shaq, uniform, pipeedge
 STRAT_FILE_NAME="sols_opt_13b_Tesla_V100-SXM2-32GB_1"
 # STRAT_FILE_NAME="sols_opt_13b_NVIDIA_A100-SXM4-40GB_1"
 export TOKENIZERS_PARALLELISM=false

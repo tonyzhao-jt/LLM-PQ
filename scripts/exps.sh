@@ -37,7 +37,7 @@ shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_time_limit 60 \
- --theta 1  --global_bz 32 --group $GROUP_SIZE --debug --fit \
+ --theta 50000  --global_bz 32 --group $GROUP_SIZE --debug --fit \
  --fname-suffix "group${GROUP_SIZE}" 2>&1 | tee "${ABLATION_FOLDER}${model_size}_GROUP_SIZE${GROUP_SIZE}"
 
 
@@ -52,7 +52,7 @@ shaq-algo --model_size ${model_size} \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
  --shaq-efficient \
- --theta 1  --global_bz 32 --debug --ilp_time_limit 160 --fit
+ --theta 1000  --global_bz 32 --debug --ilp_time_limit 160 --fit
 
 # case 5
 model_size=66b

@@ -6,7 +6,7 @@ export OMP_NUM_THREADS=20
 # CPU Not Enough
 export LOAD_IN_NP="1"
 
-STRAT_FILE_NAME="sols_opt_30b_Tesla_T4_3_Tesla_V100-SXM2-32GB_1group2"
+STRAT_FILE_NAME="sols_opt_30b_Tesla_T4_3_Tesla_V100-SXM2-32GB_1group1"
 
 storage_folder="MULTI_NODE_PERF_RESULT"
 mkdir $storage_folder

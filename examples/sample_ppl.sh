@@ -3,10 +3,10 @@ export CUDA_VISIBLE_DEVICES=0
 CUR_DIR=${PWD}
 
 # required
-model_storage_path='/mnt/bn/zjtnaslq/llms/'
+model_storage_path='/data/llms/'
 export TRANSFORMERS_CACHE=$model_storage_path
-export HF_DATASETS_CACHE="/mnt/bn/zjtnaslq/dataset/"
-sol_folder="/mnt/bn/zjtnaslq/sols"
+# export HF_DATASETS_CACHE="/mnt/bn/zjtnaslq/dataset/"
+# sol_folder="/mnt/bn/zjtnaslq/sols"
 # setups
 sample_acc_dir="${PWD}/sample_acc"
 mkdir $sample_acc_dir
@@ -17,11 +17,11 @@ cd ..
 # test config
 model_name='opt'
 model_size="30b" # must match with the following, else error.
-user_abs_file_path="sols_opt_30b_Tesla_P100-PCIE-12GB_3_Tesla_V100-SXM2-32GB_1lat"
+user_abs_file_path="sols_opt_30b_Tesla_T4_3_Tesla_V100-SXM2-32GB_1group1"
 # dont change this part
 device_info="Tesla_V100-SXM2-32GB_1"
 folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test"
 bash test_plan_acc_cmd.sh --model_name $model_name --model_size $model_size --storage_path $sample_acc_dir \
-    -p $folder_abs_path --adafile -m "shaq" \
-     --user_abs_file_path $user_abs_file_path --device_info $device_info --model_storage_path $model_storage_path \
-     --sol_folder $sol_folder
+    -p $folder_abs_path --adafile -m "shaq","adabits" \
+     --user_abs_file_path $user_abs_file_path --device_info $device_info --model_storage_path $model_storage_path 
+    #  --sol_folder $sol_folder

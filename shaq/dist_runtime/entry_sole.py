@@ -218,7 +218,7 @@ if __name__ == '__main__':
             request_input_ids[request_id] = new_input_ids # record
             # new_input_ids = torch.cat([input_ids, next_tokens[:, None]], dim=-1)
             request_token = model_pre_and_post.preprocess_one_token(new_input_ids, concat_tokens, attention_mask=attention_mask, use_cache=True, request_id=request_id)
-            logger.info(f"Request id {request_id} done for token {request_loop_counter[request_id]}")
+            logger.info(f"Request id {request_id} done for token {len(new_input_ids)}")
             return request_token
         else:
             return None, None

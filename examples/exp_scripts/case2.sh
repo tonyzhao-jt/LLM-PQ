@@ -1,4 +1,4 @@
-method='uniform' # from adabits, shaq, uniform, pipeedge
+method='adabits' # from adabits, shaq, uniform, pipeedge
 STRAT_FILE_NAME="sols_opt_13b_NVIDIA_A100-SXM4-40GB_1"
 export TOKENIZERS_PARALLELISM=false
 export TRANSFORMERS_CACHE='/data/llms/'
