@@ -12,7 +12,7 @@ shaq-algo --model_size ${model_size} \
  --ilp_seed 120 \
  --fname-suffix "_random_scheme" \
  --theta 1000 --global_bz 32 --ilp_time_limit 300 --fit --debug 
-# 204920.97896037405
+# 252149.18ms
 
 # hess
 # number scale difference is too large for hess and shaq. need to adjust theta
@@ -54,8 +54,6 @@ shaq-algo --model_size ${model_size} \
  --fname-suffix "_random_scheme" \
  --theta 1000 --global_bz 32 --ilp_time_limit 300 --fit --debug 
 
-# 371863.74223424523
-
 # HESS
 shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
@@ -71,5 +69,11 @@ shaq-algo --model_size ${model_size} \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
  --fname-suffix "_shaq_scheme" \
- --theta 1000 --global_bz 32 --ilp_time_limit 300 --fit --debug 
-# 371863.74223424523
+ --theta 20000 --global_bz 32 --ilp_time_limit 300 --fit --debug 
+# 405721.6332337759
+
+
+# 40061.88
+
+
+

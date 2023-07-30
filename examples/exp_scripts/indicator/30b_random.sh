@@ -17,7 +17,7 @@ cd ..
 # test config
 model_name='opt'
 model_size="30b" # must match with the following, else error.
-user_abs_file_path="sols_opt_30b_Tesla_T4_4_hess_scheme"
+user_abs_file_path="sols_opt_30b_Tesla_T4_4_random_scheme"
 # dont change this part
 device_info="Tesla_V100-SXM2-32GB_1"
 folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test"

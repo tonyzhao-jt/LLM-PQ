@@ -538,6 +538,7 @@ if __name__ == "__main__":
     parser.add_argument("--cpu-mem", type=int, default=200)
     parser.add_argument("--nvme-mem", type=int, default=1500)
     parser.add_argument("--partition_nums", type=int, default=1)
+    parser.add_argument("--sl", type=int, default=None)
     
     parser.add_argument("--gbs", "--gpu-batch-size", type=int)
     parser.add_argument("--num-gb", "--num-gpu-batches", type=int)
@@ -570,7 +571,9 @@ if __name__ == "__main__":
     opt_config = get_opt_config(args.model)
     config.l = opt_config.num_hidden_layers
     partiton_nums = args.partition_nums
+    
     assert config.l % partiton_nums == 0, "partition_nums must be a divisor of num_hidden_layers"
+    config.l = args.sl if args.sl else config.l
     config.l //= partiton_nums
     config.h1 = opt_config.hidden_size
     config.h2 = opt_config.ffn_embed_dim

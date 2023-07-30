@@ -17,12 +17,16 @@ NUM_TOKENS_TO_GENERATE=5
 # NUM_TOKENS_TO_GENERATE=100
 MAX_TOKENS_TO_GENERATE=100 # make sure it always larger than previous
 
-NUM_SHARDS=4
+
+WORKLOAD_STRING="--workload-test --workload-nums 2 --sampler-lower 0.4"
+
+NUM_SHARDS=2
 # shaq direct run
-shaq-dist --nnodes=1 --nproc_per_node=$NUM_SHARDS --master_port 1234 \
-    --model_name $MODEL_NAME --model_size $MODEL_SIZE\
+torchrun --standalone --nnodes=1 --nproc_per_node=$NUM_SHARDS \
+    main.py --model_name $MODEL_NAME --model_size $MODEL_SIZE\
     --sample-run --bs_token $BS --bitwidth $BITWIDTH --prompt_length $PROMPT_LEGNTH --num-shards $NUM_SHARDS \
     --num_tokens_to_generate $NUM_TOKENS_TO_GENERATE --max_tokens_to_generate $MAX_TOKENS_TO_GENERATE \
+    $WORKLOAD_STRING \
     2>&1 | tee "text_res/sample_${MODEL_NAME}_${MODEL_SIZE}_run_${BITWIDTH}_${PROMPT_LEGNTH}_${NUM_TOKENS_TO_GENERATE}.txt"
 
 # run by torch

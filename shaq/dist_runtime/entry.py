@@ -5,6 +5,7 @@
 import torch 
 import torch.distributed as dist
 import os
+import numpy as np 
 import pickle
 import time
 from time import perf_counter
@@ -151,6 +152,7 @@ def run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=None):
     token_throughput = throughput * num_tokens_to_generate
     logger.info("Latency is %f, throughput is %f", latency, throughput)
     logger.info('Token throughput is %f', token_throughput)
+    return latency
 
 def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
     global master_stage_context
@@ -232,31 +234,56 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
             shaq._globals.__PIPELINE__MODEL__PARALLEL__GROUP__ = nccl_group
             shaq._globals.__DEVICE__INDEX__ = local_rank
 
+        workload_test = args.workload_test
+        if workload_test:
+            workload_nums = args.workload_nums
+            sampler_lower = args.sampler_lower
+            # use np to generate max_tokens_to_generate from U(sampler_lower, 1) * max_tokens_to_generate
+            # n * U(sampler_lower, 1) 
+            workload_list = np.floor(np.random.uniform(sampler_lower, 1, workload_nums) * max_tokens_to_generate).astype(np.int32)
+        else:
+            workload_list = [num_tokens_to_generate] # mu_n
         with dist_p2p_pipeline_stage_factory(stage_ranks, data_rank, rank, stage_id, module,
                                                         handle_results) as stage_ctx:
 
             if rank == data_rank:
                 master_stage_context = stage_ctx
-                original_num_tokens_to_generate = num_tokens_to_generate
                 run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=warmup_tokens)
                 dist.barrier()
-                time.sleep(10)
-                module._reset_kv_status()
-                dist.barrier()
-                run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=original_num_tokens_to_generate)
+                lat_list = []
+                for workload_token_generation in workload_list:
+                    if workload_test:
+                        logger.info("Run gen-len: {}".format(workload_token_generation))
+                    time.sleep(10)
+                    module._reset_kv_status()
+                    dist.barrier()
+                    latency = run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=workload_token_generation)
+                    lat_list.append(latency)
+                
+                # stop the pipeline
                 dist_ctx.cmd_broadcast(CMD_STOP)
                 # print the result
                 if not args.perf_mode:
                     for request_id, result in request_input_ids.items():
                         generated_text = tokenizer.batch_decode(result, skip_special_tokens=True)
                         print("request_id: {}, generated_text: {}".format(request_id, generated_text))
+                if workload_test:
+                    # get sum of generated tokens
+                    sum_tokens = sum(workload_list)
+                    # sum of latency
+                    sum_latency = sum(lat_list)
+                    # throughput
+                    throughput = sum_tokens / sum_latency
+                    print("Workload Test Result: ")
+                    print("Throughput: {0:.2f} tokens/s".format(throughput))
                 # join the queue thread
                 stop_event.set()
             else:
                 dist.barrier()
-                time.sleep(10)
-                module._reset_kv_status()
-                dist.barrier()
+                for workload_token_generation in workload_list:
+                    time.sleep(10)
+                    module._reset_kv_status()
+                    dist.barrier()
                 stop_event.wait()
         
     pass
