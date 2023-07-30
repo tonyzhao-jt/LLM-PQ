@@ -50,6 +50,9 @@ def common_argparser():
     parser.add_argument('--gamma', type=float, default=0.8) # expected token numbers (x max) to generate
     parser.add_argument('--comm_multiplier', type=float, default=1) # multiply communication when not only the hidden space is passed.
     parser.add_argument('--time_mult_times', type=float, default=1)
+    # D related
+    parser.add_argument('--force-fixed-D', action='store_true', help='force fixed D')
+    parser.add_argument('--force-reverse-D', action='store_true', help='force reverse D')
     # for debug and fit
     parser.add_argument('--fit', action='store_true', help='fit cost model')
     parser.add_argument('--debug', action='store_true', help='debug mode')

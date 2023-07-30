@@ -22,6 +22,12 @@ def check_strat_file():
     print(sol['use_plan'])
     print("Partition Result:")
     print(sol['plan']['partition_result'])
+    bit_assignment = sol['plan']['bit_assignment']
+    # check how many bitwidth is used in the plan
+    bitwidths = set()
+    for bit in bit_assignment.values():
+        bitwidths.add(bit)
+    print(f"Bitwidths used: {bitwidths}")
 
 def compare_bitwidth_of_two_strat():
     parser = argparse.ArgumentParser()
@@ -42,13 +48,12 @@ def compare_bitwidth_of_two_strat():
     # use_plan
     use_plan_1 = sol_1['use_plan']
     use_plan_2 = sol_2['use_plan']
-    # compare the bitwidth difference
-    for rank, val in use_plan_1.items():
-        use_plan_2_val = use_plan_2[rank]
-        bit_1 = val['bitwidth']
-        bit_2 = use_plan_2_val['bitwidth']
-        for idx, bit in enumerate(bit_1):
-            if bit != bit_2[idx]:
-                print(f"Rank {rank} layer {idx}: {bit} vs {bit_2[idx]}")
-            # break
-            break 
+    bit_assignment_1 = sol_1['plan']['bit_assignment']
+    bit_assignment_2 = sol_2['plan']['bit_assignment']
+    # print(sol_1)
+    # # compare the bitwidth difference
+    values_bits_1 = list(bit_assignment_1.values())
+    values_bits_2 = list(bit_assignment_2.values())
+    for i in range(len(values_bits_1)):
+        if values_bits_1[i] != values_bits_2[i]:
+            print(f"layer {i}: {values_bits_1[i]} vs {values_bits_2[i]}")

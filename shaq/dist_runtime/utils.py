@@ -79,6 +79,10 @@ def parse_args():
     # perfmode
     parser.add_argument('--perf-mode', action='store_true', default=False)
     parser.add_argument('--no_auto', action='store_true', default=False)
+    # workload test
+    parser.add_argument('--workload-test', action='store_true', default=False)
+    parser.add_argument('--workload-nums', type=int, default=10)
+    parser.add_argument('--sampler-lower', type=float, default=0.6) # default sampler lower bound U(0.6, 1)
 
     parser.parse_args()
     args = parser.parse_args()

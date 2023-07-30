@@ -197,7 +197,8 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
         l_prefill[:, 0, :] += prefill_prepost_cost
         l_decode[:, 0, :] += decode_prepost_cost
     # omega
-    omega = assign_omega_constant(group_L, BITs)
+    # omega = assign_omega_constant(group_L, BITs)
+    omega = assign_omega_uniform(group_L, BITs)
     if omega_file is not None:
         # open and load with pickle
         with open(omega_file, 'rb') as f:
@@ -676,6 +677,11 @@ def enumerate_best_result(args):
     # device order candidates
     device_name_with_its_number = list(zip(device_names, device_numbers))
     permutations = itertools.permutations(device_name_with_its_number)
+    if args.force_fixed_D:
+        # dont change device order
+        permutations = [device_name_with_its_number]
+    elif args.force_reverse_D:
+        permutations = [device_name_with_its_number[::-1]]
     num_hidden_layers = len(T) // 2
     for perm in permutations:
         new_device_names, new_device_numbers = zip(*perm)
