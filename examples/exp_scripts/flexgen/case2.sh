@@ -32,3 +32,23 @@ python3 cost_model.py --model facebook/opt-13b --prompt-len 512 --gen-len 80 \
 python3 -m flexgen.flex_opt --model facebook/opt-13b \
  --path /data/llms --prompt-len 512 --gen-len 80 \
   --pin-weight 0 --percent 100 0 100 0 100 0 --gpu-batch-size 32 --num-gpu-batches 1 --compress-w
+
+
+# 100
+python3 -m flexgen.flex_opt --model facebook/opt-13b \
+ --path _DUMMY_ --prompt-len 512 --gen-len 100 --gpu-batch-size 32 --num-gpu-batches 1 \
+  --pin-weight 0 --percent 100 0 40 60 100 0 
+
+TorchDevice: cuda:0
+  cur_mem: 24.4288 GB,  peak_mem: 32.7178 GB
+TorchDevice: cpu
+  cur_mem: 0.0000 GB,  peak_mem: 0.0000 GB
+model size: 23.921 GB   cache size: 14.941 GB   hidden size (p): 0.187 GB
+peak gpu mem: 32.718 GB projected: False
+prefill latency: 3.074 s        prefill throughput: 5330.035 token/s
+decode latency: 68.018 s        decode throughput: 46.576 token/s
+total latency: 71.092 s total throughput: 45.012 token/s
+
+python3 -m flexgen.flex_opt --model facebook/opt-13b \
+ --path _DUMMY_ --prompt-len 512 --gen-len 100 \
+  --pin-weight 0 --percent 100 0 100 0 100 0 --gpu-batch-size 32 --num-gpu-batches 1 --compress-w

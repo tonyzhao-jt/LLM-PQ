@@ -254,10 +254,13 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                 for workload_token_generation in workload_list:
                     if workload_test:
                         logger.info("Run gen-len: {}".format(workload_token_generation))
-                    time.sleep(10)
+                    time.sleep(5)
                     module._reset_kv_status()
+                    time.sleep(5)
+                    # make sure it won't be affected by the previous stage
                     dist.barrier()
                     latency = run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=workload_token_generation)
+                    dist.barrier()
                     lat_list.append(latency)
                 
                 # stop the pipeline
@@ -273,7 +276,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                     # sum of latency
                     sum_latency = sum(lat_list)
                     # throughput
-                    throughput = sum_tokens / sum_latency
+                    throughput = sum_tokens / sum_latency * bs_token
                     print("Workload Test Result: ")
                     print("Throughput: {0:.2f} tokens/s".format(throughput))
                 # join the queue thread
@@ -281,8 +284,11 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
             else:
                 dist.barrier()
                 for workload_token_generation in workload_list:
-                    time.sleep(10)
+                    time.sleep(5)
                     module._reset_kv_status()
+                    time.sleep(5)
+                    # two barrier, accordingly
+                    dist.barrier()
                     dist.barrier()
                 stop_event.wait()
         

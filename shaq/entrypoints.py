@@ -92,3 +92,14 @@ def run_dist():
     print(args)
     # Call torch.distributed.launch.main() with the modified arguments
     subprocess.run(args)
+
+def run_sole():
+    args = sys.argv[1:]
+    # Modify the arguments as needed
+    args.insert(0, "python")
+    # append user-specified arguments before script path
+    # script_path = os.path.join(os.getcwd(), "shaq", "dist_runtime", "entry.py")
+    script_path = pkg_resources.resource_filename("shaq", "dist_runtime/entry_sole.py")
+    args.insert(1, script_path)
+    # Call torch.distributed.launch.main() with the modified arguments
+    subprocess.run(args)
