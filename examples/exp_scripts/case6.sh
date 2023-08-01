@@ -5,8 +5,8 @@ export OMP_NUM_THREADS=20
 # CPU Not Enough
 export LOAD_IN_NP="1"
 
-STRAT_FILE_NAME="sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2_gamma_0.6"
-
+# STRAT_FILE_NAME="sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2group_shaqh"
+STRAT_FILE_NAME="sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2group_2"
 storage_folder="MULTI_NODE_PERF_RESULT"
 mkdir $storage_folder
 
@@ -16,7 +16,7 @@ method=shaq # from adabits, uniform, pipeedge
 MASTER_ADDR=***REMOVED***
 MASTER_PORT=1234
 
-# shaq-algo-check --file_path $ROOT_DIR/scripts/part_strategy/sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2_gamma_1.pkl
+# shaq-algo-check --file_path $ROOT_DIR/scripts/part_strategy/sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2group_shaqh.pkl
 
 shaq-dist --master_addr $MASTER_ADDR --master_port $MASTER_PORT\
     --method $method \
@@ -24,4 +24,6 @@ shaq-dist --master_addr $MASTER_ADDR --master_port $MASTER_PORT\
         2>&1 | tee "./${storage_folder}/${method}_${STRAT_FILE_NAME}_${MODEL_NAME}_${MODEL_SIZE}.txt"
     pkill torchrun
     pkill python3
+
+# 
 

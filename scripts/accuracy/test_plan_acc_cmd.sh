@@ -165,7 +165,7 @@ do
                 # echo ${PWD}
                 cd zeroShot
                 python3 main.py ${pretrained_config} c4 --wbits 4 --task piqa,arc_easy,lambada \
-                --ada-file ${file_abs_path} 2>&1 | tee "${storage_path}/${file_name}.txt"
+                --ada-file ${file_abs_path} 2>&1 | tee "${storage_path}/zeroshot_${file_name}.txt"
             else
                 # pp text
                 python3 ${model_name}.py ${pretrained_config} c4 --wbits ${wbit} \

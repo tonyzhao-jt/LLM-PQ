@@ -177,8 +177,8 @@ def prepare_for_ilp(num_hidden_layers, current_D, available_bits, cost_model_pac
         l_prefill[:, 0, :] += prefill_prepost_cost
         l_decode[:, 0, :] += decode_prepost_cost
     # omega
-    # omega = assign_omega_constant(group_L, BITs)
-    omega = assign_omega_uniform(group_L, BITs)
+    omega = assign_omega_constant(group_L, BITs)
+    # omega = assign_omega_uniform(group_L, BITs)
     if omega_file is not None:
         # open and load with pickle
         with open(omega_file, 'rb') as f:

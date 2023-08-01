@@ -60,6 +60,16 @@ torchrun --nnode $N_NODES --nproc_per_node=$N_PROCES --master_addr $MASTER_ADDR 
 #                       --num-gpu-batches 4 --partition_nums 4 --compress-w
 # # 100 0 100 0 100 0
 
+rank #3: TorchDevice: cuda:3
+rank #3:   cur_mem: 28.7186 GB,  peak_mem: 30.0743 GB
+rank #3: TorchDevice: cpu
+rank #3:   cur_mem: 2.5313 GB,  peak_mem: 0.0000 GB
+rank #3: model size: 122.375 GB cache size: 43.031 GB   hidden size (prefill): 0.336 GB
+peak gpu mem: 30.074 GB
+prefill latency: 23.63 s        prefill throughput: 693.28 token/s
+decode latency: 410.36 s        decode throughput: 7.72 token/s
+total latency: 433.99 s total throughput: 7.37 token/s
+
 torchrun --nnode $N_NODES --nproc_per_node=$N_PROCES --master_addr $MASTER_ADDR --master_port $MASTER_PORT --node_rank=$RANK dist_flex_opt.py \
     --model facebook/opt-66b \
     --prompt-len 512 --gen-len 100 --gpu-batch-size 8 --num-gpu-batches 1 \
@@ -69,6 +79,16 @@ torchrun --nnode $N_NODES --nproc_per_node=$N_PROCES --master_addr $MASTER_ADDR 
     --async-comm \
     --path _DUMMY_ \
     --pin-weight 0 
+
+rank #3: TorchDevice: cuda:3
+rank #3:   cur_mem: 8.7987 GB,  peak_mem: 21.3756 GB
+rank #3: TorchDevice: cpu
+rank #3:   cur_mem: 0.0000 GB,  peak_mem: 0.0000 GB
+rank #3: model size: 122.375 GB cache size: 43.031 GB   hidden size (prefill): 0.336 GB
+peak gpu mem: 21.376 GB
+prefill latency: 20.58 s        prefill throughput: 796.04 token/s
+decode latency: 186.35 s        decode throughput: 17.00 token/s
+total latency: 206.93 s total throughput: 15.46 token/s
 
 torchrun --nnode $N_NODES --nproc_per_node=$N_PROCES --master_addr $MASTER_ADDR --master_port $MASTER_PORT --node_rank=$RANK dist_flex_opt.py \
     --model facebook/opt-66b \

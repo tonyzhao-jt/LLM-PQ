@@ -41,13 +41,13 @@ def assign_omega_uniform(L, BITs):
 def assign_omega_constant(L, BITs):
     omega = np.zeros((L, len(BITs)))
     omega_dict = {
-        2: 0.104,
-        3: 0.103,
-        4: 0.102,
-        8: 0.101,
+        2: 6.4,
+        3: 4.8,
+        4: 1.6,
+        8: 0.4,
         16: 0.1,
-        '8:tc': 0.101,
-        '8:tc-li': 0.101,
+        '8:tc': 0.4,
+        '8:tc-li': 0.4,
     }
     for l_idx in range(omega.shape[0]):
         random_ratio = np.random.uniform(0, 1)

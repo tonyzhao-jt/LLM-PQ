@@ -22,12 +22,29 @@ def check_strat_file():
     print(sol['use_plan'])
     print("Partition Result:")
     print(sol['plan']['partition_result'])
+    print("Token gen num:")
+    print(sols['mu_n'])
     bit_assignment = sol['plan']['bit_assignment']
     # check how many bitwidth is used in the plan
     bitwidths = set()
     for bit in bit_assignment.values():
         bitwidths.add(bit)
     print(f"Bitwidths used: {bitwidths}")
+
+
+def hamming_distance(list1, list2):
+    """
+    Calculates the Hamming distance between two lists of categorical values.
+    """
+    if len(list1) != len(list2):
+        raise ValueError("The two lists must be of equal length.")
+    
+    distance = 0
+    for i in range(len(list1)):
+        if list1[i] != list2[i]:
+            distance += 1
+    
+    return distance
 
 def compare_bitwidth_of_two_strat():
     parser = argparse.ArgumentParser()
@@ -54,6 +71,14 @@ def compare_bitwidth_of_two_strat():
     # # compare the bitwidth difference
     values_bits_1 = list(bit_assignment_1.values())
     values_bits_2 = list(bit_assignment_2.values())
+    hamming_val = hamming_distance(values_bits_1, values_bits_2)
+    has_diff = False
     for i in range(len(values_bits_1)):
         if values_bits_1[i] != values_bits_2[i]:
             print(f"layer {i}: {values_bits_1[i]} vs {values_bits_2[i]}")
+            has_diff = True
+    if not has_diff:
+        print("No difference")
+    else:
+        print(f"Hamming distance: {hamming_val}")
+
