@@ -5,12 +5,12 @@ export OMP_NUM_THREADS=20
 # CPU Not Enough
 export LOAD_IN_NP="1"
 
-STRAT_FILE_NAME="sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2lat"
+STRAT_FILE_NAME="sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2lat_group1"
 
 storage_folder="MULTI_NODE_PERF_RESULT"
 mkdir $storage_folder
 
-method=adabits # from adabits, uniform, pipeedge
+method=shaq # from adabits, uniform, pipeedge
 # MASTER_ADDR=***REMOVED***
 # method='shaq' # from adabits, shaq, uniform, pipeedge
 MASTER_ADDR=***REMOVED***

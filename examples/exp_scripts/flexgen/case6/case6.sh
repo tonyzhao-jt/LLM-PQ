@@ -34,3 +34,29 @@ python3 cost_model.py --model facebook/opt-30b --prompt-len 512 --gen-len 80 \
                       --num-gpu-batches 4  --partition_nums 4 --compress-w
 
 # 100 0 100 0 100 0
+
+# 100
+
+
+python3 cost_model.py --model facebook/opt-66b --prompt-len 512 --gen-len 100 \
+                     --gpu-batch-size 8 --gpu-mem 40 --cpu-mem 212 --nvme-mem 0 \
+                      --num-gpu-batches 4 --partition_nums 4 
+
+# 100 0 3 97 0 100
+
+python3 cost_model.py --model facebook/opt-66b --prompt-len 512 --gen-len 100 \
+                     --gpu-batch-size 8 --gpu-mem 40 --cpu-mem 212 --nvme-mem 0 \
+                      --num-gpu-batches 4 --partition_nums 4 --compress-w
+# 100 0 100 0 100 0
+
+python3 cost_model.py --model facebook/opt-66b --prompt-len 512 --gen-len 100 \
+                     --gpu-batch-size 8 --gpu-mem 32 --cpu-mem 200 --nvme-mem 0 \
+                      --num-gpu-batches 4 --partition_nums 4
+
+# 77 23 0 100 0 100
+
+python3 cost_model.py --model facebook/opt-66b --prompt-len 512 --gen-len 100 \
+                     --gpu-batch-size 8 --gpu-mem 32 --cpu-mem 200 --nvme-mem 0 \
+                      --num-gpu-batches 4 --partition_nums 4 --compress-w
+
+# 100 0 100 0 100 0

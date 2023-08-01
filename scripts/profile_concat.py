@@ -146,7 +146,7 @@ if __name__ == '__main__':
     else:
         df = pd.DataFrame(columns=columns)
     for stage in [0, 1]: # prefill or not
-        for prompt_length in [128, 512, 1024]:
+        for prompt_length in [256]:
             for batch_size in [1, 2, 3, 4, 5, 6, 8]:
                 # check whether entry has been profiled
                 if len(df[(df['batch_size'] == batch_size) & (df['prompt_length'] == prompt_length) & (df['stage'] == stage)]) > 0:
@@ -180,7 +180,7 @@ if __name__ == '__main__':
 
     # decode
     for stage in [1]: # prefill or not
-        for prompt_length in [128, 512, 1024]:
+        for prompt_length in [256]:
             for past_seq_length_i in range(10, 110, step):
                 past_seq_length = prompt_length + past_seq_length_i
                 for batch_size in [1, 2, 3, 4, 5, 6, 8]:

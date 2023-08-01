@@ -81,3 +81,12 @@ python3 cost_model.py --model facebook/opt-66b --prompt-len 512 --gen-len 100 \
 # Policy(gpu_batch_size=6, num_gpu_batches=6, w_gpu_percent=1.0, w_cpu_percent=0.0, cache_gpu_percent=1.0, cache_cpu_percent=0.0, act_gpu_percent=1.0, act_cpu_percent=0.0, overlap=True, sep_layer=False, pin_weight=False, cpu_cache_compute=True, attn_sparsity=1, compress_weight=False, comp_weight_config=CompressionConfig(num_bits=4, group_size=64, group_dim=0, symmetric=False, enabled=True), compress_cache=False, comp_cache_config=CompressionConfig(num_bits=4, group_size=64, group_dim=2, symmetric=False, enabled=True))
 # 100 0 100 0 100 0
 # result
+rank #5: TorchDevice: cuda:1
+rank #5:   cur_mem: 5.5937 GB,  peak_mem: 14.8339 GB
+rank #5: TorchDevice: cpu
+rank #5:   cur_mem: 0.0000 GB,  peak_mem: 0.0000 GB
+rank #5: model size: 122.375 GB cache size: 48.410 GB   hidden size (prefill): 0.378 GB
+peak gpu mem: 14.834 GB
+prefill latency: 33.68 s        prefill throughput: 547.33 token/s
+decode latency: 671.25 s        decode throughput: 5.31 token/s
+total latency: 704.93 s total throughput: 5.11 token/s

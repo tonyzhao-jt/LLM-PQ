@@ -11,7 +11,7 @@ STRAT_FILE_NAME="sols_bloom_176b_Tesla_V100-SXM2-32GB_4_NVIDIA_A100-SXM4-40GB_4"
 storage_folder="MULTI_NODE_PERF_RESULT"
 mkdir $storage_folder
 
-method=pipeedge # from adabits, uniform, pipeedge
+method=shaq # from adabits, uniform, pipeedge
 # MASTER_ADDR=***REMOVED***
 # method='shaq' # from adabits, shaq, uniform, pipeedge
 MASTER_ADDR=***REMOVED***

@@ -15,3 +15,4 @@ shaq-dist --master_port 6666 \
     2>&1 | tee "./SINGLE_NODE_PERF_RESULT/${method}_{$STRAT_FILE_NAME}.txt"
 pkill torchrun
 pkill python3
+

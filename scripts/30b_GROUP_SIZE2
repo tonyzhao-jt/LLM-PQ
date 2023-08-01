@@ -1,0 +1,825 @@
+/opt/conda/lib/python3.10/site-packages/pulp/pulp.py:1352: UserWarning: Spaces are not permitted in the name. Converted to '_'
+  warnings.warn("Spaces are not permitted in the name. Converted to '_'")
+device_names ['Tesla_T4', 'Tesla_V100-SXM2-32GB']
+device_numbers [3, 1]
+device_info Tesla_T4_3_Tesla_V100-SXM2-32GB_1
+Est model:  Tesla_T4_2_5120_20480_3.pkl
+prefill MSE: 706.0849|decode MSE: 0.1336|
+Est model:  Tesla_T4_2_5120_20480_4.pkl
+prefill MSE: 718.1520|decode MSE: 0.0850|
+Est model:  Tesla_T4_2_5120_20480_16.pkl
+prefill MSE: 343.2962|decode MSE: 0.0162|
+Est model:  Tesla_T4_2_5120_20480_8:tc-li.pkl
+prefill MSE: 4.1662|decode MSE: 0.0341|
+Est model:  Tesla_T4_2_7168_28672_3.pkl
+prefill MSE: 874.4513|decode MSE: 0.0887|
+Est model:  Tesla_T4_2_7168_28672_4.pkl
+prefill MSE: 1158.8437|decode MSE: 0.0562|
+Est model:  Tesla_T4_2_7168_28672_16.pkl
+prefill MSE: 14.8919|decode MSE: 0.1056|
+Est model:  Tesla_T4_2_7168_28672_8:tc-li.pkl
+prefill MSE: 5.4209|decode MSE: 0.0264|
+Est model:  Tesla_T4_2_9216_36864_3.pkl
+prefill MSE: 2742.4023|decode MSE: 0.0825|
+Est model:  Tesla_T4_2_9216_36864_4.pkl
+prefill MSE: 3223.0469|decode MSE: 0.0454|
+Est model:  Tesla_T4_2_9216_36864_16.pkl
+prefill MSE: 68.0786|decode MSE: 0.3770|
+Est model:  Tesla_T4_2_9216_36864_8:tc-li.pkl
+prefill MSE: 4.0600|decode MSE: 0.0396|
+Est model:  Tesla_V100-SXM2-32GB_2_9216_36864_8:tc-li.pkl
+prefill MSE: 1.3490|decode MSE: 0.0324|
+Est model:  Tesla_V100-SXM2-32GB_2_9216_36864_3.pkl
+prefill MSE: 31.7105|decode MSE: 0.0137|
+Est model:  Tesla_V100-SXM2-32GB_2_9216_36864_4.pkl
+prefill MSE: 18.0841|decode MSE: 0.0076|
+Est model:  Tesla_V100-SXM2-32GB_2_9216_36864_16.pkl
+prefill MSE: 263.9227|decode MSE: 0.0031|
+Est model:  Tesla_V100-SXM2-32GB_2_5120_20480_8:tc-li.pkl
+prefill MSE: 0.9312|decode MSE: 0.0290|
+Est model:  Tesla_V100-SXM2-32GB_2_5120_20480_3.pkl
+prefill MSE: 4.1599|decode MSE: 0.0243|
+Est model:  Tesla_V100-SXM2-32GB_2_5120_20480_4.pkl
+prefill MSE: 4.4266|decode MSE: 0.0209|
+Est model:  Tesla_V100-SXM2-32GB_2_5120_20480_16.pkl
+prefill MSE: 7.1557|decode MSE: 0.0012|
+Est model:  Tesla_V100-SXM2-32GB_2_7168_28672_8:tc-li.pkl
+prefill MSE: 7.2594|decode MSE: 0.0224|
+Est model:  Tesla_V100-SXM2-32GB_2_7168_28672_3.pkl
+prefill MSE: 15.5508|decode MSE: 0.0215|
+Est model:  Tesla_V100-SXM2-32GB_2_7168_28672_4.pkl
+prefill MSE: 15.3923|decode MSE: 0.0153|
+Est model:  Tesla_V100-SXM2-32GB_2_7168_28672_16.pkl
+prefill MSE: 23.7516|decode MSE: 0.0008|
+Est model:  Tesla_V100-SXM2-32GB_2_14336_57344_8:tc-li.pkl
+prefill MSE: 23.7406|decode MSE: 0.1040|
+Est model:  Tesla_V100-SXM2-32GB_2_14336_57344_3.pkl
+prefill MSE: 15221.3525|decode MSE: 0.0318|
+Est model:  Tesla_V100-SXM2-32GB_2_14336_57344_4.pkl
+prefill MSE: 32033.6586|decode MSE: 0.0298|
+Est model:  Tesla_V100-SXM2-32GB_2_14336_57344_16.pkl
+prefill MSE: 1071.9871|decode MSE: 0.0346|
+Loading model:  Tesla_T4_2_5120_20480_3.pkl
+prefill MSE: 706.0849|decode MSE: 0.1336|
+Loading model:  Tesla_T4_2_5120_20480_4.pkl
+prefill MSE: 718.1520|decode MSE: 0.0850|
+Loading model:  Tesla_T4_2_5120_20480_16.pkl
+prefill MSE: 343.2962|decode MSE: 0.0162|
+Loading model:  Tesla_T4_2_5120_20480_8:tc-li.pkl
+prefill MSE: 4.1662|decode MSE: 0.0341|
+Loading model:  Tesla_T4_2_7168_28672_3.pkl
+prefill MSE: 874.4513|decode MSE: 0.0887|
+Loading model:  Tesla_T4_2_7168_28672_4.pkl
+prefill MSE: 1158.8437|decode MSE: 0.0562|
+Loading model:  Tesla_T4_2_7168_28672_16.pkl
+prefill MSE: 14.8919|decode MSE: 0.1056|
+Loading model:  Tesla_T4_2_7168_28672_8:tc-li.pkl
+prefill MSE: 5.4209|decode MSE: 0.0264|
+Loading model:  Tesla_T4_2_9216_36864_3.pkl
+prefill MSE: 2742.4023|decode MSE: 0.0825|
+Loading model:  Tesla_T4_2_9216_36864_4.pkl
+prefill MSE: 3223.0469|decode MSE: 0.0454|
+Loading model:  Tesla_T4_2_9216_36864_16.pkl
+prefill MSE: 68.0786|decode MSE: 0.3770|
+Loading model:  Tesla_T4_2_9216_36864_8:tc-li.pkl
+prefill MSE: 4.0600|decode MSE: 0.0396|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_8:tc-li.pkl
+prefill MSE: 1.3490|decode MSE: 0.0324|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_3.pkl
+prefill MSE: 31.7105|decode MSE: 0.0137|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_4.pkl
+prefill MSE: 18.0841|decode MSE: 0.0076|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_16.pkl
+prefill MSE: 263.9227|decode MSE: 0.0031|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_8:tc-li.pkl
+prefill MSE: 0.9312|decode MSE: 0.0290|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_3.pkl
+prefill MSE: 4.1599|decode MSE: 0.0243|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_4.pkl
+prefill MSE: 4.4266|decode MSE: 0.0209|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_16.pkl
+prefill MSE: 7.1557|decode MSE: 0.0012|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_8:tc-li.pkl
+prefill MSE: 7.2594|decode MSE: 0.0224|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_3.pkl
+prefill MSE: 15.5508|decode MSE: 0.0215|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_4.pkl
+prefill MSE: 15.3923|decode MSE: 0.0153|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_16.pkl
+prefill MSE: 23.7516|decode MSE: 0.0008|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_8:tc-li.pkl
+prefill MSE: 23.7406|decode MSE: 0.1040|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_3.pkl
+prefill MSE: 15221.3525|decode MSE: 0.0318|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_4.pkl
+prefill MSE: 32033.6586|decode MSE: 0.0298|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_16.pkl
+prefill MSE: 1071.9871|decode MSE: 0.0346|
+Verified all regress models, maximum mse:  32033.658560087384
+Set parameter WLSAccessID
+Set parameter WLSSecret
+Set parameter LicenseID to value 965996
+Academic license - for non-commercial use only - registered to juntaozh@connect.hku.hk
+Set parameter TimeLimit to value 300
+Gurobi Optimizer version 10.0.2 build v10.0.2rc0 (linux64)
+
+CPU model: AMD EPYC 7H12 64-Core Processor, instruction set [SSE2|AVX|AVX2]
+Thread count: 128 physical cores, 256 logical processors, using up to 32 threads
+
+Academic license - for non-commercial use only - registered to juntaozh@connect.hku.hk
+Optimize a model with 816 rows, 1152 columns and 4406 nonzeros
+Model fingerprint: 0x6ed1f51f
+Variable types: 0 continuous, 1152 integer (0 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+03]
+  Objective range  [2e-09, 8e-01]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 3e+04]
+Presolve removed 445 rows and 272 columns
+Presolve time: 0.02s
+Presolved: 371 rows, 880 columns, 2860 nonzeros
+Variable types: 0 continuous, 880 integer (880 binary)
+
+Root relaxation: objective 6.042039e-03, 511 iterations, 0.01 seconds (0.01 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0    0.00604    0  150          -    0.00604      -     -    0s
+H    0     0                       3.6283729    0.00604   100%     -    0s
+H    0     0                       0.4462338    0.00604  98.6%     -    0s
+H    0     0                       0.1470723    0.00607  95.9%     -    0s
+     0     0    0.00610    0   84    0.14707    0.00610  95.9%     -    0s
+H    0     0                       0.0064014    0.00610  4.71%     -    0s
+     0     0    0.00611    0   59    0.00640    0.00611  4.52%     -    0s
+     0     0    0.00611    0  107    0.00640    0.00611  4.52%     -    0s
+H    0     0                       0.0063113    0.00611  3.16%     -    0s
+H    0     0                       0.0062295    0.00611  1.89%     -    0s
+     0     0    0.00615    0  115    0.00623    0.00615  1.31%     -    0s
+     0     0    0.00615    0  112    0.00623    0.00615  1.26%     -    0s
+H    0     0                       0.0062048    0.00615  0.87%     -    0s
+H    0     0                       0.0062047    0.00615  0.87%     -    0s
+     0     0    0.00616    0  112    0.00620    0.00616  0.69%     -    0s
+     0     0    0.00618    0  104    0.00620    0.00618  0.41%     -    0s
+     0     0    0.00618    0   46    0.00620    0.00618  0.41%     -    0s
+     0     0    0.00618    0   57    0.00620    0.00618  0.41%     -    0s
+     0     0     cutoff    0         0.00620    0.00620  0.00%     -    0s
+
+Cutting planes:
+  Gomory: 5
+  Cover: 2
+  MIR: 5
+  StrongCG: 2
+  GUB cover: 1
+  RLT: 1
+
+Explored 1 nodes (1967 simplex iterations) in 0.26 seconds (0.13 work units)
+Thread count was 32 (of 256 available processors)
+
+Solution count 8: 0.00620469 0.00620483 0.00622952 ... 3.62837
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 6.204691839738e-03, best bound 6.204691839738e-03, gap 0.0000%
+/opt/conda/lib/python3.10/site-packages/pulp/pulp.py:1352: UserWarning: Spaces are not permitted in the name. Converted to '_'
+  warnings.warn("Spaces are not permitted in the name. Converted to '_'")
+Gurobi status= 2
+Adabits result found
+mem_j = 9580.0
+mem_j = 11828.0
+mem_j = 11828.0
+mem_j = 28360.0
+Try (32, 2, 8)
+Set parameter TimeLimit to value 300
+Gurobi Optimizer version 10.0.2 build v10.0.2rc0 (linux64)
+
+CPU model: AMD EPYC 7H12 64-Core Processor, instruction set [SSE2|AVX|AVX2]
+Thread count: 128 physical cores, 256 logical processors, using up to 32 threads
+
+Academic license - for non-commercial use only - registered to juntaozh@connect.hku.hk
+Optimize a model with 432 rows, 586 columns and 2998 nonzeros
+Model fingerprint: 0x126929d0
+Variable types: 10 continuous, 576 integer (0 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+03]
+  Objective range  [1e-04, 4e+04]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [3e-01, 3e+04]
+Presolve removed 241 rows and 177 columns
+Presolve time: 0.01s
+Presolved: 191 rows, 409 columns, 1994 nonzeros
+Variable types: 6 continuous, 403 integer (403 binary)
+
+Root relaxation: objective 7.205352e+04, 286 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0 72053.5234    0  105          - 72053.5234      -     -    0s
+H    0     0                    597602.01279 84056.6839  85.9%     -    0s
+H    0     0                    108687.32391 84056.6839  22.7%     -    0s
+     0     0 86219.9486    0  118 108687.324 86219.9486  20.7%     -    0s
+     0     0 86219.9486    0  118 108687.324 86219.9486  20.7%     -    0s
+H    0     0                    88277.839708 86219.9486  2.33%     -    0s
+     0     0 86322.9075    0   65 88277.8397 86322.9075  2.21%     -    0s
+     0     0 86322.9075    0    4 88277.8397 86322.9075  2.21%     -    0s
+     0     0 87189.9749    0    6 88277.8397 87189.9749  1.23%     -    0s
+     0     0 87189.9749    0    4 88277.8397 87189.9749  1.23%     -    0s
+
+Cutting planes:
+  Gomory: 2
+  Cover: 1
+  RLT: 2
+
+Explored 1 nodes (533 simplex iterations) in 0.10 seconds (0.04 work units)
+Thread count was 32 (of 256 available processors)
+
+Solution count 3: 88277.8 108687 597602 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 8.827783970760e+04, best bound 8.827783793277e+04, gap 0.0000%
+/opt/conda/lib/python3.10/site-packages/pulp/pulp.py:1352: UserWarning: Spaces are not permitted in the name. Converted to '_'
+  warnings.warn("Spaces are not permitted in the name. Converted to '_'")
+Gurobi status= 2
+T_sum = 81693.74748266135
+Objective = 88277.83970760138
+88277.83970760138 inf
+Better Plan Generated
+Try (32, 4, 8)
+Set parameter TimeLimit to value 300
+Gurobi Optimizer version 10.0.2 build v10.0.2rc0 (linux64)
+
+CPU model: AMD EPYC 7H12 64-Core Processor, instruction set [SSE2|AVX|AVX2]
+Thread count: 128 physical cores, 256 logical processors, using up to 32 threads
+
+Academic license - for non-commercial use only - registered to juntaozh@connect.hku.hk
+Optimize a model with 432 rows, 586 columns and 2998 nonzeros
+Model fingerprint: 0xc1f97300
+Variable types: 10 continuous, 576 integer (0 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+04]
+  Objective range  [1e-04, 4e+04]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [3e-01, 3e+04]
+Presolve removed 241 rows and 177 columns
+Presolve time: 0.01s
+Presolved: 191 rows, 409 columns, 1994 nonzeros
+Variable types: 6 continuous, 403 integer (403 binary)
+
+Root relaxation: objective 5.712978e+04, 202 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0 57129.7816    0   69          - 57129.7816      -     -    0s
+H    0     0                    244234.80315 77074.4970  68.4%     -    0s
+H    0     0                    118100.15913 77074.4970  34.7%     -    0s
+     0     0 77074.4970    0  112 118100.159 77074.4970  34.7%     -    0s
+     0     0 77081.4276    0   89 118100.159 77081.4276  34.7%     -    0s
+H    0     0                    81622.153371 77100.6736  5.54%     -    0s
+     0     0 78547.8582    0   79 81622.1534 78547.8582  3.77%     -    0s
+     0     0 78547.8582    0   84 81622.1534 78547.8582  3.77%     -    0s
+     0     0 78547.8582    0   81 81622.1534 78547.8582  3.77%     -    0s
+     0     0 78935.1168    0    2 81622.1534 78935.1168  3.29%     -    0s
+     0     0 78935.1168    0    4 81622.1534 78935.1168  3.29%     -    0s
+     0     0     cutoff    0      81622.1534 81622.1534  0.00%     -    0s
+
+Cutting planes:
+  Gomory: 2
+  MIR: 1
+  GUB cover: 1
+  Relax-and-lift: 1
+
+Explored 1 nodes (484 simplex iterations) in 0.14 seconds (0.06 work units)
+Thread count was 32 (of 256 available processors)
+
+Solution count 3: 81622.2 118100 244235 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 8.162215337133e+04, best bound 8.162215337133e+04, gap 0.0000%
+/opt/conda/lib/python3.10/site-packages/pulp/pulp.py:1352: UserWarning: Spaces are not permitted in the name. Converted to '_'
+  warnings.warn("Spaces are not permitted in the name. Converted to '_'")
+Gurobi status= 2
+T_sum = 81451.64866622069
+Objective = 81622.15337132964
+81622.15337132964 88277.83970760138
+Better Plan Generated
+Try (32, 8, 8)
+Set parameter TimeLimit to value 300
+Gurobi Optimizer version 10.0.2 build v10.0.2rc0 (linux64)
+
+CPU model: AMD EPYC 7H12 64-Core Processor, instruction set [SSE2|AVX|AVX2]
+Thread count: 128 physical cores, 256 logical processors, using up to 32 threads
+
+Academic license - for non-commercial use only - registered to juntaozh@connect.hku.hk
+Optimize a model with 432 rows, 586 columns and 2998 nonzeros
+Model fingerprint: 0x35190107
+Variable types: 10 continuous, 576 integer (0 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+04]
+  Objective range  [1e-04, 4e+04]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [3e-01, 3e+04]
+Presolve removed 241 rows and 177 columns
+Presolve time: 0.01s
+Presolved: 191 rows, 409 columns, 1994 nonzeros
+Variable types: 6 continuous, 403 integer (403 binary)
+
+Root relaxation: objective 5.277121e+04, 234 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0 52771.2076    0   70          - 52771.2076      -     -    0s
+H    0     0                    597505.17318 52771.2076  91.2%     -    0s
+H    0     0                    418689.17773 52771.2076  87.4%     -    0s
+H    0     0                    117885.15632 52771.2076  55.2%     -    0s
+H    0     0                    109920.32556 75132.7403  31.6%     -    0s
+     0     0 75132.7403    0  108 109920.326 75132.7403  31.6%     -    0s
+     0     0 75142.3376    0   99 109920.326 75142.3376  31.6%     -    0s
+H    0     0                    102507.58929 75366.9771  26.5%     -    0s
+H    0     0                    94605.206654 75366.9771  20.3%     -    0s
+H    0     0                    94601.008748 75366.9771  20.3%     -    0s
+H    0     0                    77266.878996 75366.9771  2.46%     -    0s
+H    0     0                    76476.049893 75366.9771  1.45%     -    0s
+     0     0 76175.9917    0   27 76476.0499 76175.9917  0.39%     -    0s
+     0     0 76202.7705    0   14 76476.0499 76202.7705  0.36%     -    0s
+     0     0 76203.2557    0    4 76476.0499 76203.2557  0.36%     -    0s
+
+Cutting planes:
+  Gomory: 2
+  Cover: 3
+  MIR: 3
+  StrongCG: 3
+  GUB cover: 2
+  RLT: 1
+  Relax-and-lift: 1
+
+Explored 1 nodes (416 simplex iterations) in 0.09 seconds (0.04 work units)
+Thread count was 32 (of 256 available processors)
+
+Solution count 8: 76476 94601 94605.2 ... 597505
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 7.647604989338e+04, best bound 7.647604989338e+04, gap 0.0000%
+/opt/conda/lib/python3.10/site-packages/pulp/pulp.py:1352: UserWarning: Spaces are not permitted in the name. Converted to '_'
+  warnings.warn("Spaces are not permitted in the name. Converted to '_'")
+Gurobi status= 2
+T_sum = 76305.5451882719
+Objective = 76476.04989338088
+76476.04989338088 81622.15337132964
+Better Plan Generated
+Try (32, 2, 8)
+Set parameter TimeLimit to value 300
+Gurobi Optimizer version 10.0.2 build v10.0.2rc0 (linux64)
+
+CPU model: AMD EPYC 7H12 64-Core Processor, instruction set [SSE2|AVX|AVX2]
+Thread count: 128 physical cores, 256 logical processors, using up to 32 threads
+
+Academic license - for non-commercial use only - registered to juntaozh@connect.hku.hk
+Optimize a model with 432 rows, 586 columns and 2998 nonzeros
+Model fingerprint: 0xf1621cf5
+Variable types: 10 continuous, 576 integer (0 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+03]
+  Objective range  [1e-04, 4e+04]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [3e-01, 3e+04]
+Presolve removed 242 rows and 178 columns
+Presolve time: 0.01s
+Presolved: 190 rows, 408 columns, 1992 nonzeros
+Variable types: 5 continuous, 403 integer (403 binary)
+
+Root relaxation: objective 5.056994e+04, 283 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0 50569.9398    0  110          - 50569.9398      -     -    0s
+H    0     0                    323517.62654 71274.6859  78.0%     -    0s
+H    0     0                    90389.078506 71274.6859  21.1%     -    0s
+H    0     0                    79072.617038 71274.6859  9.86%     -    0s
+H    0     0                    79071.358659 71274.6859  9.86%     -    0s
+     0     0 73104.1375    0  115 79071.3587 73104.1375  7.55%     -    0s
+     0     0 73241.5750    0  115 79071.3587 73241.5750  7.37%     -    0s
+     0     0 73253.8650    0   38 79071.3587 73253.8650  7.36%     -    0s
+
+Explored 1 nodes (564 simplex iterations) in 0.10 seconds (0.04 work units)
+Thread count was 32 (of 256 available processors)
+
+Solution count 4: 79071.4 79072.6 90389.1 323518 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 7.907135865908e+04, best bound 7.907135865908e+04, gap 0.0000%
+/opt/conda/lib/python3.10/site-packages/pulp/pulp.py:1352: UserWarning: Spaces are not permitted in the name. Converted to '_'
+  warnings.warn("Spaces are not permitted in the name. Converted to '_'")
+Gurobi status= 2
+T_sum = 78869.24500385087
+Objective = 79071.35865908166
+79071.35865908166 76476.04989338088
+Try (32, 4, 8)
+Set parameter TimeLimit to value 300
+Gurobi Optimizer version 10.0.2 build v10.0.2rc0 (linux64)
+
+CPU model: AMD EPYC 7H12 64-Core Processor, instruction set [SSE2|AVX|AVX2]
+Thread count: 128 physical cores, 256 logical processors, using up to 32 threads
+
+Academic license - for non-commercial use only - registered to juntaozh@connect.hku.hk
+Optimize a model with 432 rows, 586 columns and 2998 nonzeros
+Model fingerprint: 0x25dc31d8
+Variable types: 10 continuous, 576 integer (0 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+04]
+  Objective range  [1e-04, 4e+04]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [3e-01, 3e+04]
+Presolve removed 242 rows and 178 columns
+Presolve time: 0.01s
+Presolved: 190 rows, 408 columns, 1992 nonzeros
+Variable types: 5 continuous, 403 integer (403 binary)
+
+Root relaxation: objective 4.393165e+04, 262 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0 43931.6478    0   98          - 43931.6478      -     -    0s
+H    0     0                    70334.698712 64642.4700  8.09%     -    0s
+     0     0 64642.4700    0   94 70334.6987 64642.4700  8.09%     -    0s
+     0     0 64642.4700    0   96 70334.6987 64642.4700  8.09%     -    0s
+     0     0 67096.3679    0    2 70334.6987 67096.3679  4.60%     -    0s
+     0     0 67096.3679    0   20 70334.6987 67096.3679  4.60%     -    0s
+
+Explored 1 nodes (404 simplex iterations) in 0.08 seconds (0.04 work units)
+Thread count was 32 (of 256 available processors)
+
+Solution count 1: 70334.7 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 7.033469871236e+04, best bound 7.033469871236e+04, gap 0.0000%
+/opt/conda/lib/python3.10/site-packages/pulp/pulp.py:1352: UserWarning: Spaces are not permitted in the name. Converted to '_'
+  warnings.warn("Spaces are not permitted in the name. Converted to '_'")
+Gurobi status= 2
+T_sum = 70132.5850571318
+Objective = 70334.69871236259
+70334.69871236259 76476.04989338088
+Better Plan Generated
+Try (32, 8, 8)
+Set parameter TimeLimit to value 300
+Gurobi Optimizer version 10.0.2 build v10.0.2rc0 (linux64)
+
+CPU model: AMD EPYC 7H12 64-Core Processor, instruction set [SSE2|AVX|AVX2]
+Thread count: 128 physical cores, 256 logical processors, using up to 32 threads
+
+Academic license - for non-commercial use only - registered to juntaozh@connect.hku.hk
+Optimize a model with 432 rows, 586 columns and 2998 nonzeros
+Model fingerprint: 0x54bd5f27
+Variable types: 10 continuous, 576 integer (0 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+04]
+  Objective range  [1e-04, 4e+04]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [3e-01, 3e+04]
+Presolve removed 242 rows and 178 columns
+Presolve time: 0.01s
+Presolved: 190 rows, 408 columns, 1992 nonzeros
+Variable types: 5 continuous, 403 integer (403 binary)
+
+Root relaxation: objective 4.384301e+04, 274 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0 43843.0131    0  122          - 43843.0131      -     -    0s
+H    0     0                    638473.89197 43843.0131  93.1%     -    0s
+H    0     0                    67648.538362 65031.4458  3.87%     -    0s
+     0     0 65804.8911    0   26 67648.5384 65804.8911  2.73%     -    0s
+     0     0 65804.8911    0   14 67648.5384 65804.8911  2.73%     -    0s
+     0     0 65805.3074    0    2 67648.5384 65805.3074  2.72%     -    0s
+     0     0 65805.3085    0    2 67648.5384 65805.3085  2.72%     -    0s
+     0     0 65805.3085    0    6 67648.5384 65805.3085  2.72%     -    0s
+     0     0 65805.3085    0   21 67648.5384 65805.3085  2.72%     -    0s
+     0     0 67000.4895    0    2 67648.5384 67000.4895  0.96%     -    0s
+     0     0 67000.5450    0    3 67648.5384 67000.5450  0.96%     -    0s
+
+Explored 1 nodes (403 simplex iterations) in 0.10 seconds (0.04 work units)
+Thread count was 32 (of 256 available processors)
+
+Solution count 2: 67648.5 638474 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 6.764853836227e+04, best bound 6.764853836227e+04, gap 0.0000%
+Gurobi status= 2
+T_sum = 67446.42470704252
+Objective = 67648.5383622733
+67648.5383622733 70334.69871236259
+Better Plan Generated
+best plan:  {'prefill_bz': 8, 'bz_decode_max': 8, 'bz_decode_bss': [8, 8, 8, 8], 'device_names': ('Tesla_V100-SXM2-32GB', 'Tesla_T4'), 'device_numbers': (1, 3), 'plan': {'partition_result': {0: [0, 18], 1: [18, 28], 2: [28, 38], 3: [38, 48]}, 'bit_assignment': {0: '8:tc-li', 1: '8:tc-li', 2: '8:tc-li', 3: '8:tc-li', 4: 16, 5: 16, 6: 16, 7: 16, 8: '8:tc-li', 9: '8:tc-li', 10: '8:tc-li', 11: '8:tc-li', 12: '8:tc-li', 13: '8:tc-li', 14: '8:tc-li', 15: '8:tc-li', 16: 16, 17: 16, 18: 16, 19: 16, 20: '8:tc-li', 21: '8:tc-li', 22: '8:tc-li', 23: '8:tc-li', 24: 16, 25: 16, 26: 16, 27: 16, 28: 16, 29: 16, 30: 16, 31: 16, 32: 16, 33: 16, 34: 16, 35: 16, 36: '8:tc-li', 37: '8:tc-li', 38: '8:tc-li', 39: '8:tc-li', 40: '8:tc-li', 41: '8:tc-li', 42: '8:tc-li', 43: '8:tc-li', 44: '8:tc-li', 45: '8:tc-li', 46: '8:tc-li', 47: '8:tc-li', 48: '8:tc-li', 49: '8:tc-li', 50: '8:tc-li', 51: '8:tc-li', 52: '8:tc-li', 53: '8:tc-li', 54: '8:tc-li', 55: '8:tc-li', 56: '8:tc-li', 57: '8:tc-li', 58: '8:tc-li', 59: '8:tc-li', 60: '8:tc-li', 61: '8:tc-li', 62: '8:tc-li', 63: '8:tc-li', 64: '8:tc-li', 65: '8:tc-li', 66: '8:tc-li', 67: '8:tc-li', 68: '8:tc-li', 69: '8:tc-li', 70: '8:tc-li', 71: '8:tc-li', 72: '8:tc-li', 73: '8:tc-li', 74: '8:tc-li', 75: '8:tc-li', 76: '8:tc-li', 77: '8:tc-li', 78: '8:tc-li', 79: '8:tc-li', 80: '8:tc-li', 81: '8:tc-li', 82: '8:tc-li', 83: '8:tc-li', 84: '8:tc-li', 85: '8:tc-li', 86: '8:tc-li', 87: '8:tc-li', 88: '8:tc-li', 89: '8:tc-li', 90: '8:tc-li', 91: '8:tc-li', 92: '8:tc-li', 93: '8:tc-li', 94: '8:tc-li', 95: '8:tc-li'}}, 'obj': 67648.5383622733, 'D': {0: 'Tesla_V100-SXM2-32GB', 1: 'Tesla_T4', 2: 'Tesla_T4', 3: 'Tesla_T4'}, 'maps': {0: 3, 1: 0, 2: 1, 3: 2}, 'name': 'shaq'}
+Try uniform bit:  16
+Loading model:  Tesla_T4_2_5120_20480_3.pkl
+prefill MSE: 706.0849|decode MSE: 0.1336|
+Loading model:  Tesla_T4_2_5120_20480_4.pkl
+prefill MSE: 718.1520|decode MSE: 0.0850|
+Loading model:  Tesla_T4_2_5120_20480_16.pkl
+prefill MSE: 343.2962|decode MSE: 0.0162|
+Loading model:  Tesla_T4_2_5120_20480_8:tc-li.pkl
+prefill MSE: 4.1662|decode MSE: 0.0341|
+Loading model:  Tesla_T4_2_7168_28672_3.pkl
+prefill MSE: 874.4513|decode MSE: 0.0887|
+Loading model:  Tesla_T4_2_7168_28672_4.pkl
+prefill MSE: 1158.8437|decode MSE: 0.0562|
+Loading model:  Tesla_T4_2_7168_28672_16.pkl
+prefill MSE: 14.8919|decode MSE: 0.1056|
+Loading model:  Tesla_T4_2_7168_28672_8:tc-li.pkl
+prefill MSE: 5.4209|decode MSE: 0.0264|
+Loading model:  Tesla_T4_2_9216_36864_3.pkl
+prefill MSE: 2742.4023|decode MSE: 0.0825|
+Loading model:  Tesla_T4_2_9216_36864_4.pkl
+prefill MSE: 3223.0469|decode MSE: 0.0454|
+Loading model:  Tesla_T4_2_9216_36864_16.pkl
+prefill MSE: 68.0786|decode MSE: 0.3770|
+Loading model:  Tesla_T4_2_9216_36864_8:tc-li.pkl
+prefill MSE: 4.0600|decode MSE: 0.0396|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_8:tc-li.pkl
+prefill MSE: 1.3490|decode MSE: 0.0324|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_3.pkl
+prefill MSE: 31.7105|decode MSE: 0.0137|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_4.pkl
+prefill MSE: 18.0841|decode MSE: 0.0076|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_16.pkl
+prefill MSE: 263.9227|decode MSE: 0.0031|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_8:tc-li.pkl
+prefill MSE: 0.9312|decode MSE: 0.0290|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_3.pkl
+prefill MSE: 4.1599|decode MSE: 0.0243|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_4.pkl
+prefill MSE: 4.4266|decode MSE: 0.0209|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_16.pkl
+prefill MSE: 7.1557|decode MSE: 0.0012|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_8:tc-li.pkl
+prefill MSE: 7.2594|decode MSE: 0.0224|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_3.pkl
+prefill MSE: 15.5508|decode MSE: 0.0215|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_4.pkl
+prefill MSE: 15.3923|decode MSE: 0.0153|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_16.pkl
+prefill MSE: 23.7516|decode MSE: 0.0008|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_8:tc-li.pkl
+prefill MSE: 23.7406|decode MSE: 0.1040|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_3.pkl
+prefill MSE: 15221.3525|decode MSE: 0.0318|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_4.pkl
+prefill MSE: 32033.6586|decode MSE: 0.0298|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_16.pkl
+prefill MSE: 1071.9871|decode MSE: 0.0346|
+Verified all regress models, maximum mse:  32033.658560087384
+Total memory required: 80.22784423828125 GB available memory:  64.6799375 GB
+The model is too large to fit in the device mesh
+Total memory required: 80.22784423828125 GB available memory:  64.6799375 GB
+The model is too large to fit in the device mesh
+Total memory required: 80.22784423828125 GB available memory:  64.6799375 GB
+The model is too large to fit in the device mesh
+Try uniform bit:  8:tc-li
+Loading model:  Tesla_T4_2_5120_20480_3.pkl
+prefill MSE: 706.0849|decode MSE: 0.1336|
+Loading model:  Tesla_T4_2_5120_20480_4.pkl
+prefill MSE: 718.1520|decode MSE: 0.0850|
+Loading model:  Tesla_T4_2_5120_20480_16.pkl
+prefill MSE: 343.2962|decode MSE: 0.0162|
+Loading model:  Tesla_T4_2_5120_20480_8:tc-li.pkl
+prefill MSE: 4.1662|decode MSE: 0.0341|
+Loading model:  Tesla_T4_2_7168_28672_3.pkl
+prefill MSE: 874.4513|decode MSE: 0.0887|
+Loading model:  Tesla_T4_2_7168_28672_4.pkl
+prefill MSE: 1158.8437|decode MSE: 0.0562|
+Loading model:  Tesla_T4_2_7168_28672_16.pkl
+prefill MSE: 14.8919|decode MSE: 0.1056|
+Loading model:  Tesla_T4_2_7168_28672_8:tc-li.pkl
+prefill MSE: 5.4209|decode MSE: 0.0264|
+Loading model:  Tesla_T4_2_9216_36864_3.pkl
+prefill MSE: 2742.4023|decode MSE: 0.0825|
+Loading model:  Tesla_T4_2_9216_36864_4.pkl
+prefill MSE: 3223.0469|decode MSE: 0.0454|
+Loading model:  Tesla_T4_2_9216_36864_16.pkl
+prefill MSE: 68.0786|decode MSE: 0.3770|
+Loading model:  Tesla_T4_2_9216_36864_8:tc-li.pkl
+prefill MSE: 4.0600|decode MSE: 0.0396|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_8:tc-li.pkl
+prefill MSE: 1.3490|decode MSE: 0.0324|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_3.pkl
+prefill MSE: 31.7105|decode MSE: 0.0137|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_4.pkl
+prefill MSE: 18.0841|decode MSE: 0.0076|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_16.pkl
+prefill MSE: 263.9227|decode MSE: 0.0031|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_8:tc-li.pkl
+prefill MSE: 0.9312|decode MSE: 0.0290|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_3.pkl
+prefill MSE: 4.1599|decode MSE: 0.0243|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_4.pkl
+prefill MSE: 4.4266|decode MSE: 0.0209|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_16.pkl
+prefill MSE: 7.1557|decode MSE: 0.0012|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_8:tc-li.pkl
+prefill MSE: 7.2594|decode MSE: 0.0224|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_3.pkl
+prefill MSE: 15.5508|decode MSE: 0.0215|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_4.pkl
+prefill MSE: 15.3923|decode MSE: 0.0153|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_16.pkl
+prefill MSE: 23.7516|decode MSE: 0.0008|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_8:tc-li.pkl
+prefill MSE: 23.7406|decode MSE: 0.1040|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_3.pkl
+prefill MSE: 15221.3525|decode MSE: 0.0318|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_4.pkl
+prefill MSE: 32033.6586|decode MSE: 0.0298|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_16.pkl
+prefill MSE: 1071.9871|decode MSE: 0.0346|
+Verified all regress models, maximum mse:  32033.658560087384
+The model is too large to fit in the device mesh
+min(each_device_mem_availability):  10483.263595703123 Uniform requries mem:  13482.0
+The model is too large to fit in the device mesh
+min(each_device_mem_availability):  10483.263595703123 Uniform requries mem:  13482.0
+The model is too large to fit in the device mesh
+min(each_device_mem_availability):  10013.875656249998 Uniform requries mem:  13482.0
+Try uniform bit:  4
+Loading model:  Tesla_T4_2_5120_20480_3.pkl
+prefill MSE: 706.0849|decode MSE: 0.1336|
+Loading model:  /opt/conda/lib/python3.10/site-packages/pulp/pulp.py:1352: UserWarning: Spaces are not permitted in the name. Converted to '_'
+  warnings.warn("Spaces are not permitted in the name. Converted to '_'")
+Tesla_T4_2_5120_20480_4.pkl
+prefill MSE: 718.1520|decode MSE: 0.0850|
+Loading model:  Tesla_T4_2_5120_20480_16.pkl
+prefill MSE: 343.2962|decode MSE: 0.0162|
+Loading model:  Tesla_T4_2_5120_20480_8:tc-li.pkl
+prefill MSE: 4.1662|decode MSE: 0.0341|
+Loading model:  Tesla_T4_2_7168_28672_3.pkl
+prefill MSE: 874.4513|decode MSE: 0.0887|
+Loading model:  Tesla_T4_2_7168_28672_4.pkl
+prefill MSE: 1158.8437|decode MSE: 0.0562|
+Loading model:  Tesla_T4_2_7168_28672_16.pkl
+prefill MSE: 14.8919|decode MSE: 0.1056|
+Loading model:  Tesla_T4_2_7168_28672_8:tc-li.pkl
+prefill MSE: 5.4209|decode MSE: 0.0264|
+Loading model:  Tesla_T4_2_9216_36864_3.pkl
+prefill MSE: 2742.4023|decode MSE: 0.0825|
+Loading model:  Tesla_T4_2_9216_36864_4.pkl
+prefill MSE: 3223.0469|decode MSE: 0.0454|
+Loading model:  Tesla_T4_2_9216_36864_16.pkl
+prefill MSE: 68.0786|decode MSE: 0.3770|
+Loading model:  Tesla_T4_2_9216_36864_8:tc-li.pkl
+prefill MSE: 4.0600|decode MSE: 0.0396|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_8:tc-li.pkl
+prefill MSE: 1.3490|decode MSE: 0.0324|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_3.pkl
+prefill MSE: 31.7105|decode MSE: 0.0137|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_4.pkl
+prefill MSE: 18.0841|decode MSE: 0.0076|
+Loading model:  Tesla_V100-SXM2-32GB_2_9216_36864_16.pkl
+prefill MSE: 263.9227|decode MSE: 0.0031|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_8:tc-li.pkl
+prefill MSE: 0.9312|decode MSE: 0.0290|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_3.pkl
+prefill MSE: 4.1599|decode MSE: 0.0243|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_4.pkl
+prefill MSE: 4.4266|decode MSE: 0.0209|
+Loading model:  Tesla_V100-SXM2-32GB_2_5120_20480_16.pkl
+prefill MSE: 7.1557|decode MSE: 0.0012|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_8:tc-li.pkl
+prefill MSE: 7.2594|decode MSE: 0.0224|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_3.pkl
+prefill MSE: 15.5508|decode MSE: 0.0215|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_4.pkl
+prefill MSE: 15.3923|decode MSE: 0.0153|
+Loading model:  Tesla_V100-SXM2-32GB_2_7168_28672_16.pkl
+prefill MSE: 23.7516|decode MSE: 0.0008|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_8:tc-li.pkl
+prefill MSE: 23.7406|decode MSE: 0.1040|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_3.pkl
+prefill MSE: 15221.3525|decode MSE: 0.0318|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_4.pkl
+prefill MSE: 32033.6586|decode MSE: 0.0298|
+Loading model:  Tesla_V100-SXM2-32GB_2_14336_57344_16.pkl
+prefill MSE: 1071.9871|decode MSE: 0.0346|
+Verified all regress models, maximum mse:  32033.658560087384
+Prefill cost stage [34111.67948952654, 34111.67948952654, 34111.67948952654, 6752.124581103195]
+Decode cost stage [291.88480468005275, 291.88480468005275, 291.88480468005275, 72.73092462315532]
+Prefill Time 620762.36ms, Decode Time 87638.17ms, E2E Latency 708400.53ms
+Prefill cost stage [67409.89240878202, 67409.89240878202, 67409.89240878202, 13619.106674296027]
+Decode cost stage [291.88480468005275, 291.88480468005275, 291.88480468005275, 72.73092462315532]
+Prefill Time 687718.03ms, Decode Time 87638.17ms, E2E Latency 775356.20ms
+Prefill cost stage [134006.31824729298, 134006.31824729298, 134006.31824729298, 27353.07086068168]
+Decode cost stage [291.88480468005275, 291.88480468005275, 291.88480468005275, 72.73092462315532]
+Prefill Time 831390.98ms, Decode Time 87638.17ms, E2E Latency 919029.15ms
+Uniform solution found, use bit:  4
+Try pipeedge bit:  16
+Set parameter TimeLimit to value 300
+Gurobi Optimizer version 10.0.2 build v10.0.2rc0 (linux64)
+
+CPU model: AMD EPYC 7H12 64-Core Processor, instruction set [SSE2|AVX|AVX2]
+Thread count: 128 physical cores, 256 logical processors, using up to 32 threads
+
+Academic license - for non-commercial use only - registered to juntaozh@connect.hku.hk
+Optimize a model with 64 rows, 197 columns and 592 nonzeros
+Model fingerprint: 0x7df027c6
+Variable types: 5 continuous, 192 integer (0 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+03]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [3e-01, 3e+04]
+Presolve removed 8 rows and 4 columns
+Presolve time: 0.00s
+Presolved: 56 rows, 193 columns, 580 nonzeros
+Variable types: 1 continuous, 192 integer (192 binary)
+
+Root relaxation: infeasible, 56 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0 infeasible    0               - infeasible      -     -    0s
+
+Explored 1 nodes (56 simplex iterations) in 0.02 seconds (0.00 work units)
+Thread count was 32 (of 256 available processors)
+
+Solution count 0
+
+Model is infeasible
+Best objective -, best bound -, gap -
+/opt/conda/lib/python3.10/site-packages/pulp/pulp.py:1352: UserWarning: Spaces are not permitted in the name. Converted to '_'
+  warnings.warn("Spaces are not permitted in the name. Converted to '_'")
+Gurobi status= 3
+Pipedge Result not feasible
+Try pipeedge bit:  8:tc-li
+Set parameter TimeLimit to value 300
+Gurobi Optimizer version 10.0.2 build v10.0.2rc0 (linux64)
+
+CPU model: AMD EPYC 7H12 64-Core Processor, instruction set [SSE2|AVX|AVX2]
+Thread count: 128 physical cores, 256 logical processors, using up to 32 threads
+
+Academic license - for non-commercial use only - registered to juntaozh@connect.hku.hk
+Optimize a model with 64 rows, 197 columns and 592 nonzeros
+Model fingerprint: 0x16427e31
+Variable types: 5 continuous, 192 integer (0 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+03]
+  Objective range  [1e+00, 1e+00]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [3e-01, 3e+04]
+Presolve removed 8 rows and 4 columns
+Presolve time: 0.00s
+Presolved: 56 rows, 193 columns, 580 nonzeros
+Variable types: 1 continuous, 192 integer (192 binary)
+Found heuristic solution: objective 386.5919877
+Found heuristic solution: objective 309.2735901
+
+Root relaxation: cutoff, 74 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0     cutoff    0       309.27359  309.27359  0.00%     -    0s
+
+Explored 1 nodes (74 simplex iterations) in 0.01 seconds (0.00 work units)
+Thread count was 32 (of 256 available processors)
+
+Solution count 2: 309.274 386.592 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 3.092735901324e+02, best bound 3.092735901324e+02, gap 0.0000%
+Gurobi status= 2
+Pipedge Result found
+PipeEdge solution found, use bit:  8:tc-li
+start to run adabits
+Prefill cost stage [1476.9780956468999, 1823.1488439439067, 1823.1488439439067, 1795.0268997282624]
+Decode cost stage [66.67953918141022, 83.25995978378565, 83.25995978378565, 187.056346824891]
+Prefill Time 12387.75ms, Decode Time 55975.99ms, E2E Latency 68363.74ms
+adabits result: Minimax Lat 68363.74002766119
+start to run shaq
+Prefill cost stage [1610.9802247018813, 1730.8537414850343, 1730.8537414850343, 1730.8537414850343]
+Decode cost stage [156.12898781164608, 82.90210301187714, 82.90210301187714, 82.90210301187714]
+Prefill Time 11996.10ms, Decode Time 46775.14ms, E2E Latency 58771.25ms
+shaq result: Minimax Lat 58771.24735051826
+start to run pipeedge
+Prefill cost stage [1384.6829931880275, 1730.8537414850343, 1730.8537414850343, 1840.4667502638097]
+Decode cost stage [66.32168240950172, 82.90210301187714, 82.90210301187714, 309.27359013244893]
+Prefill Time 12208.26ms, Decode Time 92395.66ms, E2E Latency 104603.91ms
+pipeedge result: Minimax Lat 104603.91322511637
+start to run uniform
+Prefill cost stage [134006.31824729298, 134006.31824729298, 134006.31824729298, 27353.07086068168]
+Decode cost stage [291.88480468005275, 291.88480468005275, 291.88480468005275, 72.73092462315532]
+Prefill Time 831390.98ms, Decode Time 87638.17ms, E2E Latency 919029.15ms
+uniform result: Minimax Lat 919029.1526730785
+Minimum bit of  adabits
+minimum_bit:  8
+Minimum bit of  shaq
+minimum_bit:  8
+Minimum bit of  pipeedge
+minimum_bit:  8
+Minimum bit of  uniform
+minimum_bit:  4
+Shaq D not same
+{0: 'Tesla_V100-SXM2-32GB', 1: 'Tesla_T4', 2: 'Tesla_T4', 3: 'Tesla_T4'}
+Shaq time:  1.0725619792938232
+Result saved to /workspace/shaq/scripts/part_strategy/sols_opt_30b_Tesla_T4_3_Tesla_V100-SXM2-32GB_1group2.pkl
