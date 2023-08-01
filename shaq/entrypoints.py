@@ -51,6 +51,8 @@ def run_dist():
         # ref
         # {0: 'Tesla_T4', 1: 'Tesla_T4', 2: 'Tesla_T4', 3: 'Tesla_V100-SXM2-32GB'}
         # get index order of devices
+        if 'A800' in device_name:
+            device_name = "NVIDIA_A100-SXM4-80GB" # TODO: later fix the name
         device_rank_list, rank = convert_D_to_ranked_device(D, device_name=device_name)
         nnodes = len(device_rank_list)
         # current device index
