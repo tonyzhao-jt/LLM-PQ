@@ -1,5 +1,5 @@
 # VISIBLE DEVIES
-export CUDA_VISIBLE_DEVICES=3 
+export CUDA_VISIBLE_DEVICES=0 
 CUR_DIR=${PWD}
 
 # required
