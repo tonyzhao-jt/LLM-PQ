@@ -11,7 +11,7 @@ ps ax | awk '/python3.*dist_flex_opt\.py/ {print $1}' | xargs kill
 
 set -x
 ENV="CUDA_VISIBLE_DEVICES=1,2"
-HOSTS=(net-g15 ***REMOVED***)
+HOSTS=(net-g15 net-g13)
 PER_NODE_GPUS=(1 1)
 # process
 GPU_ALL=0

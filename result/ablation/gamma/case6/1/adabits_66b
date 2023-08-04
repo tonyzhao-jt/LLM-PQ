@@ -502,7 +502,7 @@ Failures:
 Root Cause (first observed failure):
 [0]:
   time      : 2023-06-05_09:02:40
-  host      : ***REMOVED***
+  host      : net-g13
   rank      : 1 (local_rank: 1)
   exitcode  : 1 (pid: 6538)
   error_file: <N/A>

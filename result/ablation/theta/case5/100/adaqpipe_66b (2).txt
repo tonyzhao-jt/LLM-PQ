@@ -542,7 +542,7 @@ Traceback (most recent call last):
     self.run()
   File "/home/tiger/.local/lib/python3.9/site-packages/qpipe/p2p/util.py", line 24, in run
     self._req.wait()
-RuntimeError: [../third_party/gloo/gloo/transport/tcp/pair.cc:598] Connection closed by peer [***REMOVED***]:5528
+RuntimeError: [../third_party/gloo/gloo/transport/tcp/pair.cc:598] Connection closed by peer [10.132.166.21]:5528
 WARNING:torch.distributed.elastic.multiprocessing.api:Sending process 556020 closing signal SIGTERM
 ERROR:torch.distributed.elastic.multiprocessing.api:failed (exitcode: 1) local_rank: 1 (pid: 556021) of binary: /usr/bin/python3
 Traceback (most recent call last):

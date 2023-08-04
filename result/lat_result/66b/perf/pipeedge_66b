@@ -744,7 +744,7 @@ Failures:
 Root Cause (first observed failure):
 [0]:
   time      : 2023-06-05_15:30:42
-  host      : ***REMOVED***
+  host      : net-g13
   rank      : 1 (local_rank: 1)
   exitcode  : 1 (pid: 38561)
   error_file: <N/A>

@@ -61,16 +61,26 @@ shaq-algo --model_size ${model_size} \
  --theta 1000  --global_bz 32 --debug --ilp_time_limit 160 --fit
 
 # case 5
+# we recommend to use Hess for cluster 5, you can get better result than in paper.
 model_size=66b
 device_names=("Tesla_T4" "Tesla_V100-SXM2-32GB") 
 device_numbers=(4 2)  # define device numbers as a list of integers
 OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_66b_ind.pkl
+HESS_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_66b_hess_ind.pkl
 
+# shaq-algo --model_size ${model_size} \
+#  --device_names "${device_names[@]}" \
+#  --device_numbers "${device_numbers[@]}" \
+#  --shaq-efficient \
+#  --omega_file $OMEGA_FILE --ilp_seed 120 \
+#  --theta 50 --global_bz 32 --ilp_time_limit 160 --fit --debug 
+
+# HESS file result is much better in this case
 shaq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --shaq-efficient \
- --omega_file $OMEGA_FILE --ilp_seed 120 \
+ --omega_file $HESS_FILE --ilp_seed 120 \
  --theta 50 --global_bz 32 --ilp_time_limit 160 --fit --debug 
 
 # case6

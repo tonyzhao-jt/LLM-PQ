@@ -342,7 +342,7 @@ Failures:
 Root Cause (first observed failure):
 [0]:
   time      : 2023-06-05_09:42:13
-  host      : ***REMOVED***
+  host      : net-g13
   rank      : 1 (local_rank: 1)
   exitcode  : 1 (pid: 11440)
   error_file: <N/A>

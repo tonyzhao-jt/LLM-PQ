@@ -25,4 +25,5 @@ profile.json
 !result/**/*.txt
 *.pdf
 *.pt
+/notebook/*.json
 

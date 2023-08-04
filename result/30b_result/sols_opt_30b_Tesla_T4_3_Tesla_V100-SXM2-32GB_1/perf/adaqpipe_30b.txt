@@ -350,4 +350,4 @@ Traceback (most recent call last):
     self.run()
   File "/home/tiger/.local/lib/python3.9/site-packages/qpipe/p2p/util.py", line 24, in run
     self._req.wait()
-RuntimeError: [../third_party/gloo/gloo/transport/tcp/pair.cc:598] Connection closed by peer [***REMOVED***]:23976
+RuntimeError: [../third_party/gloo/gloo/transport/tcp/pair.cc:598] Connection closed by peer [10.132.166.21]:23976

@@ -21,7 +21,7 @@ PARTITION_NUMS=4 # 4 gpus
 # N_NODES=1
 # N_PROCES=4
 # ALL_GPUS=4
-# MASTER_ADDR=***REMOVED***
+# MASTER_ADDR=10.132.166.21
 # MASTER_PORT=1234
 # RANK=0
 
@@ -73,7 +73,7 @@ python3 cost_model.py --model facebook/opt-30b --prompt-len 512 --gen-len 100 \
 N_NODES=1
 N_PROCES=4
 ALL_GPUS=4
-MASTER_ADDR=***REMOVED***
+MASTER_ADDR=10.132.166.21
 MASTER_PORT=1234
 RANK=0
 

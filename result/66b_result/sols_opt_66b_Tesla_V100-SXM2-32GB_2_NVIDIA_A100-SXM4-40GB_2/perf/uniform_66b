@@ -422,7 +422,7 @@ Failures:
 Root Cause (first observed failure):
 [0]:
   time      : 2023-05-27_12:49:31
-  host      : ***REMOVED***
+  host      : net-g12
   rank      : 1 (local_rank: 1)
   exitcode  : 1 (pid: 98152)
   error_file: <N/A>

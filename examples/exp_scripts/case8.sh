@@ -11,13 +11,17 @@ STRAT_FILE_NAME="sols_bloom_176b_Tesla_V100-SXM2-32GB_4_NVIDIA_A100-SXM4-80GB_2"
 storage_folder="MULTI_NODE_PERF_RESULT"
 mkdir $storage_folder
 
-method=shaq # from adabits, uniform, pipeedge
-# MASTER_ADDR=***REMOVED***
+method=adabits # from adabits, uniform, pipeedge
+# MASTER_ADDR=net-g13
 # method='shaq' # from adabits, shaq, uniform, pipeedge
 MASTER_ADDR=10.130.24.87
 MASTER_PORT=1234
+NNODES=2
+NPROC_PER_NODE=2
+RANK=1
 
-shaq-dist --master_addr $MASTER_ADDR --master_port $MASTER_PORT\
+shaq-dist --master_addr $MASTER_ADDR --master_port $MASTER_PORT --nnodes=$NNODES --nproc_per_node=$NPROC_PER_NODE --node_rank=${RANK} \
+    --model_name  bloom --model_size 176b --no_auto \
     --method $method --perf-mode \
     --strat_file_name $STRAT_FILE_NAME \
         2>&1 | tee "./${storage_folder}/${method}_${STRAT_FILE_NAME}_${MODEL_NAME}_${MODEL_SIZE}.txt"

@@ -29,7 +29,7 @@ NPROC_PER_NODE=2
 # NPROC_PER_NODE=1
 
 # master
-# MASTER_ADDR=***REMOVED***
+# MASTER_ADDR=net-g13
 # RANK=1
 # NPROC_PER_NODE=2
 # worker1

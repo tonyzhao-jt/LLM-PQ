@@ -11,7 +11,7 @@ storage_folder="MULTI_NODE_PERF_RESULT"
 mkdir $storage_folder
 
 method=shaq # from adabits, uniform, pipeedge
-# MASTER_ADDR=***REMOVED***
+# MASTER_ADDR=net-g13
 # method='shaq' # from adabits, shaq, uniform, pipeedge
 MASTER_ADDR=net-g15
 MASTER_PORT=1234

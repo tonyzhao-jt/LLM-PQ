@@ -21,7 +21,7 @@ done
 # available_methods=('adaqpipe')
 # rank=0
 # model_size="30b"
-# MASTER_ADDR=***REMOVED***
+# MASTER_ADDR=net-g12
 # STRAT_FILE_NAME="sols_opt_30b_Tesla_P100-PCIE-12GB_3_Tesla_V100-SXM2-32GB_1"
 # for i in "${!available_methods[@]}"
 # do  

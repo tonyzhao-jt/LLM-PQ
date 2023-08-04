@@ -52,25 +52,25 @@ rank_src: 3, rank_dst: 1, rank: 0, results_cb: <function handle_results at 0x7f0
 rank_src: 0, rank_dst: 2, rank: 1, results_cb: None
 2023-05-27 11:35:29,362 - INFO - start pipe data
 n132-166-021:168664:170684 [0] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
-n132-166-021:168664:170684 [0] NCCL INFO Bootstrap : Using eth0:***REMOVED***<0>
+n132-166-021:168664:170684 [0] NCCL INFO Bootstrap : Using eth0:10.132.166.21<0>
 n132-166-021:168664:170684 [0] NCCL INFO NET/Plugin : Plugin load (libnccl-net.so) returned 2 : libnccl-net.so: cannot open shared object file: No such file or directory
 n132-166-021:168664:170684 [0] NCCL INFO NET/Plugin : No plugin found, using internal implementation
 n132-166-021:168664:170684 [0] NCCL INFO cudaDriverVersion 11070
 NCCL version 2.17.1+cuda11.7
 n132-166-021:168665:170689 [1] NCCL INFO cudaDriverVersion 11070
 n132-166-021:168665:170689 [1] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
-n132-166-021:168665:170689 [1] NCCL INFO Bootstrap : Using eth0:***REMOVED***<0>
+n132-166-021:168665:170689 [1] NCCL INFO Bootstrap : Using eth0:10.132.166.21<0>
 n132-166-021:168665:170689 [1] NCCL INFO NET/Plugin : Plugin load (libnccl-net.so) returned 2 : libnccl-net.so: cannot open shared object file: No such file or directory
 n132-166-021:168665:170689 [1] NCCL INFO NET/Plugin : No plugin found, using internal implementation
 n132-166-021:168665:170695 [1] NCCL INFO NCCL_IB_DISABLE set by environment to 0.
 n132-166-021:168665:170695 [1] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
 n132-166-021:168665:170695 [1] NCCL INFO NCCL_IB_HCA set to mlx5_2:1
-n132-166-021:168665:170695 [1] NCCL INFO NET/IB : Using [0]mlx5_2:1/RoCE [RO]; OOB eth0:***REMOVED***<0>
+n132-166-021:168665:170695 [1] NCCL INFO NET/IB : Using [0]mlx5_2:1/RoCE [RO]; OOB eth0:10.132.166.21<0>
 n132-166-021:168665:170695 [1] NCCL INFO Using network IB
 n132-166-021:168664:170694 [0] NCCL INFO NCCL_IB_DISABLE set by environment to 0.
 n132-166-021:168664:170694 [0] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
 n132-166-021:168664:170694 [0] NCCL INFO NCCL_IB_HCA set to mlx5_2:1
-n132-166-021:168664:170694 [0] NCCL INFO NET/IB : Using [0]mlx5_2:1/RoCE [RO]; OOB eth0:***REMOVED***<0>
+n132-166-021:168664:170694 [0] NCCL INFO NET/IB : Using [0]mlx5_2:1/RoCE [RO]; OOB eth0:10.132.166.21<0>
 n132-166-021:168664:170694 [0] NCCL INFO Using network IB
 n132-166-021:168665:170695 [1] NCCL INFO Setting affinity for GPU 1 to ff,ffff0000,00ffffff
 n132-166-021:168664:170694 [0] NCCL INFO Setting affinity for GPU 0 to ff,ffff0000,00ffffff
@@ -99,13 +99,13 @@ n132-166-021:168664:170703 [0] NCCL INFO Channel 01/1 : 0[3d000] -> 1[3e000] via
 NCCL version 2.17.1+cuda11.7
 n132-166-021:168666:170683 [2] NCCL INFO cudaDriverVersion 11070
 n132-166-021:168666:170683 [2] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
-n132-166-021:168666:170683 [2] NCCL INFO Bootstrap : Using eth0:***REMOVED***<0>
+n132-166-021:168666:170683 [2] NCCL INFO Bootstrap : Using eth0:10.132.166.21<0>
 n132-166-021:168666:170683 [2] NCCL INFO NET/Plugin : Plugin load (libnccl-net.so) returned 2 : libnccl-net.so: cannot open shared object file: No such file or directory
 n132-166-021:168666:170683 [2] NCCL INFO NET/Plugin : No plugin found, using internal implementation
 n132-166-021:168666:170708 [2] NCCL INFO NCCL_IB_DISABLE set by environment to 0.
 n132-166-021:168666:170708 [2] NCCL INFO NCCL_SOCKET_IFNAME set by environment to eth0
 n132-166-021:168666:170708 [2] NCCL INFO NCCL_IB_HCA set to mlx5_2:1
-n132-166-021:168666:170708 [2] NCCL INFO NET/IB : Using [0]mlx5_2:1/RoCE [RO]; OOB eth0:***REMOVED***<0>
+n132-166-021:168666:170708 [2] NCCL INFO NET/IB : Using [0]mlx5_2:1/RoCE [RO]; OOB eth0:10.132.166.21<0>
 n132-166-021:168666:170708 [2] NCCL INFO Using network IB
 n132-166-021:168665:170707 [1] NCCL INFO Using network IB
 n132-166-021:168665:170707 [1] NCCL INFO Setting affinity for GPU 1 to ff,ffff0000,00ffffff
