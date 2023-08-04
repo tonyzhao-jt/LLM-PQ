@@ -8,14 +8,15 @@ export CUDA_VISIBLE_DEVICES=3
 # all indicators required.
 # python3 main.py facebook/opt-13b c4 --wbits 4 --task piqa,arc_easy,lambada --profile
 # python3 main.py facebook/opt-30b c4 --wbits 4 --task piqa,arc_easy,lambada --profile
-python3 main.py facebook/opt-66b c4 --wbits 4 --task piqa,arc_easy,lambada --profile
+# python3 main.py facebook/opt-66b c4 --wbits 4 --task piqa,arc_easy,lambada --profile
 # python3 main.py bigscience/bloom c4 --wbits 4 --task piqa,arc_easy,lambada --profile
 # python3 main.py facebook/opt-175b c4 --wbits 4 --task piqa,arc_easy,lambada --profile
-# for bit in 8
-# do
-#     echo "Try collect Hess"
+for bit in 3 4 8
+do
+    echo "Try collect Hess"
     # python3 main.py facebook/opt-13b c4 --wbits ${bit} --task piqa
     # python3 main.py facebook/opt-30b c4 --wbits ${bit} --task piqa
     # python3 main.py facebook/opt-66b c4 --wbits ${bit} --task piqa
-    # python3 main.py facebook/bloom c4 --wbits ${bit} --task piqa
-# done
+    python3 main.py bigscience/bloom c4 --wbits ${bit} --task piqa
+    # python3 main.py bigscience/bloom-560m c4 --wbits ${bit} --task piqa # test
+done

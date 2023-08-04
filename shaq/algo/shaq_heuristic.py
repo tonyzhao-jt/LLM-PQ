@@ -441,8 +441,10 @@ def calculate_stage_latency(current_D, partition_result, bit_assignment, \
 # possible conversion pairs
 convert_pairs = [
     (16, ['8:tc-li', 2]),
+    ('8:tc-li', ['8:tc-li', 1]),
     (16, [4, 4]),
     ('8:tc-li', [4, 2]),
+    (4, [4, 1]),
 ]
 
 def shaq_h_internal_main(num_hidden_layers, cost_model_pack, bz_pack, current_D):
