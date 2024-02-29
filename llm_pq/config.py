@@ -1,0 +1,1 @@
+PROJECT_NAME = 'llm_pq'

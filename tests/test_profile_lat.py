@@ -1,6 +1,6 @@
 # profile latency
 # load an OPTSharded Decoder
-from shaq.profiler import profile_lat
+from llm_pq.profiler import profile_lat
 from qllm.models.OPT.opt import model_cards
 from qllm.models.OPT.seq_layers import OPTDecoderLayerSharded
 import argparse
