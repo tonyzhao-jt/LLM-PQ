@@ -15,6 +15,8 @@ LLM-PQ is implemented in a top-down view, where
 - QLLM: the customized LLM workload and its quantized version
 - LPTorch: the inner most quantization support for the LM, implement different quantization scheme.
 
+Due to the similar reason, later two's performance is not a SOTA. **If this repo / paper is getting popular 🤑🤑🤑, we will consider merging / updates the later two.**
+
 ### Docker (Recommended)
 You can use the docker file under the dockerfiles. We also provides one pre-built image:
 
@@ -23,26 +25,22 @@ You can use the docker file under the dockerfiles. We also provides one pre-buil
     git clone --recursive https://github.com/tonyzhao-jt/llm_pq.git
     python3 pip install -e .
 ```
-#### QLLM / LPTorch
-The llm_pq's runtime relies on the QLLM / LPTorch. Which is our adaptor lib for quantized LLM and quantized operators. (going to merge them later)
-- also, due to the historical reason (this repo is initially built on 2023 month 3-6), the implementation of them may not be optimal, we will optimize them later.
+**Careful**: use GPU with cap <= 70 require recompile of bitsandbytes. We done it for u in setup.py, but if not, please run the update.sh in the 3rd_party of LPTorch to mannually compile and install the bitsandbytes.
 
-#### EXTRME CAREFUL
-When you use GPU with cap <= 70. please run the update.sh in the 3rd_party of LPTorch to mannually compile and install the bitsandbytes.
+## Optimizer Setup
+llm_pq's optimizer utilize the support from the gurobi. To use gurobi, put the [web license](https://license.gurobi.com/manager/licenses) under `/opt/gurobi/` or under `configs`:
 
-### Optimizer Setup
-llm_pq's optimizer utilize the support from the gurobi. You need to first install gurobi. To use gurobi, put the [web license](https://license.gurobi.com/manager/licenses) under `/opt/gurobi/` or under `configs`:
-
-Elsewise if you run the optimization command, you will get:
+Else you will get:
 ```bash
     ERROR:llm_pq:Please install gurobi and put the license file under /opt/gurobi/
 ```
 
-## Result in Paper
+## Reproduce Results in Paper
 ### Scripts
 We provide all the scripts used in the paper under the `scripts/` folder. Currently, we evaluate the performance and accuracy separately by performing the following:
 - Evaluating mixed-precision using modified scripts from GPTQ.
 - Evaluating performance using the distributed runtime.
+
 Please note that in the current version, we load the model layer by layer and do not require any additional storage for weight saving. However, this loading process might be relatively slow.
 
 ### Graphing
@@ -51,7 +49,7 @@ We provides all the graphing scripts under the `notebook/` folder.
 
 
 
-## MileStone (TODO)
+## TODOs if Heated 
 1. Faster Loading
 We are going to add scripts to distributed runtime and quantization part to make it can be fast deployed in runtime. Stay-tuned.
 2. Better Pipeline
