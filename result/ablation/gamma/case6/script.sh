@@ -6,7 +6,7 @@ STRAT_FILE_NAME="sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2"
 model_size="66b"
 # exp1
 # rank=1
-# MASTER_ADDR=net-g13
+# MASTER_ADDR=***REMOVED***
 # model_size="66b"
 # for i in "${!available_methods[@]}"
 # do  

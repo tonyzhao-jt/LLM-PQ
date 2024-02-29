@@ -1,3 +1,4 @@
+torch
 pandas
 statsmodels
 bitsandbytes
@@ -12,3 +13,7 @@ scipy
 matplotlib 
 statsmodels
 # transformers
+
+# our two packages
+# git+https://github.com/tonyzhao-jt/LPTorch.git
+# git+https://github.com/tonyzhao-jt/QLLM.git

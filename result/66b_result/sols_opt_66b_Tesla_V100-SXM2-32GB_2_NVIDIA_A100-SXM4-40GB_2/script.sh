@@ -5,7 +5,7 @@ available_methods=('uniform')
 STRAT_FILE_NAME="sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2"
 # exp1
 rank=0
-MASTER_ADDR=net-g12
+MASTER_ADDR=***REMOVED***
 model_size="66b"
 for i in "${!available_methods[@]}"
 do  
@@ -17,7 +17,7 @@ do
 done
 
 # rank=1
-# MASTER_ADDR=net-g12
+# MASTER_ADDR=***REMOVED***
 # available_methods=('adaqpipe')
 # for i in "${!available_methods[@]}"
 # do  

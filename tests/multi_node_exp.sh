@@ -5,7 +5,7 @@ STRAT_FILE_NAME="sols_bloom_176b_Tesla_V100-SXM2-32GB_4_NVIDIA_A100-SXM4-40GB_4"
 model_size="176b"
 # exp1
 rank=1
-MASTER_ADDR=net-g12
+MASTER_ADDR=***REMOVED***
 for i in "${!available_methods[@]}"
 do  
     torchrun --nnodes=2 --nproc_per_node=4 --master_addr $MASTER_ADDR --master_port 6666 --node_rank=${rank} main_p2p.py \
