@@ -26,4 +26,5 @@ profile.json
 *.pdf
 *.pt
 /notebook/*.json
+*.env 
 

@@ -44,6 +44,9 @@ from shaq.p2p.dist_pipe import (
     dist_p2p_pipeline_stage_factory, SimpleQueueThread, ConditionQueue
 )
 
+
+
+
 # example utils
 from utils import create_uniform_sharding_strategies, parse_args
 
@@ -383,7 +386,7 @@ if __name__ == '__main__':
     caliber.set_fake() 
     file_path = os.path.abspath(__file__) if os.environ.get('CALIB_ROOT_FOLDER', None) is None else os.environ.get('CALIB_ROOT_FOLDER')
     calib_file_name = f'fake_calib_{model_name}_{model_size}.pkl'
-    calib_file_path = os.path.join(os.path.dirname(file_path), 'fake_calib', calib_file_name)
+    calib_file_path = os.path.join(file_path, calib_file_name)
     caliber.load_fake_calib_data(calib_file_path)
 
     # warmup for performance
