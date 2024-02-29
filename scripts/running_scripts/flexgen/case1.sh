@@ -9,7 +9,7 @@ nvme list
 # Policy(gpu_batch_size=32, num_gpu_batches=11, w_gpu_percent=0.97080702, w_cpu_percent=0.029192982, cache_gpu_percent=0.0, cache_cpu_percent=1.0, act_gpu_percent=0.0, act_cpu_percent=1.0, overlap=True, sep_layer=False, pin_weight=False, cpu_cache_compute=True, attn_sparsity=1, compress_weight=False, comp_weight_config=CompressionConfig(num_bits=4, group_size=64, group_dim=0, symmetric=False, enabled=True), compress_cache=False, comp_cache_config=CompressionConfig(num_bits=4, group_size=64, group_dim=2, symmetric=False, enabled=True))
 # 97 3 0 100 100 0
 # script
-export TRANSFORMERS_CACHE='***REMOVED***llms/'
+export TRANSFORMERS_CACHE='/mnt/bn/zjtnaslq/llms/'
 python3 -m flexgen.flex_opt --model facebook/opt-13b \
  --path _DUMMY_ --prompt-len 512 --gen-len 80 \
   --pin-weight 0 --percent 97 3 0 100 100 0 --gpu-batch-size 32 --num-gpu-batches 11
@@ -32,7 +32,7 @@ python3 cost_model.py --model facebook/opt-13b --prompt-len 512 --gen-len 80 \
                      --gpu-batch-size 32 --gpu-mem 32 --cpu-mem 200 --nvme-mem 0 --compress-w # same to int8
 # cannot load dummy, 
 python3 -m flexgen.flex_opt --model facebook/opt-13b \
- --path ***REMOVED***llms --prompt-len 512 --gen-len 80 \
+ --path /mnt/bn/zjtnaslq/llms --prompt-len 512 --gen-len 80 \
   --pin-weight 0 --percent 100 0 100 0 100 0 --gpu-batch-size 32  --compress-w
 
 # 100
@@ -45,7 +45,7 @@ nvme list
 # Policy(gpu_batch_size=32, num_gpu_batches=1, w_gpu_percent=0.97080702, w_cpu_percent=0.029192982, cache_gpu_percent=0.0, cache_cpu_percent=1.0, act_gpu_percent=1.0, act_cpu_percent=0.0, overlap=True, sep_layer=False, pin_weight=False, cpu_cache_compute=True, attn_sparsity=1, compress_weight=False, comp_weight_config=CompressionConfig(num_bits=4, group_size=64, group_dim=0, symmetric=False, enabled=True), compress_cache=False, comp_cache_config=CompressionConfig(num_bits=4, group_size=64, group_dim=2, symmetric=False, enabled=True))
 # 97 3 0 100 100 0
 # script
-export TRANSFORMERS_CACHE='***REMOVED***llms/'
+export TRANSFORMERS_CACHE='/mnt/bn/zjtnaslq/llms/'
 python3 -m flexgen.flex_opt --model facebook/opt-13b \
  --path _DUMMY_ --prompt-len 512 --gen-len 100 \
   --pin-weight 0 --percent 97 3 0 100 100 0 --gpu-batch-size 32 --num-gpu-batches 1 
@@ -66,7 +66,7 @@ python3 cost_model.py --model facebook/opt-13b --prompt-len 512 --gen-len 100 \
                       --num-gpu-batches 1 --compress-w # same to int8
 # cannot load dummy, 
 python3 -m flexgen.flex_opt --model facebook/opt-13b \
- --path ***REMOVED***llms --prompt-len 512 --gen-len 100 \
+ --path /mnt/bn/zjtnaslq/llms --prompt-len 512 --gen-len 100 \
   --pin-weight 0 --percent 100 0 100 0 100 0 --gpu-batch-size 32 --num-gpu-batches 1 --compress-w
 
 TorchDevice: cuda:0

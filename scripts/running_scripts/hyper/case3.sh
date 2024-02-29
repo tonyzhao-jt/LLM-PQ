@@ -1,5 +1,5 @@
 
-export TRANSFORMERS_CACHE='***REMOVED***llms/'
+export TRANSFORMERS_CACHE='/mnt/bn/zjtnaslq/llms/'
 export CALIB_ROOT_FOLDER="${ROOT_DIR}/examples/"
 export NP_WEIGHT_FOLDER="${TRANSFORMERS_CACHE}/converted_weights_np/"
 export OMP_NUM_THREADS=20

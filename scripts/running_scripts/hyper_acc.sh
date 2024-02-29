@@ -6,7 +6,7 @@ CUR_DIR=${PWD}
 model_storage_path='/data/llms/'
 export TRANSFORMERS_CACHE=$model_storage_path
 # export HF_DATASETS_CACHE="/data/dataset/"
-# sol_folder="***REMOVED***sols"
+# sol_folder="/mnt/bn/zjtnaslq/sols"
 # setups
 sample_acc_dir="${PWD}/sample_acc"
 mkdir $sample_acc_dir

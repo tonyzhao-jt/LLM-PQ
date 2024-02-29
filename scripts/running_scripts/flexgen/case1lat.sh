@@ -10,7 +10,7 @@ nvme list
 # Policy(gpu_batch_size=32, num_gpu_batches=1, w_gpu_percent=1.0, w_cpu_percent=0.0, cache_gpu_percent=0.22422222, cache_cpu_percent=0.77577778, act_gpu_percent=1.0, act_cpu_percent=0.0, overlap=True, sep_layer=False, pin_weight=False, cpu_cache_compute=True, attn_sparsity=1, compress_weight=False, comp_weight_config=CompressionConfig(num_bits=4, group_size=64, group_dim=0, symmetric=False, enabled=True), compress_cache=False, comp_cache_config=CompressionConfig(num_bits=4, group_size=64, group_dim=2, symmetric=False, enabled=True))
 # 100 0 22 78 100 0
 # script
-export TRANSFORMERS_CACHE='***REMOVED***llms/'
+export TRANSFORMERS_CACHE='/mnt/bn/zjtnaslq/llms/'
 python3 -m flexgen.flex_opt --model facebook/opt-13b \
  --path _DUMMY_ --prompt-len 128 --gen-len 160 \
   --pin-weight 0 --percent 100 0 22 78 100 0 --gpu-batch-size 32 --num-gpu-batches 1 
