@@ -14,9 +14,9 @@ from transformers import (
 from qllm.models import create_empty_model, create_model_config, return_h1_h2
 import qllm.utils as qllm_utils
 
-from shaq.logger import logger
-from shaq.utils import get_device_name_and_mem
-from shaq import (
+from llm_pq.logger import logger
+from llm_pq.utils import get_device_name_and_mem
+from llm_pq import (
     fetch_prompts
 )
 
