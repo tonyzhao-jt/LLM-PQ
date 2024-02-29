@@ -47,7 +47,7 @@ for method in available_methods:
         bit_assignment[layer_idx].append(bits[0])
         bit_assignment[layer_idx].append(bits[1])
 
-    from shaq.utils import (
+    from llm_pq.utils import (
         save_with_pickle,
     )
 

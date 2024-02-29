@@ -7,9 +7,9 @@
 model_size=13b
 device_names=("Tesla_V100-SXM2-32GB") 
 device_numbers=(1)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_13b_ind.pkl
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_opt_13b_ind.pkl
 
-shaq-algo --model_size ${model_size} \
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
@@ -20,9 +20,9 @@ shaq-algo --model_size ${model_size} \
 model_size=13b
 device_names=("Tesla_V100-SXM2-32GB") 
 device_numbers=(1)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_13b_ind.pkl
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_opt_13b_ind.pkl
 
-shaq-algo --model_size ${model_size} \
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
@@ -34,12 +34,12 @@ shaq-algo --model_size ${model_size} \
 model_size=30b
 device_names=("Tesla_T4" "Tesla_V100-SXM2-32GB") 
 device_numbers=(3 1)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_30b_ind.pkl
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_opt_30b_ind.pkl
 
 ABLATION_FOLDER="${PWD}/ablation/"
 
 GROUP_SIZE=1
-shaq-algo --model_size ${model_size} \
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_time_limit 60 \
@@ -51,13 +51,13 @@ shaq-algo --model_size ${model_size} \
 model_size=30b
 device_names=("Tesla_P100-PCIE-12GB" "Tesla_V100-SXM2-32GB") 
 device_numbers=(3 1)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_30b_ind.pkl
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_opt_30b_ind.pkl
 
-shaq-algo --model_size ${model_size} \
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --shaq-efficient \
+ --llm_pq-efficient \
  --theta 1000  --global_bz 32 --debug --ilp_time_limit 160 --fit
 
 # case 5
@@ -65,21 +65,21 @@ shaq-algo --model_size ${model_size} \
 model_size=66b
 device_names=("Tesla_T4" "Tesla_V100-SXM2-32GB") 
 device_numbers=(4 2)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_66b_ind.pkl
-HESS_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_66b_hess_ind.pkl
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_opt_66b_ind.pkl
+HESS_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_opt_66b_hess_ind.pkl
 
-# shaq-algo --model_size ${model_size} \
+# llm_pq-algo --model_size ${model_size} \
 #  --device_names "${device_names[@]}" \
 #  --device_numbers "${device_numbers[@]}" \
-#  --shaq-efficient \
+#  --llm_pq-efficient \
 #  --omega_file $OMEGA_FILE --ilp_seed 120 \
 #  --theta 50 --global_bz 32 --ilp_time_limit 160 --fit --debug 
 
 # HESS file result is much better in this case
-shaq-algo --model_size ${model_size} \
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
- --shaq-efficient \
+ --llm_pq-efficient \
  --omega_file $HESS_FILE --ilp_seed 120 \
  --theta 50 --global_bz 32 --ilp_time_limit 160 --fit --debug 
 
@@ -87,10 +87,10 @@ shaq-algo --model_size ${model_size} \
 model_size=66b
 device_names=("Tesla_V100-SXM2-32GB" "NVIDIA_A100-SXM4-40GB") 
 device_numbers=(2 2)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_66b_ind.pkl
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_opt_66b_ind.pkl
 GROUP_SIZE=1
 ABLATION_FOLDER="${PWD}/ablation/"
-shaq-algo --model_size ${model_size} \
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
@@ -101,9 +101,9 @@ shaq-algo --model_size ${model_size} \
 model_size=176b
 device_names=("Tesla_V100-SXM2-32GB" "NVIDIA_A100-SXM4-40GB") 
 device_numbers=(4 4)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_bloom_176b_ind.pkl
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_bloom_176b_ind.pkl
 
-shaq-algo --model_size ${model_size} \
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --model_name bloom \
@@ -115,9 +115,9 @@ shaq-algo --model_size ${model_size} \
 model_size=176b
 device_names=("Tesla_V100-SXM2-32GB" "NVIDIA_A100-SXM4-80GB") 
 device_numbers=(4 2)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_bloom_176b_ind.pkl
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_bloom_176b_ind.pkl
 
-shaq-algo --model_size ${model_size} \
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --model_name bloom \
@@ -129,9 +129,9 @@ shaq-algo --model_size ${model_size} \
 model_size=30b
 device_names=("Tesla_T4") 
 device_numbers=(4)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_30b_ind.pkl
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_opt_30b_ind.pkl
 
-shaq-algo --model_size ${model_size} \
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
@@ -141,26 +141,26 @@ shaq-algo --model_size ${model_size} \
 model_size=66b
 device_names=("Tesla_V100-SXM2-32GB") 
 device_numbers=(4)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_66b_ind.pkl
-# use shaq-efficient for this case
-shaq-algo --model_size ${model_size} \
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_opt_66b_ind.pkl
+# use llm_pq-efficient for this case
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --shaq-efficient \ 
+ --llm_pq-efficient \ 
  --theta 1 --global_bz 32 --ilp_time_limit 160 --group 1  --fit 
 
 # case11
 model_size=176b
 device_names=("NVIDIA_A100-SXM4-80GB") 
 device_numbers=(4)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_bloom_176b_ind.pkl
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_bloom_176b_ind.pkl
 
-shaq-algo --model_size ${model_size} \
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --model_name bloom \
- --shaq-efficient \
+ --llm_pq-efficient \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
  --time_mult_times 2 \
  --theta 10 --global_bz 32 --debug --group 1 --ilp_time_limit 100
@@ -174,9 +174,9 @@ shaq-algo --model_size ${model_size} \
 model_size=13b
 device_names=("Tesla_V100-SXM2-32GB") 
 device_numbers=(1)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_13b_ind.pkl
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_opt_13b_ind.pkl
 
-shaq-algo --model_size ${model_size} \
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
@@ -186,26 +186,26 @@ shaq-algo --model_size ${model_size} \
 model_size=30b
 device_names=("Tesla_P100-PCIE-12GB" "Tesla_V100-SXM2-32GB") 
 device_numbers=(3 1)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_30b_ind.pkl
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_opt_30b_ind.pkl
 
-shaq-algo --model_size ${model_size} \
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 120 \
- --shaq-efficient \
+ --llm_pq-efficient \
  --fname-suffix "lat" \
  --theta 1000 --global_bz 32 --debug --ilp_time_limit 160 --s 128 --n 200
 
 model_size=66b
 device_names=("Tesla_V100-SXM2-32GB" "NVIDIA_A100-SXM4-40GB") 
 device_numbers=(2 2)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_66b_ind.pkl
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_opt_66b_ind.pkl
 
-shaq-algo --model_size ${model_size} \
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 150 \
- --shaq-efficient \
+ --llm_pq-efficient \
  --fname-suffix "lat" \
  --theta 100 --global_bz 32 --ilp_time_limit 200 --debug  --s 128 --n 200 
 
@@ -213,12 +213,12 @@ shaq-algo --model_size ${model_size} \
 model_size=66b
 device_names=("Tesla_V100-SXM2-32GB" "NVIDIA_A100-SXM4-40GB") 
 device_numbers=(2 2)  # define device numbers as a list of integers
-OMEGA_FILE=${ROOT_DIR}/scripts/accuracy/generated_ind/gen_opt_66b_ind.pkl
+OMEGA_FILE=${ROOT_DIR}/scripts/accuracyPPL/generated_ind/gen_opt_66b_ind.pkl
 
-shaq-algo --model_size ${model_size} \
+llm_pq-algo --model_size ${model_size} \
  --device_names "${device_names[@]}" \
  --device_numbers "${device_numbers[@]}" \
  --omega_file $OMEGA_FILE --ilp_seed 150 \
- --shaq-efficient \
+ --llm_pq-efficient \
  --fname-suffix "lat_eff" \
  --theta 10 --global_bz 32 --ilp_time_limit 200 --debug  --s 128 --n 200 

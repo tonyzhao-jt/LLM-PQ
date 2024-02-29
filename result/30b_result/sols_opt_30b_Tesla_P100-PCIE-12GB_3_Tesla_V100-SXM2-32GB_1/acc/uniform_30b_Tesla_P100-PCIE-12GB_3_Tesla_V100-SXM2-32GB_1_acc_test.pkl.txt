@@ -1,23 +1,0 @@
-CUDA extension not installed.
-Selected Tasks: ['arc_easy', 'piqa', 'lambada']
-Loading checkpoint shards:   0%|          | 0/7 [00:00<?, ?it/s]Loading checkpoint shards:  14%|█▍        | 1/7 [00:04<00:29,  4.92s/it]Loading checkpoint shards:  29%|██▊       | 2/7 [00:09<00:24,  4.96s/it]Loading checkpoint shards:  43%|████▎     | 3/7 [00:14<00:19,  4.93s/it]Loading checkpoint shards:  57%|█████▋    | 4/7 [00:19<00:14,  4.81s/it]Loading checkpoint shards:  71%|███████▏  | 5/7 [00:23<00:09,  4.64s/it]Loading checkpoint shards:  86%|████████▌ | 6/7 [00:29<00:04,  4.93s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:29<00:00,  3.51s/it]Loading checkpoint shards: 100%|██████████| 7/7 [00:29<00:00,  4.26s/it]
-Found cached dataset json (/root/.cache/huggingface/datasets/allenai___json/allenai--c4-6fbe877195f42de5/0.0.0/e347ab1c932092252e717ff3f949105a4dd28b27e842dd53157d2f72e276c2e4)
-Found cached dataset json (/root/.cache/huggingface/datasets/allenai___json/allenai--c4-efc3d4f4606f44bd/0.0.0/e347ab1c932092252e717ff3f949105a4dd28b27e842dd53157d2f72e276c2e4)
-OPT vocab size:  50265
-Starting ...
-Starting ...
-Ready.
-Traceback (most recent call last):
-  File "/workspace/qpipe/3rd_party/gptq/zeroShot/main.py", line 44, in <module>
-    main()
-  File "/workspace/qpipe/3rd_party/gptq/zeroShot/main.py", line 19, in main
-    results = evaluator.simple_evaluate(
-  File "/workspace/qpipe/3rd_party/gptq/zeroShot/utils.py", line 22, in _wrapper
-    return fn(*args, **kwargs)
-  File "/workspace/qpipe/3rd_party/gptq/zeroShot/evaluator.py", line 51, in simple_evaluate
-    quantizers = lm.opt_sequential(dataloader)
-  File "/opt/conda/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 115, in decorate_context
-    return func(*args, **kwargs)
-  File "/workspace/qpipe/3rd_party/gptq/zeroShot/models/opt.py", line 279, in opt_sequential
-    with open(file_name, 'rb') as f:
-FileNotFoundError: [Errno 2] No such file or directory: '/workspace/qpipe/scripts/accuracy/bit_for_gptq_test/uniform_30b_Tesla_P100-PCIE-12GB_3_Tesla_V100-SXM2-32GB_1_acc_test.pkl'

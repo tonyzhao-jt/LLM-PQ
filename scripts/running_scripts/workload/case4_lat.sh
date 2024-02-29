@@ -6,7 +6,7 @@ export OMP_NUM_THREADS=20
 # CPU Not Enough
 export LOAD_IN_NP="1"
 
-method='pipeedge' # from adabits, shaq, uniform, pipeedge
+method='pipeedge' # from adabits, llm_pq, uniform, pipeedge
 # STRAT_FILE_NAME="sols_opt_30b_Tesla_P100-PCIE-12GB_3_Tesla_V100-SXM2-32GB_1"
 # STRAT_FILE_NAME="sols_opt_30b_Tesla_P100-PCIE-12GB_3_Tesla_V100-SXM2-32GB_1force-fixed-D"
 # STRAT_FILE_NAME="sols_opt_30b_Tesla_P100-PCIE-12GB_3_Tesla_V100-SXM2-32GB_1group_2"
@@ -44,7 +44,7 @@ WORKLOAD_STRING="--workload-test --workload-nums 10 --sampler-lower $SAMPLE_LOWE
 
 # specify no-auto here to avoid auto distributed generation for case
 # two or more cluster with same cards, e.g. cluster 1. 2P100 cluster 2 1 P100
-shaq-dist --master_addr $MASTER_ADDR --master_port $MASTER_PORT --nnodes=$NNODES --nproc_per_node=$NPROC_PER_NODE --node_rank=${RANK} \
+llm_pq-dist --master_addr $MASTER_ADDR --master_port $MASTER_PORT --nnodes=$NNODES --nproc_per_node=$NPROC_PER_NODE --node_rank=${RANK} \
     --method $method --model_size 66b --no_auto --strat_file_name $STRAT_FILE_NAME \
     $WORKLOAD_STRING \
         2>&1 | tee "./${storage_folder}/${method}_${STRAT_FILE_NAME}_${MODEL_NAME}_${MODEL_SIZE}_${SAMPLE_LOWER_RATIO}.txt"

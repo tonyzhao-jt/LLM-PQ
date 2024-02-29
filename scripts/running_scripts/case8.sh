@@ -13,14 +13,14 @@ mkdir $storage_folder
 
 method=adabits # from adabits, uniform, pipeedge
 # MASTER_ADDR=***REMOVED***
-# method='shaq' # from adabits, shaq, uniform, pipeedge
+# method='llm_pq' # from adabits, llm_pq, uniform, pipeedge
 MASTER_ADDR=10.130.24.87
 MASTER_PORT=1234
 NNODES=2
 NPROC_PER_NODE=2
 RANK=1
 
-shaq-dist --master_addr $MASTER_ADDR --master_port $MASTER_PORT --nnodes=$NNODES --nproc_per_node=$NPROC_PER_NODE --node_rank=${RANK} \
+llm_pq-dist --master_addr $MASTER_ADDR --master_port $MASTER_PORT --nnodes=$NNODES --nproc_per_node=$NPROC_PER_NODE --node_rank=${RANK} \
     --model_name  bloom --model_size 176b --no_auto \
     --method $method --perf-mode \
     --strat_file_name $STRAT_FILE_NAME \

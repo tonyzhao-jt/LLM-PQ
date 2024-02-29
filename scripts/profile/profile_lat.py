@@ -5,10 +5,10 @@ import pandas as pd
 import qllm.utils as qllm_utils
 from qllm.models import create_empty_decoder
 
-import shaq
-from shaq.logger import logger
-from shaq.profiler import profile_lat
-from shaq.utils import get_device_name_and_mem
+import llm_pq
+from llm_pq.logger import logger
+from llm_pq.profiler import profile_lat
+from llm_pq.utils import get_device_name_and_mem
 
 
 def parse_args():
@@ -42,14 +42,14 @@ if __name__ == '__main__':
     num_stacks = args.num_stacks
 
     generated_seq_length = args.generated_seq_length
-    folder_name = 'lat_profiled_result' 
-    file_path = os.path.dirname(os.path.realpath(__file__))
-    file_path = os.path.join(file_path, folder_name)
+    folder_name = os.path.join(os.environ.get('ROOT_DIR', '/workspace/llm_pq'), 'scripts/profile/lat_profiled_result')
+    # folder_name = '/lat_profiled_result' 
 
     device_name, device_mem, _ = get_device_name_and_mem()
-    available_bits = shaq._globals.AVAILABLE_BITS
+    available_bits = llm_pq._globals.AVAILABLE_BITS
 
     file_name = device_name + "_" + str(model_size) + ".csv"
+    file_name = os.path.join(folder_name, file_name)
 
     decoder_layer, (h1, h2), config = create_empty_decoder(model_name, model_size)
     # must set, else bitsandbyyes profiled wrongly
