@@ -1,39 +1,34 @@
+import os 
+import copy 
+import time 
+
+# algorithms
 from .adabits import main as adaptive_bits_main
 from .shaq import main as shaq_main
 from .shaq_efficient import main as shaq_ef_main
 from .shaq_heuristic import main as shaq_h_main
 from .pipeedge_ilp import main as pipeedge_ilp_main
 from .uniform import main as uniform_main
-from .. import _globals 
+from .lat_utils import run_simu
+from .mem_utils import check_memory_budget
 # arg parser
 from .utils import (
-    common_argparser, ilp_env,
+    common_argparser,
     FP16_ENOUGH, NOT_AVAILABLE,
     get_final_strat_file_name,
     convert_to_shaq_result2partitions,
-
 )
-from ..utils import save_with_pickle, has_tc
+# globals
+from .. import _globals 
+from ..utils import save_with_pickle
+from ..partitioner import gen_config
 from ..partitioner.helper import (
     init_parameters_and_cost_models, 
-    get_single_device_mem_constraints,
     get_device_info,
-    lat_prediction,
 )
-from ..partitioner import gen_config
-from ..cost_model import (
-    estimate_single_layer_mem,
-)
-import os 
-import copy 
-import logging
-import math 
-import time 
-
-logger = logging.getLogger(__name__)
-
-from .lat_utils import run_simu
-from .mem_utils import check_memory_budget
+# logger
+from shaq.logger import logger, assert_log
+from ..config import PROJECT_NAME
 
 # for debug
 def check_minimum_bit_of_sols(sol):
@@ -44,17 +39,14 @@ def check_minimum_bit_of_sols(sol):
             v = 8
         if v < minimum_bit:
             minimum_bit = v
-    print("minimum_bit: ", minimum_bit)
+    logger.info("minimum_bit: ", minimum_bit)
 
 def log_result(result, name):
-    print(f"{name} result: Minimax Lat {result}")
-
-
+    logger.info(f"{name} result: Minimax Lat {result}")
 
 def algo_main():
     # check whether exists /opt/gurobi/ and file under file
-    if not os.path.exists('/opt/gurobi/'):
-        assert False, "Please install gurobi and put the license file under /opt/gurobi/"
+    assert_log(os.path.exists('/opt/gurobi/'), "Please install gurobi and put the license file under /opt/gurobi/")
     args = common_argparser()
     # device info
     # modelname and size
@@ -102,32 +94,26 @@ def algo_main():
     else:
         sol_shaq = shaq_main(args)
     end = time.time()
-    # sol_pipeedge_adaptive = pipeedge_adaptive_main(args)
-    # sort by bit number, decsending
     no_info_bits = copy.deepcopy(_globals.AVAILABLE_BITS)[::-1]
-    # no_info_bits.sort(reverse=True)
-    # if args.adabits_tc:
-    #     no_info_bits = copy.deepcopy(_globals.AVAILABLE_BITS)[::-1]
-    
 
     # find first solution that is valid
     uniform_sols = {}
     for bit in no_info_bits:
-        print("Try uniform bit: ", bit)
+        logger.info("Try uniform bit: ", bit)
         args.uniform_bit = bit
         sol_uniform = uniform_main(args)
         if sol_uniform['plan'] != NOT_AVAILABLE:
-            print("Uniform solution found, use bit: ", bit)
+            logger.info("Uniform solution found, use bit: ", bit)
             uniform_sols[bit] = sol_uniform
             break
 
     # same to pipeedge
     for bit in no_info_bits:
-        print("Try pipeedge bit: ", bit)
+        logger.info("Try pipeedge bit: ", bit)
         args.pe_bit = bit
         sol_pipeedge = pipeedge_ilp_main(args)
         if sol_pipeedge['plan'] != NOT_AVAILABLE:
-            print("PipeEdge solution found, use bit: ", bit)
+            logger.info("PipeEdge solution found, use bit: ", bit)
             break
     # solution packs
     sols = {}
@@ -138,9 +124,9 @@ def algo_main():
     for bit, sol in uniform_sols.items():
         sols[f'uniform'] = sol
     for sol_name, sol in sols.items():
-        print(f"start to run {sol_name}")
+        logger.info(f"start to run {sol_name}")
         if sol['plan'] == NOT_AVAILABLE:
-            print(f"no plan for {sol_name}")
+            logger.info(f"no plan for {sol_name}")
             continue
         check_memory_budget(sol, model_mem_estimator, name=sol_name)
         convert_to_shaq_result2partitions(sol)
@@ -150,7 +136,7 @@ def algo_main():
         log_result(result, sol_name)
     
     for sol_name, sol in sols.items():
-        print("Minimum bit of ", sol_name)
+        logger.info("Minimum bit of ", sol_name)
         check_minimum_bit_of_sols(sol)
 
     # device info
@@ -160,14 +146,11 @@ def algo_main():
     # check whether same, same key value
     for k, v in D_original.items():
         if D_shaq[k] != v:
-            print("Shaq D not same")
-            print(D_shaq)
+            logger.info(f"{PROJECT_NAME} D not same")
+            logger.info(D_shaq)
             break
     
-    # print(D_original)
-    # print shaq time also
-    print("Shaq time: ", end - start)
-    # print("Shaq batch size: ", sol_shaq['prefill_bz'])
+    logger.info(f"{PROJECT_NAME}: {end-start}")
 
     sols['mu_n'] = mu_n
     sols['n'] = n

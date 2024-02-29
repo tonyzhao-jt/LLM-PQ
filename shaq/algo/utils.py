@@ -1,14 +1,19 @@
 import argparse
+import os
+import numpy as np 
+
 from qllm.models import create_model_config
+
+from .. import _globals 
 from ..partitioner.helper import (
     get_device_info,
 )
 from ..partitioner import gen_config
-from .. import _globals 
-import os
-import numpy as np 
+from ..config import PROJECT_NAME
 
-ROOT_DIR = os.environ.get('ROOT_DIR', '/workspace/shaq')
+from ..logger import logger, assert_log
+
+ROOT_DIR = os.environ.get('ROOT_DIR', f'/workspace/{PROJECT_NAME}')
 def verbose_device_info(device_names, device_numbers, device_info):
     print(f"device_names {device_names}")
     print(f"device_numbers {device_numbers}")
@@ -92,9 +97,12 @@ def common_argparser():
     
     # check omega file valid if exits
     if args.omega_file is not None:
-        assert os.path.exists(args.omega_file), f"omega file {args.omega_file} does not exist"
-        assert model_name in args.omega_file, f"omega file {args.omega_file} does not contain model name {model_name}"
-        assert model_size in args.omega_file, f"omega file {args.omega_file} does not contain model size {model_size}"
+        # assert os.path.exists(args.omega_file), f"omega file {args.omega_file} does not exist"
+        # assert model_name in args.omega_file, f"omega file {args.omega_file} does not contain model name {model_name}"
+        # assert model_size in args.omega_file, f"omega file {args.omega_file} does not contain model size {model_size}"
+        assert_log(os.path.exists(args.omega_file), f"omega file {args.omega_file} does not exist")
+        assert_log(model_name in args.omega_file, f"omega file {args.omega_file} does not contain model name {model_name}")
+        assert_log(model_size in args.omega_file, f"omega file {args.omega_file} does not contain model size {model_size}")
 
     return args
 
@@ -121,9 +129,6 @@ FP16_ENOUGH=SIGNAL_BASE + 2
 def get_final_strat_file_name(model_name, model_size, device_info):
     file_name = f'sols_' + f'{model_name}_{model_size}' + '_' + device_info + '.pkl'
     return file_name
-
-
-
 
 # processing
 # convert to the result can be used by shaq

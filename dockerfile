@@ -6,10 +6,14 @@ RUN apt-get update && apt-get install -y \
     git ffmpeg libsm6 libxext6 ca-certificates curl jq wget \
     git-lfs net-tools
 
-RUN pip install gurobipy pulp sacrebleu
-RUN pip install -U scikit-learn scipy matplotlib statsmodels
+RUN python3 -m pip install gurobipy pulp sacrebleu
+RUN python3 -m pip install -U scikit-learn scipy matplotlib statsmodels
 # ana
-RUN pip install torch_tb_profiler
+RUN python3 -m pip install torch_tb_profiler
+# dot env
+RUN python3 -m pip install python-dotenv
+# logger
+RUN python3 -m pip install colorlog
 
 ENV ROOT_DIR=/workspace/shaq
 
