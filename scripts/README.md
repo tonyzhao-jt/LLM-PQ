@@ -14,7 +14,12 @@ You should first prepare (1-3) before running (4-6).
 We require first convert model weight into finer granularity. Enter the folder using `cd`.
 
 ### DownloadModel
-1. Prepare your `.env` under the modelConvert folder.
+1. Prepare your `.env` under the modelConvert folder like this:
+```bash
+    HF_TOKEN=<>
+    REPO_ID='facebook/opt-125m'
+    CACHE_DIR='/data/llms/'
+```
 2. Specify the following entry
     1. HF_TOKEN: your hf token, required for some model like llama2. In this exp we only support BLOOM and OPT.
     2. REPO_ID: e.g. 'facebook/opt-125m'
@@ -24,6 +29,7 @@ We require first convert model weight into finer granularity. Enter the folder u
 
 ## Profiler
 You should enter the profile folder using `cd`, and then the profiled result will be located on the right place.
+- You can try `bash profile_test.sh` to see how it works
 
 We provides our pre-profiled results
 - [Latency Result](https://connecthkuhk-my.sharepoint.com/:f:/g/personal/juntaozh_connect_hku_hk/ErGI0vzdj6JIjJSimenJ1M0BMiMfsxI4cZzuKwc5psLybw?e=suVaSx).
@@ -34,6 +40,7 @@ If you want to profile by your own, run
     - `profile.sh` for latency
     - `profile_concat.sh` for prepost result
 -  `profile_comm.sh` for communication, you need to run on both devices with correct setups.
+
 
 ## FakeCalib
 Fake calibration data is required to do quantization. Go to fakeCalib and run `bash gen_fake.sh`

@@ -3,7 +3,7 @@
 # take a model, given the compression rate (reduce memory required)
 # given different types of inidcator, test the accuracy of them in the gptq
 
-from shaq.utils import (
+from llm_pq.utils import (
     save_with_pickle, partition_a_into_b_bins
 )
 

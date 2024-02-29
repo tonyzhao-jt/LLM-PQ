@@ -2,7 +2,7 @@
 import pickle
 import torch
 import numpy as np
-from shaq.utils import (
+from llm_pq.utils import (
     save_with_pickle, get_available_bits_pair
 )
 

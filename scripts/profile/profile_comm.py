@@ -2,10 +2,10 @@ import torch.distributed as dist
 import pickle
 import os 
 
-from shaq.rpc import init_env_gloo
-from shaq.profiler import profile_comm
-import shaq
-from shaq.p2p import (
+from llm_pq.rpc import init_env_gloo
+from llm_pq.profiler import profile_comm
+import llm_pq
+from llm_pq.p2p import (
     new_nccl_group
 )
 
@@ -32,8 +32,8 @@ if __name__ == "__main__":
     # new a nccl group
     if args.nccl:
         nccl_group = new_nccl_group()
-        shaq._globals.__PIPELINE__MODEL__PARALLEL__GROUP__ = nccl_group
-        shaq._globals.__DEVICE__INDEX__ = local_rank
+        llm_pq._globals.__PIPELINE__MODEL__PARALLEL__GROUP__ = nccl_group
+        llm_pq._globals.__DEVICE__INDEX__ = local_rank
     if local_rank == '0':
         # check if the comm_cost_model folder exists
         if not os.path.exists('comm_cost_model'):

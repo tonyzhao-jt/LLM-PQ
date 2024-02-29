@@ -45,13 +45,9 @@ def install_customized_packges(requirements):
         for command in install_commands:
             subprocess.call(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     else:
-        # if the current folder didn't holds QLLM & LLM-PQ, then install from github
-        requirements.append(
-            "git+https://github.com/tonyzhao-jt/LPTorch.git",
-        )
-        requirements.append(
-            "git+https://github.com/tonyzhao-jt/QLLM.git"
-        )
+        # raise error
+        raise ValueError("QLLM and LPTorch are not found, please check the installation")
+        
 
 # update the GPTQ repo for the accuracy
 def update_gptq():
@@ -68,7 +64,7 @@ install_customized_packges(requirements)
 move_gurobi_license()
 update_gptq()
 
-package_name = 'shaq'
+package_name = 'llm_pq'
 setup(
     name=package_name,
     cmdclass={
@@ -81,8 +77,8 @@ setup(
             f'{package_name}-algo = {package_name}.algo.entry:algo_main',
             f'{package_name}-algo-check = {package_name}.algo.checker:check_strat_file',
             f'{package_name}-algo-cmp = {package_name}.algo.checker:compare_bitwidth_of_two_strat',
-            # f'{package_name}-algo-shaqef = {package_name}.algo.shaq_heuristic:shaq_h_main',
-            f'{package_name}-algo-shaqef = {package_name}.algo.shaq_efficient:shaq_ef_main',
+            # f'{package_name}-algo-llm_pqef = {package_name}.algo.llm_pq_heuristic:llm_pq_h_main',
+            f'{package_name}-algo-llm_pqef = {package_name}.algo.llm_pq_efficient:llm_pq_ef_main',
             f'{package_name}-dist = {package_name}.entrypoints:run_dist',
             f'{package_name}-sole = {package_name}.entrypoints:run_sole'
         ]

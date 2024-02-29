@@ -1,5 +1,5 @@
 import argparse
-import shaq
+import llm_pq
 import os 
 def simple_model_info_parser():
     root_folder = os.environ.get('ROOT_DIR') if os.environ.get('ROOT_DIR') else '/workspace/qpipe'
@@ -11,7 +11,7 @@ def simple_model_info_parser():
     parser.add_argument('--user_abs_file_path', type=str, default='')
     args = parser.parse_args()
     # available method
-    args.available_methods = ['adabits', 'shaq', 'pipeedge', 'uniform']
+    args.available_methods = ['adabits', 'llm_pq', 'pipeedge', 'uniform']
     return args
 
 def model_config_and_decoder_layers(model_name, model_size):
@@ -27,4 +27,4 @@ def model_config_and_decoder_layers(model_name, model_size):
     return config, num_layers
 
 def get_available_candidate_bits():
-    return shaq._globals.AVAILABLE_BITS
+    return llm_pq._globals.AVAILABLE_BITS

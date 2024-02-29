@@ -1,6 +1,6 @@
-from shaq.profiler import profile_comm
+from llm_pq.profiler import profile_comm
 import torch.distributed as dist
-from shaq.rpc import init_env
+from llm_pq.rpc import init_env
 def test_comm_speed():
     data_size_buffer, time_buffer = profile_comm.generate_cost_model_dataset(batch_size=4, hidden_space=4096, sample_num=10, warmup=3)
     rank = dist.get_rank()

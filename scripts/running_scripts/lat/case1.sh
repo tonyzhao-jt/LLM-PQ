@@ -1,4 +1,4 @@
-method='shaq' # from adabits, shaq, uniform, pipeedge
+method='llm_pq' # from adabits, llm_pq, uniform, pipeedge
 STRAT_FILE_NAME="sols_opt_13b_Tesla_V100-SXM2-32GB_1lat"
 # STRAT_FILE_NAME="sols_opt_13b_NVIDIA_A100-SXM4-40GB_1"
 export TOKENIZERS_PARALLELISM=false
@@ -9,7 +9,7 @@ export NP_WEIGHT_FOLDER="${TRANSFORMERS_CACHE}/converted_weights_np/"
 export LOAD_IN_NP="1"
 mkdir SINGLE_NODE_PERF_RESULT
 
-shaq-dist --master_port 6666 \
+llm_pq-dist --master_port 6666 \
     --method $method \
     --strat_file_name $STRAT_FILE_NAME \
     2>&1 | tee "./SINGLE_NODE_PERF_RESULT/${method}_{$STRAT_FILE_NAME}.txt"

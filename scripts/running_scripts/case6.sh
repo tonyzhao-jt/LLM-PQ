@@ -6,7 +6,7 @@ export OMP_NUM_THREADS=20
 # CPU Not Enough
 export LOAD_IN_NP="1"
 
-# STRAT_FILE_NAME="sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2group_shaqh"
+# STRAT_FILE_NAME="sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2group_llm_pqh"
 # STRAT_FILE_NAME="sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2group_2"
 STRAT_FILE_NAME="sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2group_1"
 
@@ -18,13 +18,13 @@ mkdir $storage_folder
 
 method=pipeedge # from adabits, uniform, pipeedge
 # MASTER_ADDR=***REMOVED***
-# method='shaq' # from adabits, shaq, uniform, pipeedge
+# method='llm_pq' # from adabits, llm_pq, uniform, pipeedge
 MASTER_ADDR=***REMOVED***
 MASTER_PORT=1444
 
-# shaq-algo-check --file_path $ROOT_DIR/scripts/part_strategy/sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2group_shaqh.pkl
+# llm_pq-algo-check --file_path $ROOT_DIR/scripts/part_strategy/sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2group_llm_pqh.pkl
 
-shaq-dist --master_addr $MASTER_ADDR --master_port $MASTER_PORT\
+llm_pq-dist --master_addr $MASTER_ADDR --master_port $MASTER_PORT\
     --method $method \
     $WORKLOAD_STRING \
     --strat_file_name $STRAT_FILE_NAME \

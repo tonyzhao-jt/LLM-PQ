@@ -1,7 +1,7 @@
 # based on the config to generate the random assignments
 import random
 import pickle
-from shaq.utils import (
+from llm_pq.utils import (
     save_with_pickle,
 )
 

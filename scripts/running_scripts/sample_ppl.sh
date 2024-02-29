@@ -22,7 +22,7 @@ cd ..
 # device_info="Tesla_V100-SXM2-32GB_1"
 # folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test"
 # bash test_plan_acc_cmd.sh --model_name $model_name --model_size $model_size --storage_path $sample_acc_dir \
-#     -p $folder_abs_path --adafile -m "shaq","adabits" \
+#     -p $folder_abs_path --adafile -m "llm_pq","adabits" \
 #      --user_abs_file_path $user_abs_file_path --device_info $device_info --model_storage_path $model_storage_path 
 #     #  --sol_folder $sol_folder
 
@@ -33,7 +33,7 @@ user_abs_file_path="sols_opt_66b_Tesla_T4_4_Tesla_V100-SXM2-32GB_2theta_66b_1x"
 device_info="Tesla_V100-SXM2-32GB_1"
 folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test"
 bash test_plan_acc_cmd.sh --model_name $model_name --model_size $model_size --storage_path $sample_acc_dir \
-    -p $folder_abs_path --adafile -m "shaq" \
+    -p $folder_abs_path --adafile -m "llm_pq" \
      --user_abs_file_path $user_abs_file_path --device_info $device_info --model_storage_path $model_storage_path 
     #  --sol_folder $sol_folder
 
@@ -43,7 +43,7 @@ user_abs_file_path="sols_opt_66b_Tesla_T4_4_Tesla_V100-SXM2-32GB_2theta_66b_10x"
 device_info="Tesla_V100-SXM2-32GB_1"
 folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test"
 bash test_plan_acc_cmd.sh --model_name $model_name --model_size $model_size --storage_path $sample_acc_dir \
-    -p $folder_abs_path --adafile -m "shaq" \
+    -p $folder_abs_path --adafile -m "llm_pq" \
      --user_abs_file_path $user_abs_file_path --device_info $device_info --model_storage_path $model_storage_path 
 
 model_size="66b" # must match with the following, else error.
@@ -52,7 +52,7 @@ user_abs_file_path="sols_opt_66b_Tesla_T4_4_Tesla_V100-SXM2-32GB_2theta_66b_100x
 device_info="Tesla_V100-SXM2-32GB_1"
 folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test"
 bash test_plan_acc_cmd.sh --model_name $model_name --model_size $model_size --storage_path $sample_acc_dir \
-    -p $folder_abs_path --adafile -m "shaq" \
+    -p $folder_abs_path --adafile -m "llm_pq" \
      --user_abs_file_path $user_abs_file_path --device_info $device_info --model_storage_path $model_storage_path 
     
 
@@ -63,7 +63,7 @@ user_abs_file_path="sols_opt_66b_Tesla_T4_4_Tesla_V100-SXM2-32GB_2theta_66b_1x"
 device_info="Tesla_V100-SXM2-32GB_1"
 folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test"
 bash test_plan_acc_cmd.sh --model_name $model_name --model_size $model_size --storage_path $sample_acc_dir \
-    -p $folder_abs_path --adafile -m "shaq" --zeroshot \
+    -p $folder_abs_path --adafile -m "llm_pq" --zeroshot \
      --user_abs_file_path $user_abs_file_path --device_info $device_info --model_storage_path $model_storage_path 
     #  --sol_folder $sol_folder
 
@@ -73,7 +73,7 @@ user_abs_file_path="sols_opt_66b_Tesla_T4_4_Tesla_V100-SXM2-32GB_2theta_66b_10x"
 device_info="Tesla_V100-SXM2-32GB_1"
 folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test"
 bash test_plan_acc_cmd.sh --model_name $model_name --model_size $model_size --storage_path $sample_acc_dir \
-    -p $folder_abs_path --adafile -m "shaq" --zeroshot \
+    -p $folder_abs_path --adafile -m "llm_pq" --zeroshot \
      --user_abs_file_path $user_abs_file_path --device_info $device_info --model_storage_path $model_storage_path 
 
 model_size="66b" # must match with the following, else error.
@@ -82,5 +82,5 @@ user_abs_file_path="sols_opt_66b_Tesla_T4_4_Tesla_V100-SXM2-32GB_2theta_66b_100x
 device_info="Tesla_V100-SXM2-32GB_1"
 folder_abs_path="${ROOT_DIR}/scripts/accuracy/bit_for_gptq_test"
 bash test_plan_acc_cmd.sh --model_name $model_name --model_size $model_size --storage_path $sample_acc_dir \
-    -p $folder_abs_path --adafile -m "shaq" --zeroshot \
+    -p $folder_abs_path --adafile -m "llm_pq" --zeroshot \
      --user_abs_file_path $user_abs_file_path --device_info $device_info --model_storage_path $model_storage_path 
