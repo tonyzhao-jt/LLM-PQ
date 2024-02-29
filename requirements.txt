@@ -1,3 +1,4 @@
+torch
 pandas
 statsmodels
 bitsandbytes
@@ -10,5 +11,4 @@ sacrebleu
 scikit-learn 
 scipy 
 matplotlib 
-statsmodels
-# transformers
+
