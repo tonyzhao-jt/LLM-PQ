@@ -19,7 +19,7 @@ mkdir $storage_folder
 method=llm_pq # from adabits, uniform, pipeedge
 # MASTER_ADDR=***REMOVED***
 # method='llm_pq' # from adabits, llm_pq, uniform, pipeedge
-MASTER_ADDR=***REMOVED***
+MASTER_ADDR=net-g12
 MASTER_PORT=1444
 
 # llm_pq-algo-check --file_path $ROOT_DIR/scripts/part_strategy/sols_opt_66b_Tesla_V100-SXM2-32GB_2_NVIDIA_A100-SXM4-40GB_2group_llm_pqh.pkl
