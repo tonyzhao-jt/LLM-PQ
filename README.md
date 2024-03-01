@@ -3,6 +3,7 @@ Official Repo for: LLM-PQ: Serving LLM on Heterogeneous Clusters with Phase-Awar
 - LLM-PQ argues that the assumption of **infinite requests** in LLM serving is not necessarily valid. 
 - LLM-PQ emphasize the importance of efficiently processing workload-similar **predetermined offline batch processing tasks** 
 - But also maximizing the utilization of GPUs acquired at different points in time (**Heterogenous GPU Serving**).
+- Utilize the overall resources towards behaviours of quantization for the same workload in different phase (**Ada-Q**).
 - Specially, LLM-PQ is a **workload-centric** and **device-agnostic** serving framework, takes both workload information and device information for strategy derving.
 
 In this version, we don't have chatbot, but flexgen-like one-time running script.
@@ -20,9 +21,9 @@ Due to the similar reason, later two's performance is not a SOTA. **If this repo
 
 ### Docker (Recommended)
 You can use the docker file under the dockerfiles. We also provides pre-built image with data insides:
-```bash
+```bash 
     docker pull springtonyzhao/llmpq:v100 # v100 (the one who required from scratch build of bitsandbytes)
-    docker pull springtonyzhao/llmpq:v100 # A100
+    docker pull springtonyzhao/llmpq:a100 # A100
 ```
 
 ### Manual
@@ -32,7 +33,7 @@ You can use the docker file under the dockerfiles. We also provides pre-built im
 ```
 **Careful**: use GPU with cap <= 70 require recompile of bitsandbytes. We done it for u in setup.py, but if not, please run the update.sh in the 3rd_party of LPTorch to mannually compile and install the bitsandbytes.
 
-#### Possible error
+#### Possible errors
 - `BuilderConfig 'allenai--c4' not found. Available: `: please change the data load script in GPTQ to
 ```bash
 traindata = load_dataset(
