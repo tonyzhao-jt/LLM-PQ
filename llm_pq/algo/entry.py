@@ -27,7 +27,8 @@ from ..partitioner.helper import (
     get_device_info,
 )
 # logger
-from llm_pq.logger import logger, assert_log
+from llm_pq.logger import init_logger, assert_log
+logger = init_logger(__name__)
 from ..config import PROJECT_NAME
 
 # for debug

@@ -18,7 +18,8 @@ from qllm.scheduler import DSScheduler
 from time import perf_counter
 # import sharding strategies helper
 from utils import create_uniform_sharding_strategies, parse_args
-from llm_pq.logger import logger
+from llm_pq.logger import init_logger
+logger = init_logger(__name__)
 final_result = {}
 request_input_ids = {}
 request_logit_processor = {}

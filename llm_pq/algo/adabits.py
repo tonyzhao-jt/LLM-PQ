@@ -155,10 +155,13 @@ def prepare_for_ilp(num_hidden_layers, D, available_bits, bz_pack, model_mem_est
             for i in range(group_L):
                 new_omega_loaded[i] = np.mean(omega_loaded[i*group_size:(i+1)*group_size], axis=0)
             omega_loaded = new_omega_loaded
-        if omega_loaded.shape != omega.shape:
-            print(omega_loaded.shape, omega.shape)
-            raise ValueError('omega shape mismatched')
-        omega = omega_loaded
+        try:
+            if omega_loaded.shape != omega.shape:
+                print(omega_loaded.shape, omega.shape)
+                raise ValueError('omega shape mismatched')
+            omega = omega_loaded
+        except:
+            import pdb; pdb.set_trace()
     # import pdb; pdb.set_trace()
     # for i in range(N):
     #     device_name = D[i]

@@ -1,6 +1,7 @@
 import logging
 import threading
-from llm_pq.logger import logger
+from llm_pq.logger import init_logger
+logger = init_logger(__name__)
 # encode schedule to 1d list for communication
 def encode_schedule(schedule):
     assert type(schedule) is dict, "the schedule should be a dict"

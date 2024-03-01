@@ -27,6 +27,14 @@ You can use the docker file under the dockerfiles. We also provides one pre-buil
 ```
 **Careful**: use GPU with cap <= 70 require recompile of bitsandbytes. We done it for u in setup.py, but if not, please run the update.sh in the 3rd_party of LPTorch to mannually compile and install the bitsandbytes.
 
+#### Possible error
+`BuilderConfig 'allenai--c4' not found. Available: `: please change the data load script in GPTQ to
+```bash
+traindata = load_dataset(
+    'allenai/c4', data_files={'train': 'en/c4-train.00000-of-01024.json.gz'}, split='train'
+)
+```
+
 ## Optimizer Setup
 llm_pq's optimizer utilize the support from the gurobi. To use gurobi, put the [web license](https://license.gurobi.com/manager/licenses) under `/opt/gurobi/` or under `configs`:
 
@@ -34,6 +42,7 @@ Else you will get:
 ```bash
     ERROR:llm_pq:Please install gurobi and put the license file under /opt/gurobi/
 ```
+
 
 ## Reproduce Results in Paper
 ### Scripts
@@ -49,14 +58,16 @@ We provides all the graphing scripts under the `notebook/` folder.
 
 
 
-## TODOs if Heated 
-1. Faster Loading
-We are going to add scripts to distributed runtime and quantization part to make it can be fast deployed in runtime. Stay-tuned.
-2. Better Pipeline
-Replace PipeEdge's 
-3. Simplify model structure
-The existing model structure is directly adopted from old transformer lib, introducing many unnecessary ops which could be reduced.
 
+## TODOs if 🌟 
+1. Faster Loading:
+We are going to add scripts to distributed runtime and quantization part to make it can be fast deployed in runtime. Stay-tuned.
+2. Better Pipeline:
+Replace PipeEdge's 
+3. Simplify model structure:
+The existing model structure is directly adopted from old transformer lib, introducing many unnecessary ops which could be reduced.
+4. Deploy: Wrap it as a chatbot.
+   
 ## Citation
 If you use LLM-PQ for your research, please cite our [paper](https://dl.acm.org/doi/10.1145/3627535.3638480):
 ```bibtex

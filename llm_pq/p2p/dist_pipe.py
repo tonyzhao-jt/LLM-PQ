@@ -21,6 +21,9 @@ class ConditionQueue(queue.Queue):
         super().__init__(**kwargs)
         self.condition = threading.Condition()
 
+    def destroy(self):
+        with self.condition:
+            self.condition.notify_all()
 
 class AbstractTensorExchangeThread(threading.Thread):
     """Abstract tensor exchange thread."""
@@ -64,12 +67,14 @@ class SimpleQueueThread(AbstractTensorExchangeThread):
     def stop(self) -> None:
         """Direct the thread to stop."""
         self._evt_stop_thread.set()
+        self.lock_queue.destroy()
+        self.work_queue.destroy()
     
     def run(self):
         while self.lock_queue.empty():
             # print("watiing")
             time.sleep(0.001)
-        while True:
+        while not self._evt_stop_thread.is_set():
             # get element from workqueue
             with self.work_queue.condition:
                 while self.work_queue.empty():

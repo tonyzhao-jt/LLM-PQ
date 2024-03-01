@@ -8,9 +8,9 @@ cd $ROOT_DIR/scripts/profile
 export CUDA_VISIBLE_DEVICES=1 # use last one
 
 # prefill
-for batch_size in 3
+for batch_size in 1 2 4 
 do
-    for prompt_length in 384
+    for prompt_length in 128 256 
     do
         for model_size in 125m
         do
@@ -18,5 +18,22 @@ do
              --generated-seq-length 1 --step 20 --warmup 2 --repeat 10 --model-size $model_size
         done
     done
+done
+
+# decode
+for batch_size in 1 2 4 
+do
+    for past_seq_length in 128 256 
+    do
+        for model_size in 125m
+        do
+            python3 profile_lat.py --batch-size $batch_size --past-seq-length $past_seq_length \
+             --generated-seq-length 100 --step 20 --warmup 2 --repeat 20 --model-size $model_size
+        done
+    done
+done
+
+for model_size in 125m; do
+    python3 profile_concat.py --step 20 --warmup 2 --repeat 10 --model-name opt --model-size $model_size
 done
 

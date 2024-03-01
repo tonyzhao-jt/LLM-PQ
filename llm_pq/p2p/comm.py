@@ -5,7 +5,8 @@ import torch
 import torch.distributed as dist
 
 import llm_pq
-from llm_pq.logger import logger
+from llm_pq.logger import init_logger
+logger = init_logger(__name__)
 from llm_pq._globals import __PIPELINE__MODEL__PARALLEL__GROUP__
 
 from .TYPES import *

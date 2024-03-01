@@ -15,7 +15,8 @@ from typing import Any, Callable, List, Optional, Tuple, Type, Union
 import llm_pq
 from llm_pq.utils import to_device
 from llm_pq.rpc import get_neighbor_ranks
-from llm_pq.logger import logger
+from llm_pq.logger import init_logger
+logger = init_logger(__name__)
 import qllm.tp.utils as qllm_tp_utils
 
 class DistRpcPipelineStage:

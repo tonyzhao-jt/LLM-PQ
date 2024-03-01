@@ -24,7 +24,8 @@ from llm_pq.rpc import (
     init_env, DistConfig, set_device_map,
     DistRpcContext
 )
-from llm_pq.logger import logger
+from llm_pq.logger import init_logger
+logger = init_logger(__name__)
 from llm_pq.thread import ThreadSafeCounter
 from llm_pq.partitioner import get_shard_strategy
 from llm_pq.pipe import (

@@ -14,7 +14,8 @@ from transformers import (
 from qllm.models import create_empty_model, create_model_config, return_h1_h2
 import qllm.utils as qllm_utils
 
-from llm_pq.logger import logger
+from llm_pq.logger import init_logger
+logger = init_logger(__name__)
 from llm_pq.utils import get_device_name_and_mem
 from llm_pq import (
     fetch_prompts

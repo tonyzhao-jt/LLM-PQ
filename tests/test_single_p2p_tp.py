@@ -24,7 +24,8 @@ from llm_pq import (
     init_random_seed,
     fetch_prompts
 )
-from llm_pq.logger import logger
+from llm_pq.logger import init_logger
+logger = init_logger(__name__)
 # dist
 from llm_pq.p2p import (
     init_env, DistP2pContext,

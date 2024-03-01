@@ -4,7 +4,7 @@ import os
 import pkg_resources
 import pickle
 import socket
-from .utils import get_device_name_and_mem, convert_D_to_ranked_device
+from ..utils import get_device_name_and_mem, convert_D_to_ranked_device
 def run_dist():
     # Get the arguments passed to the llm_pq-dist command
     args = sys.argv[1:]
@@ -39,7 +39,7 @@ def run_dist():
         args.pop(args.index("--no_auto"))
     # check whether has the strat file, if has, then reorgnize the torch run args
     if has_strat_file and not no_auto:
-        print("Strategy file detected, reconstructing torchrun args")
+        print("Reconstructed torchrun args:")
         sol_file = f"{strat_file_name}.pkl"
         root_dir = os.environ['ROOT_DIR']
         strat_folder = f'{root_dir}/scripts/part_strategy'

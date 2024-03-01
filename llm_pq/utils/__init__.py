@@ -10,3 +10,6 @@ from .tensor_handler import object_to_tensor
 from .bits_pair import get_available_bits_pair, get_available_bits_pair_decoupled
 from .misc import get_factors, roundup_power2_divisions
 from .D_handler import convert_D_to_ranked_device
+
+# api server
+from .random import random_uuid

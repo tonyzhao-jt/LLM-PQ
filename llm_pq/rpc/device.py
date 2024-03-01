@@ -4,7 +4,8 @@ import numpy as np
 import os 
 from typing import Optional, Dict, Union, Callable, Any
 DeviceType = Union[int, str, torch.device]
-from llm_pq.logger import logger
+from llm_pq.logger import init_logger
+logger = init_logger(__name__)
 # dist / comm utils
 def create_device_mesh(rank, local_rank, world_size):
     node_first_rank = rank - local_rank

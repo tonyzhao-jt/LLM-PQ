@@ -9,4 +9,7 @@ cp gptq.py ${gptq_zs_folder}/models/gptq.py
 cp opt_perplex.py ${gptq_folder}/opt.py
 cp bloom_perplex.py ${gptq_folder}/bloom.py
 cp adaqh_utils.py ${gptq_folder}/adaqh_utils.py
+# datautils ? wierd why it cannot be copied to.
 cp datautils.py ${gptq_folder}/datautils.py
+
+

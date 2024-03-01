@@ -2,7 +2,8 @@ import torch
 import torch.distributed as dist 
 import torch.multiprocessing as mp
 import os 
-from llm_pq.logger import logger
+from llm_pq.logger import init_logger
+logger = init_logger(__name__)
 from .tp import tp_launcher
 from .global_context import *
 def launch(rank, world_size, backend="nccl", tp_group=[], pp_group=[]):

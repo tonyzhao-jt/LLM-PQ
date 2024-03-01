@@ -22,7 +22,8 @@ from llm_pq.utils import (
     save_with_pickle, get_available_bits_pair_decoupled
 )
 
-from llm_pq.logger import logger
+from llm_pq.logger import init_logger
+logger = init_logger(__name__)
 import pickle
 from qllm.models import opt
 from qllm.models import bloom

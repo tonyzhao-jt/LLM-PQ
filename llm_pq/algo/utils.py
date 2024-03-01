@@ -11,7 +11,8 @@ from ..partitioner.helper import (
 from ..partitioner import gen_config
 from ..config import PROJECT_NAME
 
-from ..logger import logger, assert_log
+from ..logger import init_logger, assert_log
+logger = init_logger(__name__)
 
 ROOT_DIR = os.environ.get('ROOT_DIR', f'/workspace/{PROJECT_NAME}')
 def verbose_device_info(device_names, device_numbers, device_info):

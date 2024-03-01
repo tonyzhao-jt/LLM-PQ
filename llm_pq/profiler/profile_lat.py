@@ -195,7 +195,12 @@ def profile_decoder_layer(config, decoder_layer, shard=0, batch_size=1, input_se
         lat_avg = inf # not implementable
         mem_weight, mem_kv, mem_embedding = 0, 0, 0
     caliber.clear_calib_data()
-    layer_name = 'self_attn' if shard == 0 else 'ffn'
+    if shard == 0:
+        layer_name = 'self_attn'
+    if shard == 1:
+        layer_name = 'ffn'
+    if shard == 2:
+        layer_name = 'attn+ffn'
     if verbose:
         print(f"decoder_layer {layer_name} (bit={bit}): {lat_avg}")
         print(f"decoder_layer {layer_name} (bit={bit}, unit {mem_unit}): {mem_weight} {mem_kv} {mem_embedding}")

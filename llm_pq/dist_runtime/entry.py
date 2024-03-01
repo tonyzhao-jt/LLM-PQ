@@ -32,7 +32,8 @@ from llm_pq import (
     init_random_seed,
     fetch_prompts
 )
-from llm_pq.logger import logger
+from llm_pq.logger import init_logger
+logger = init_logger(__name__)
 # dist
 from llm_pq.p2p import (
     init_env, DistP2pContext,
@@ -43,8 +44,6 @@ from llm_pq.thread import ThreadSafeCounter
 from llm_pq.p2p.dist_pipe import (
     dist_p2p_pipeline_stage_factory, SimpleQueueThread, ConditionQueue
 )
-
-
 
 
 # example utils
@@ -126,6 +125,8 @@ def run_inf(stage_ctx, input_id_dict, data_chunks, sample_num=None):
         num_tokens_to_generate = sample_num
     lock_queue = ConditionQueue(maxsize=1)
     work_queue = ConditionQueue(maxsize=chunk_size)
+    if simple_queue_thread:
+        simple_queue_thread.stop()
     simple_queue_thread = SimpleQueueThread(lock_queue, work_queue, master_stage_context.enqueue_tensor)
     simple_queue_thread.start() # start
     ds_scheduler.reset_status()
@@ -272,7 +273,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                 if not args.perf_mode:
                     for request_id, result in request_input_ids.items():
                         generated_text = tokenizer.batch_decode(result, skip_special_tokens=True)
-                        print("request_id: {}, generated_text: {}".format(request_id, generated_text))
+                        print("Ref: request_id: {}, \n 0-th response: {}, \n # of responses {}".format(request_id, generated_text[0], len(generated_text)))
                 if workload_test:
                     # get sum of generated tokens
                     sum_tokens = sum(workload_list)
@@ -294,7 +295,7 @@ def run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=None):
                     dist.barrier()
                     dist.barrier()
                 stop_event.wait()
-        
+    
     pass
 
 if __name__ == '__main__':
@@ -394,7 +395,7 @@ if __name__ == '__main__':
     # hybrid micro-batch scheduler
     chunk_size = len(decoder_bss)
     ds_scheduler = DSScheduler(prefill_bs, decoder_bss)
-    print(prefill_bs, decoder_bss)
+    # print(prefill_bs, decoder_bss)
     # configs
     infer_configs = (bs_token, prompt_length, num_tokens_to_generate, chunk_size)
     loaded_llm_cpu._verify_shard_strategy(sharding_strategy)
@@ -410,9 +411,13 @@ if __name__ == '__main__':
         model_pre_and_post = model_pre_and_post.cuda()
 
     run_pipeline_p2p(loaded_llm_cpu, dist_cfg, sharding_strategy=sharding_strategy)
-    if simple_queue_thread is not None:
-        simple_queue_thread.join()
 
+    # join all queues
+    if simple_queue_thread is not None:
+        simple_queue_thread.stop()
+
+    # use os to kill the current thread
+    os._exit(0)
 
 
 

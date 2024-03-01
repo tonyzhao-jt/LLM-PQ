@@ -6,7 +6,8 @@ import qllm.utils as qllm_utils
 from qllm.models import create_empty_decoder
 
 import llm_pq
-from llm_pq.logger import logger
+from llm_pq.logger import init_logger
+logger = init_logger(__name__)
 from llm_pq.profiler import profile_lat
 from llm_pq.utils import get_device_name_and_mem
 

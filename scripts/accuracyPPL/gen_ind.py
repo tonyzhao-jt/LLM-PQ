@@ -41,6 +41,7 @@ def generate_indicator(model_name, model_size, folder_path, fast=True):
     available_bits = get_available_candidate_bits() # regard 8-bit as same
     BITs = get_available_bits_pair(available_bits)
 
+
     # get indicator for each layer
     # final result should be a dict with respect to different layer and BITs
     def calculate_indicator(bit, x_var, w_max, w_min, is_ffn=False):

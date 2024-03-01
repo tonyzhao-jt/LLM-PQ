@@ -91,7 +91,8 @@ def init_env():
 # contruct rpc opt by environ
 def rpc_opt_factory(rpc_timeout=60, rpc_disable_shm=False):
     import random
-    from llm_pq.logger import logger
+    from llm_pq.logger import init_logger
+    logger = init_logger(__name__)
     MASTER_PORT = int(os.environ['MASTER_PORT'])
     if 'RPC_PORT' in os.environ:
         rpc_port = int(os.environ['RPC_PORT'])

@@ -2,7 +2,7 @@ gptq_zs_folder="${ROOT_DIR}/3rd_party/gptq/zeroShot/"
 cd $gptq_zs_folder
 model_storage_path='/data/llms/'
 export TRANSFORMERS_CACHE=$model_storage_path
-export CUDA_VISIBLE_DEVICES=3
+export CUDA_VISIBLE_DEVICES=2
 # test
 python3 main.py facebook/opt-125m c4 --wbits 4 --task piqa --profile
 # all indicators required.
