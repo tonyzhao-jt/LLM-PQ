@@ -1,6 +1,6 @@
 # prompts much larger than the generated tokens
 export TRANSFORMERS_CACHE='/data/llms/'
-export CALIB_ROOT_FOLDER="${ROOT_DIR}/examples/"
+export CALIB_ROOT_FOLDER="${ROOT_DIR}/scripts/fakeCalib"
 export NP_WEIGHT_FOLDER="${TRANSFORMERS_CACHE}/converted_weights_np/"
 # CPU Not Enough
 export LOAD_IN_NP="1"

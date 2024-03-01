@@ -46,7 +46,7 @@ def install_customized_packges(requirements):
             subprocess.call(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     else:
         # raise error
-        raise ValueError("QLLM and LPTorch are not found, please check the installation")
+        raise ValueError("QLLM and LPTorch are not found in path, pls use 'git clone --recursive' instead")
         
 
 # update the GPTQ repo for the accuracy

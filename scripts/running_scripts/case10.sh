@@ -3,7 +3,7 @@ STRAT_FILE_NAME="sols_opt_66b_Tesla_V100-SXM2-32GB_4"
 # STRAT_FILE_NAME="sols_opt_13b_NVIDIA_A100-SXM4-40GB_1"
 export TOKENIZERS_PARALLELISM=false
 export TRANSFORMERS_CACHE='/data/llms/'
-export CALIB_ROOT_FOLDER="${ROOT_DIR}/examples/"
+export CALIB_ROOT_FOLDER="${ROOT_DIR}/scripts/fakeCalib"
 export NP_WEIGHT_FOLDER="${TRANSFORMERS_CACHE}/converted_weights_np/"
 # CPU Not Enough
 export LOAD_IN_NP="1"

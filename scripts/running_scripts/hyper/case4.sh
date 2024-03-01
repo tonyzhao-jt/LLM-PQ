@@ -1,6 +1,6 @@
 
 export TRANSFORMERS_CACHE='/data/llms/'
-export CALIB_ROOT_FOLDER="${ROOT_DIR}/examples/"
+export CALIB_ROOT_FOLDER="${ROOT_DIR}/scripts/fakeCalib"
 export NP_WEIGHT_FOLDER="${TRANSFORMERS_CACHE}/converted_weights_np/"
 export OMP_NUM_THREADS=20
 # CPU Not Enough

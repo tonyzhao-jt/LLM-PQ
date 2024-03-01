@@ -5,9 +5,10 @@ Official Repo for: LLM-PQ: Serving LLM on Heterogeneous Clusters with Phase-Awar
 - But also maximizing the utilization of GPUs acquired at different points in time (**Heterogenous GPU Serving**).
 - Specially, LLM-PQ is a **workload-centric** and **device-agnostic** serving framework, takes both workload information and device information for strategy derving.
 
+In this version, we don't have chatbot, but flexgen-like one-time running script.
+
 ## Before You Proceed
-- Due to historical reasons (this repository was initially built between March and June 2023), LLM-PQ's pipeline is built on top of [PipeEdge](https://github.com/usc-isi/PipeEdge). As a result, its performance may be limited compared to the latest pipeline implementations, such as TGI. However, this also ensures a fair comparison with PipeEdge.
-- we are planning to replace the backend in the near future. Stay tuned for updates.
+- Due to historical reasons **(this repository was initially built between March and June 2023)**, LLM-PQ's pipeline is built on top of [PipeEdge](https://github.com/usc-isi/PipeEdge). As a result, its performance may be limited compared to the latest pipeline implementations, such as TGI. However, this also ensures a fair comparison with PipeEdge.
 
 ## Install
 LLM-PQ is implemented in a top-down view, where
@@ -18,7 +19,11 @@ LLM-PQ is implemented in a top-down view, where
 Due to the similar reason, later two's performance is not a SOTA. **If this repo / paper is getting popular 🤑🤑🤑, we will consider merging / updates the later two.**
 
 ### Docker (Recommended)
-You can use the docker file under the dockerfiles. We also provides one pre-built image:
+You can use the docker file under the dockerfiles. We also provides pre-built image with data insides:
+```bash
+    docker pull springtonyzhao/llmpq:v100 # v100 (the one who required from scratch build of bitsandbytes)
+    docker pull springtonyzhao/llmpq:v100 # A100
+```
 
 ### Manual
 ```bash
@@ -28,12 +33,13 @@ You can use the docker file under the dockerfiles. We also provides one pre-buil
 **Careful**: use GPU with cap <= 70 require recompile of bitsandbytes. We done it for u in setup.py, but if not, please run the update.sh in the 3rd_party of LPTorch to mannually compile and install the bitsandbytes.
 
 #### Possible error
-`BuilderConfig 'allenai--c4' not found. Available: `: please change the data load script in GPTQ to
+- `BuilderConfig 'allenai--c4' not found. Available: `: please change the data load script in GPTQ to
 ```bash
 traindata = load_dataset(
     'allenai/c4', data_files={'train': 'en/c4-train.00000-of-01024.json.gz'}, split='train'
 )
 ```
+- `ERROR: Could not install packages due to an OSError:`: when `pip install -e .`, you can just install it again and the problem can be solved.
 
 ## Optimizer Setup
 llm_pq's optimizer utilize the support from the gurobi. To use gurobi, put the [web license](https://license.gurobi.com/manager/licenses) under `/opt/gurobi/` or under `configs`:
@@ -57,16 +63,15 @@ We provides all the graphing scripts under the `notebook/` folder.
 - For cost model, you need to profile `gtruth` for prediction error est.
 
 
-
-
 ## TODOs if 🌟 
 1. Faster Loading:
-We are going to add scripts to distributed runtime and quantization part to make it can be fast deployed in runtime. Stay-tuned.
+We are going to add scripts to distributed runtime and quantization part to make it can be fast deployed in runtime.
 2. Better Pipeline:
-Replace PipeEdge's 
-3. Simplify model structure:
-The existing model structure is directly adopted from old transformer lib, introducing many unnecessary ops which could be reduced.
-4. Deploy: Wrap it as a chatbot.
+Replace PipeEdge's piepline with sth better.
+3. More efficient model structure:
+The existing model structure is directly adopted from old transformer lib, introducing many unnecessary ops which could be reduced. But also, we only provides BLOOM / OPT for the moment, which could be also improved.
+4. Deployment: 
+Wrap it with a chatbot.
    
 ## Citation
 If you use LLM-PQ for your research, please cite our [paper](https://dl.acm.org/doi/10.1145/3627535.3638480):

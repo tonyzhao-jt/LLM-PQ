@@ -9,7 +9,7 @@ WORKDIR $PROJECT_DIR
 # change data path and number of trainers here
 RUN apt-get update && apt-get install -y \
     git ffmpeg libsm6 libxext6 ca-certificates curl jq wget \
-    git-lfs net-tools
+    git-lfs net-tools inetutils-ping
 
 RUN python3 -m pip install gurobipy pulp sacrebleu
 RUN python3 -m pip install -U scikit-learn scipy matplotlib statsmodels
