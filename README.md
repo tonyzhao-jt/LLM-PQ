@@ -8,6 +8,8 @@ Official Repo for: LLM-PQ: Serving LLM on Heterogeneous Clusters with Phase-Awar
 
 In this version, we don't have chatbot, but flexgen-like one-time running script.
 
+Our full paper is not ready yet, we will release it soon.
+
 ## Before You Proceed
 - Due to historical reasons **(this repository was initially built between March and June 2023)**, LLM-PQ's pipeline is built on top of [PipeEdge](https://github.com/usc-isi/PipeEdge). As a result, its performance may be limited compared to the latest pipeline implementations, such as TGI. However, this also ensures a fair comparison with PipeEdge.
 
