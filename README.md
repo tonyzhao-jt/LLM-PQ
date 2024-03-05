@@ -1,6 +1,6 @@
 # LLM-PQ
 
-Official Repo for: LLM-PQ: Serving LLM on Heterogeneous Clusters with Phase-Aware Partition and Adaptive Quantization
+Official Repo for LLM-PQ: Serving LLM on Heterogeneous Clusters with Phase-Aware Partition and Adaptive Quantization
 
 <p align="center">
 | <a href="https://dl.acm.org/doi/10.1145/3627535.3638480"><b>Poster</b></a> | <a href="https://arxiv.org/abs/2403.01136"><b>Full Paper</b></a>｜
@@ -9,14 +9,13 @@ Official Repo for: LLM-PQ: Serving LLM on Heterogeneous Clusters with Phase-Awar
 ---
 
 - LLM-PQ argues that the assumption of **infinite requests** in LLM serving is not necessarily valid. 
-- LLM-PQ emphasize the importance of efficiently processing workload-similar **predetermined offline batch processing tasks** 
+- LLM-PQ emphasizes the importance of efficiently processing workload-similar **predetermined offline batch processing tasks** 
 - But also maximizing the utilization of GPUs acquired at different points in time (**Heterogenous GPU Serving**).
-- Utilize the overall resources towards behaviours of quantization for the same workload in different phase (**Ada-Q**).
-- Specially, LLM-PQ is a **workload-centric** and **device-agnostic** serving framework, takes both workload information and device information for strategy derving.
+- Utilize the overall resources towards behaviors of quantization for the same workload in different phases (**Ada-Q**).
+- Especially, LLM-PQ is a **workload-centric** and **device-agnostic** serving framework, taking both workload information and device information for strategy.
 
-In this version, we don't have chatbot, but flexgen-like one-time running script.
+In this version, we don't have a chatbot, but a flexgen-like one-time running script.
 
-Our full paper is not ready yet, we will release it soon.
 
 ## Before You Proceed
 - Due to historical reasons **(this repository was initially built between March and June 2023)**, LLM-PQ's pipeline is built on top of [PipeEdge](https://github.com/usc-isi/PipeEdge). As a result, its performance may be limited compared to the latest pipeline implementations, such as TGI. However, this also ensures a fair comparison with PipeEdge.
@@ -25,12 +24,12 @@ Our full paper is not ready yet, we will release it soon.
 LLM-PQ is implemented in a top-down view, where
 - LLM-PQ: Provides the distributed runtime and optimizer for the better serving plan
 - QLLM: the customized LLM workload and its quantized version
-- LPTorch: the inner most quantization support for the LM, implement different quantization scheme.
+- LPTorch: the innermost quantization support for the LM, implement different quantization schemes.
 
-Due to the similar reason, later two's performance is not a SOTA. **If this repo / paper is getting popular 🤑🤑🤑, we will consider merging / updates the later two.**
+Due to a similar reason, latter two's performance is not a SOTA. **If this repo / paper is getting popular 🤑🤑🤑, we will consider merging / updates the later two.**
 
 ### Docker (Recommended)
-You can use the docker file under the dockerfiles. We also provides pre-built image with data insides:
+You can use the docker file under the dockerfiles. We also provide the pre-built image with data insides:
 ```bash 
     docker pull springtonyzhao/llmpq:v100 # v100 (the one who required from scratch build of bitsandbytes)
     docker pull springtonyzhao/llmpq:a100 # A100
@@ -41,7 +40,7 @@ You can use the docker file under the dockerfiles. We also provides pre-built im
     git clone --recursive https://github.com/tonyzhao-jt/llm_pq.git
     python3 pip install -e .
 ```
-**Careful**: use GPU with cap <= 70 require recompile of bitsandbytes. We done it for u in setup.py, but if not, please run the update.sh in the 3rd_party of LPTorch to mannually compile and install the bitsandbytes.
+**Careful**: use GPU with cap <= 70 require recompile of bitsandbytes. We done it for u in setup.py, but if not, please run the update.sh in the 3rd_party of LPTorch to manually compile and install the bitsandbytes.
 
 #### Possible errors
 - `BuilderConfig 'allenai--c4' not found. Available: `: please change the data load script in GPTQ to
@@ -53,11 +52,11 @@ traindata = load_dataset(
 - `ERROR: Could not install packages due to an OSError:`: when `pip install -e .`, you can just install it again and the problem can be solved.
 
 ## Optimizer Setup
-llm_pq's optimizer utilize the support from the gurobi. To use gurobi, put the [web license](https://license.gurobi.com/manager/licenses) under `/opt/gurobi/` or under `configs`:
+llm_pq's optimizer utilizes the support from the gurobi. To use gurobi, put the [web license](https://license.gurobi.com/manager/licenses) under `/opt/gurobi/` or under `configs`:
 
 Else you will get:
 ```bash
-    ERROR:llm_pq:Please install gurobi and put the license file under /opt/gurobi/
+    ERROR:llm_pq: Please install gurobi and put the license file under /opt/gurobi/
 ```
 
 
@@ -70,17 +69,17 @@ We provide all the scripts used in the paper under the `scripts/` folder. Curren
 Please note that in the current version, we load the model layer by layer and do not require any additional storage for weight saving. However, this loading process might be relatively slow.
 
 ### Graphing
-We provides all the graphing scripts under the `notebook/` folder.
+We provide all the graphing scripts under the `notebook/` folder.
 - For cost model, you need to profile `gtruth` for prediction error est.
 
 
 ## TODOs if 🌟 
 1. Faster Loading:
-We are going to add scripts to distributed runtime and quantization part to make it can be fast deployed in runtime.
+We are going to add scripts to the distributed runtime and quantization part to make it can be fast deployed in runtime.
 2. Better Pipeline:
-Replace PipeEdge's piepline with sth better.
+Replace PipeEdge's pipeline with sth better.
 3. More efficient model structure:
-The existing model structure is directly adopted from old transformer lib, introducing many unnecessary ops which could be reduced. But also, we only provides BLOOM / OPT for the moment, which could be also improved.
+The existing model structure is directly adopted from the old transformer lib, introducing many unnecessary ops that could be reduced. But also, we only provide BLOOM / OPT for the moment, which could be also improved.
 4. Deployment: 
 Wrap it with a chatbot.
    
