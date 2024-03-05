@@ -1,5 +1,13 @@
 # LLM-PQ
+
 Official Repo for: LLM-PQ: Serving LLM on Heterogeneous Clusters with Phase-Aware Partition and Adaptive Quantization
+
+<p align="center">
+| <a href="https://dl.acm.org/doi/10.1145/3627535.3638480"><b>Poster</b></a> | <a href="https://arxiv.org/abs/2403.01136"><b>Full Paper</b></a>｜
+</p>
+
+---
+
 - LLM-PQ argues that the assumption of **infinite requests** in LLM serving is not necessarily valid. 
 - LLM-PQ emphasize the importance of efficiently processing workload-similar **predetermined offline batch processing tasks** 
 - But also maximizing the utilization of GPUs acquired at different points in time (**Heterogenous GPU Serving**).
