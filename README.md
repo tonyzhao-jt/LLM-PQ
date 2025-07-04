@@ -6,7 +6,7 @@ Official Repo for LLM-PQ: Serving LLM on Heterogeneous Clusters with Phase-Aware
 | <a href="https://dl.acm.org/doi/10.1145/3627535.3638480"><b>Poster</b></a> | <a href="https://arxiv.org/abs/2403.01136"><b>Full Paper</b></a>｜
 </p>
 
-2025.7.4: To release a vLLM-compatible version in the next few weeks.. 
+**2025.7.4 Release**，LLMPQ vllm backend：https://github.com/tonyzhao-jt/LLMPQ-vLLM
 
 ---
 
