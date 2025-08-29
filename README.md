@@ -1,104 +1,93 @@
-# LLM-PQ
+# SplitQuant / LLM-PQ: Resource-Efficient LLM Offline Serving on Heterogeneous GPUs via Phase-Aware Model Partition and Adaptive Quantization
 
-Official Repo for LLM-PQ: Serving LLM on Heterogeneous Clusters with Phase-Aware Partition and Adaptive Quantization
+This is the official repository for **SplitQuant** (IEEE Cluster 2025) and its preliminary work, **LLMPQ** (ACM PPoPP'24 Poster).
 
-<p align="center">
-| <a href="https://dl.acm.org/doi/10.1145/3627535.3638480"><b>Poster</b></a> | <a href="https://arxiv.org/abs/2403.01136"><b>Full Paper</b></a>｜
-</p>
+\<p align="center"\>
+| \<a href="[https://dl.acm.org/doi/10.1145/3627535.3638480](https://dl.acm.org/doi/10.1145/3627535.3638480)"\>\<b\>PPoPP'24 Poster\</b\>\</a\> | \<a href="[https://arxiv.org/abs/2403.01136](https://arxiv.org/abs/2403.01136)"\>\<b\>Full Paper (arXiv)\</b\>\</a\>｜
+\</p\>
 
-**2025.7.4 Release**，LLMPQ vllm backend：https://github.com/tonyzhao-jt/LLMPQ-vLLM
+-----
 
----
+### Backends
 
-- LLM-PQ argues that the assumption of **infinite requests** in LLM serving is not necessarily valid. 
-- LLM-PQ emphasizes the importance of efficiently processing workload-similar **predetermined offline batch processing tasks** 
-- But also maximizing the utilization of GPUs acquired at different points in time (**Heterogenous GPU Serving**).
-- Utilize the overall resources towards behaviors of quantization for the same workload in different phases (**Ada-Q**).
-- Especially, LLM-PQ is a **workload-centric** and **device-agnostic** serving framework, taking both workload information and device information for strategy.
+This project provides two backends for reproducing results and for practical deployment:
 
-In this version, we don't have a chatbot, but a flexgen-like one-time running script.
+1.  **This Repository (Research Prototype Backend)**: This backend was built on PipeEdge and is used to reproduce the specific results and baselines presented in the paper. It serves as the primary research artifact.
+2.  **High-Performance vLLM Backend**: For users seeking higher performance and easier deployment, a more optimized backend based on vLLM is available at: **[https://github.com/tonyzhao-jt/LLMPQ-vLLM](https://github.com/tonyzhao-jt/LLMPQ-vLLM)**
 
+-----
 
-## Before You Proceed
-- Due to historical reasons **(this repository was initially built between March and June 2023)**, LLM-PQ's pipeline is built on top of [PipeEdge](https://github.com/usc-isi/PipeEdge). As a result, its performance may be limited compared to the latest pipeline implementations, such as TGI. However, this also ensures a fair comparison with PipeEdge.
+SplitQuant is a serving framework designed for offline batch processing of Large Language Model (LLM) workloads on heterogeneous GPU clusters. It introduces a workload-centric and device-agnostic serving strategy, incorporating phase-aware model partitioning and adaptive quantization to optimize resource utilization.
 
-## Install
-LLM-PQ is implemented in a top-down view, where
-- LLM-PQ: Provides the distributed runtime and optimizer for the better serving plan
-- QLLM: the customized LLM workload and its quantized version
-- LPTorch: the innermost quantization support for the LM, implement different quantization schemes.
-
-Due to a similar reason, latter two's performance is not a SOTA. **If this repo / paper is getting popular 🤑🤑🤑, we will consider merging / updates the later two.**
+## Installation
 
 ### Docker (Recommended)
-You can use the docker file under the dockerfiles. We also provide the pre-built image with data insides:
-```bash 
-    docker pull springtonyzhao/llmpq:v100 # v100 (the one who required from scratch build of bitsandbytes)
-    docker pull springtonyzhao/llmpq:a100 # A100
+
+Pre-built Docker images are available for different GPU architectures:
+
+```bash
+# For GPUs with compute capability <= 7.0 (e.g., V100), which require a custom build of bitsandbytes
+docker pull springtonyzhao/llmpq:v100
+
+# For newer GPUs (e.g., A100)
+docker pull springtonyzhao/llmpq:a100
 ```
 
-### Manual
-```bash
-    git clone --recursive https://github.com/tonyzhao-jt/llm_pq.git
-    python3 pip install -e .
-```
-**Careful**: use GPU with cap <= 70 require recompile of bitsandbytes. We done it for u in setup.py, but if not, please run the update.sh in the 3rd_party of LPTorch to manually compile and install the bitsandbytes.
+### Manual Installation
 
-#### Possible errors
-- `BuilderConfig 'allenai--c4' not found. Available: `: please change the data load script in GPTQ to
 ```bash
-traindata = load_dataset(
-    'allenai/c4', data_files={'train': 'en/c4-train.00000-of-01024.json.gz'}, split='train'
-)
+git clone --recursive https://github.com/tonyzhao-jt/llm_pq.git
+cd llm_pq
+pip3 install -e .
 ```
-- `ERROR: Could not install packages due to an OSError:`: when `pip install -e .`, you can just install it again and the problem can be solved.
+
+**Note**: GPUs with compute capability 7.0 or lower require a manual compilation of `bitsandbytes`. The `setup.py` script attempts to handle this. If it fails, please run the `update.sh` script in `3rd_party/LPTorch` to manually compile and install it.
+
+#### Common Errors
+
+  - `BuilderConfig 'allenai--c4' not found. Available: ...`: Please change the data loading script in the GPTQ component to:
+    ```python
+    traindata = load_dataset(
+        'allenai/c4', data_files={'train': 'en/c4-train.00000-of-01024.json.gz'}, split='train'
+    )
+    ```
+  - `ERROR: Could not install packages due to an OSError:`: This can sometimes occur during `pip install -e .`. Simply running the command again usually resolves the issue.
 
 ## Optimizer Setup
-llm_pq's optimizer utilizes the support from the gurobi. To use gurobi, put the [web license](https://license.gurobi.com/manager/licenses) under `/opt/gurobi/` or under `configs`:
 
-Else you will get:
+The optimizer relies on Gurobi. Please obtain a [web license](https://license.gurobi.com/manager/licenses) and place the `gurobi.lic` file either in `/opt/gurobi/` or in the `configs/` directory of this project. Without a valid license, you will encounter the following error:
+
 ```bash
-    ERROR:llm_pq: Please install gurobi and put the license file under /opt/gurobi/
+ERROR:llm_pq: Please install gurobi and put the license file under /opt/gurobi/
 ```
 
-
 ## Reproduce Results in Paper
-### Scripts
-We provide all the scripts used in the paper under the `scripts/` folder. Currently, we evaluate the performance and accuracy separately by performing the following:
-- Evaluating mixed-precision using modified scripts from GPTQ.
-- Evaluating performance using the distributed runtime.
 
-Please note that in the current version, we load the model layer by layer and do not require any additional storage for weight saving. However, this loading process might be relatively slow.
+### Scripts
+
+All scripts used for the paper's experiments are located in the `scripts/` directory. The evaluation is split into two parts:
+
+  - **Accuracy**: Mixed-precision accuracy is evaluated using modified scripts from GPTQ.
+  - **Performance**: End-to-end serving performance is measured using the distributed runtime.
+
+In the current implementation, models are loaded layer by layer at runtime, which avoids the need for saving quantized weights to disk but can make the initial loading process slower.
 
 ### Graphing
-We provide all the graphing scripts under the `notebook/` folder.
-- For cost model, you need to profile `gtruth` for prediction error est.
 
+All scripts for generating plots and figures from the paper are available in the `notebook/` directory. For cost model validation, you will need to profile the `gtruth` to estimate prediction errors.
 
-## TODOs if 🌟 
-1. Faster Loading:
-We are going to add scripts to the distributed runtime and quantization part to make it can be fast deployed in runtime.
-2. Better Pipeline:
-Replace PipeEdge's pipeline with sth better.
-3. More efficient model structure:
-The existing model structure is directly adopted from the old transformer lib, introducing many unnecessary ops that could be reduced. But also, we only provide BLOOM / OPT for the moment, which could be also improved.
-4. Deployment: 
-Wrap it with a chatbot.
-   
 ## Citation
-If you use LLM-PQ for your research, please cite our [paper](https://dl.acm.org/doi/10.1145/3627535.3638480):
+
+If you use this work in your research, please cite our paper:
+
 ```bibtex
-@inproceedings{10.1145/3627535.3638480,
-author = {Zhao, Juntao and Wan, Borui and Wu, Chuan and Peng, Yanghua and Lin, Haibin},
-title = {POSTER: LLM-PQ:Serving LLM on Heterogeneous Clusters with Phase-Aware Partition and Adaptive Quantization},
-year = {2024},
-isbn = {9798400704352},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/3627535.3638480},
-doi = {10.1145/3627535.3638480},
-pages = {460–462},
-keywords = {LM serving, heterogenous cluster, quantization},
-series = {PPoPP '24}
+@misc{zhao2024llmpqservingllmheterogeneous,
+      title={LLM-PQ: Serving LLM on Heterogeneous Clusters with Phase-Aware Partition and Adaptive Quantization}, 
+      author={Juntao Zhao and Borui Wan and Yanghua Peng and Haibin Lin and Chuan Wu},
+      year={2024},
+      eprint={2403.01136},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2403.01136}, 
 }
 ```
