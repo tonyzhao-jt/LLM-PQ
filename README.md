@@ -1,10 +1,10 @@
 # SplitQuant / LLM-PQ: Resource-Efficient LLM Offline Serving on Heterogeneous GPUs via Phase-Aware Model Partition and Adaptive Quantization
 
-This is the official repository for **SplitQuant** (IEEE Cluster 2025) and its preliminary work, **LLMPQ** (ACM PPoPP'24 Poster).
+This is the official repository for **SplitQuant** (IEEE Cluster 2025) and its preliminary work, **LLM-PQ** (ACM PPoPP'24 Poster).
 
-\<p align="center"\>
-| \<a href="[https://dl.acm.org/doi/10.1145/3627535.3638480](https://dl.acm.org/doi/10.1145/3627535.3638480)"\>\<b\>PPoPP'24 Poster\</b\>\</a\> | \<a href="[https://arxiv.org/abs/2403.01136](https://arxiv.org/abs/2403.01136)"\>\<b\>Full Paper (arXiv)\</b\>\</a\>｜
-\</p\>
+<p align="center">
+ | <a href="https://arxiv.org/abs/2403.01136"><b>Full Paper</b></a>｜  <a href="https://dl.acm.org/doi/10.1145/3627535.3638480"><b>Poster</b></a> |
+</p>
 
 -----
 
