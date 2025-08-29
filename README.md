@@ -12,7 +12,7 @@ This is the official repository for **SplitQuant** (IEEE Cluster 2025) and its p
 
 This project provides two backends for reproducing results and for practical deployment:
 
-1.  **This Repository (Research Prototype Backend)**: This backend was built on PipeEdge and is used to reproduce the specific results and baselines presented in the paper. It serves as the primary research artifact.
+1.  **This Repository (Low-Calibre Research Prototype Backend)**: This backend was built on PipeEdge and is used to reproduce the specific results and baselines presented in the paper. It serves as the primary research artifact.
 2.  **High-Performance vLLM Backend**: For users seeking higher performance and easier deployment, a more optimized backend based on vLLM is available at: **[https://github.com/tonyzhao-jt/LLMPQ-vLLM](https://github.com/tonyzhao-jt/LLMPQ-vLLM)**
 
 -----
